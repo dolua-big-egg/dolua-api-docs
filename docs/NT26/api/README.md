@@ -49,6 +49,7 @@
 | flashdb | [flashdb.md](module/flashdb.md) | [flashdb_kv](../../../examples/NT26/storage/flashdb_kv)、[flashdb_ts](../../../examples/NT26/storage/flashdb_ts)、[mix](../../../examples/NT26/storage/mix) |
 | lfs | [lfs.md](module/lfs.md) | [littlefs](../../../examples/NT26/storage/littlefs)、[mix](../../../examples/NT26/storage/mix) |
 | lcd | [lcd.md](module/lcd.md) | [spi_lcd](../../../examples/NT26/peripherals/spi/spi_lcd)、[spi_st7789](../../../examples/NT26/peripherals/spi/spi_st7789) |
+| lvgl | [lvgl.md](module/lvgl.md) | [lvgl_demo](../../../examples/NT26/module/lvgl/lvgl_demo) |
 | json | [json.md](module/json.md) | [json_api](../../../examples/NT26/module/json/json_api) |
 | hex | [hex.md](module/hex.md) | [hex_api](../../../examples/NT26/module/hex/hex_api) |
 | tls | [tls.md](module/tls.md) | [tls_api](../../../examples/NT26/module/tls/tls_api) |
@@ -59,5 +60,3 @@
 | rtu | [rtu.md](module/rtu.md) | [rtu_api](../../../examples/NT26/module/rtu/rtu_api)、[rtu_cmd](../../../examples/NT26/module/rtu/rtu_cmd) |
 | virat | [virat.md](module/virat.md) | [virt_api](../../../examples/NT26/module/virt/virt_api) |
 | sms | [sms.md](module/sms.md) | [sms_api](../../../examples/NT26/network/sms/sms_api)、[sms_cmd](../../../examples/NT26/network/sms/sms_cmd) |
-
-LVGL 目前只有示例、没有 API 文档：[lvgl_demo](../../../examples/NT26/module/lvgl/lvgl_demo)。

@@ -74,4 +74,4 @@
 | [rtu](module/rtu) | [rtu](../../docs/NT26/api/module/rtu.md) |
 | [virt](module/virt) | [virat](../../docs/NT26/api/module/virat.md) |
 | [charge](module/charge) | [charge](../../docs/NT26/api/peripherals/charge.md) |
-| [lvgl](module/lvgl) | 暂无 API 文档 |
+| [lvgl](module/lvgl) | [lvgl](../../docs/NT26/api/module/lvgl.md) |

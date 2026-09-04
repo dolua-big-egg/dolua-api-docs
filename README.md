@@ -36,7 +36,7 @@ API 按主题放在 `peripherals` / `network` / `module`；示例按工程用途
 | 类别 | 典型模块 |
 | --- | --- |
 | 入门 / 运行时 | `log`、`rt`、`sys`、`info`、`script` |
-| 外设 | `gpio`、`uart`、`spi`、`i2c`、`pwm`、`adc`、`lcd` |
+| 外设 | `gpio`、`uart`、`spi`、`i2c`、`pwm`、`adc`、`lcd`、`lvgl` |
 | 网络 | `tcp`、`http`、`mqtt`、`dns`、`ntp`、`sms` |
 | 存储 | 内部文件、外挂 Flash（LittleFS / KV） |
 | 协议与工具 | `json`、`hex`、`modbus`、`framekit`、`rtu` |
@@ -47,4 +47,4 @@ API 按主题放在 `peripherals` / `network` / `module`；示例按工程用途
 
 - 每篇 API 文首的 **文档版本** 只表示该篇 markdown 的修订，不是模组固件版本。
 - 许可证见 [LICENSE](LICENSE)（Apache-2.0）。
-- 国内镜像：[Gitee](https://gitee.com/dolua/dolua-api-docs)；GitHub：[liam-so-sad/dolua-api-docs](https://github.com/liam-so-sad/dolua-api-docs)。
+- 国内镜像（优先）：[Gitee](https://gitee.com/dolua/dolua-api-docs)；GitHub：[dolua-big-egg/dolua-api-docs](https://github.com/dolua-big-egg/dolua-api-docs)。
