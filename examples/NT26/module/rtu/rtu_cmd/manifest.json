@@ -1,0 +1,33 @@
+{
+  "id": "rtu_cmd",
+  "name": "RTU 指令控制",
+  "version": "1.0.0",
+  "category": "module",
+  "hw": "中",
+  "tags": [
+    "rtu"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "rt",
+      "rtu",
+      "uart"
+    ],
+    "pins": [],
+    "peripherals": [],
+    "controllers": [
+      "UART1"
+    ],
+    "extras": [],
+    "network": true
+  },
+  "readme": "",
+  "description": "UART1 指令调用 rtu.write / socket / mqtt / control / wait_connect。\n\n上电把本次 pass_up/down 关掉以免透传抢走指令。*_cfg 写入会改 NVM。通道须先在模组里配置。回调里不要同步发送。\n"
+}

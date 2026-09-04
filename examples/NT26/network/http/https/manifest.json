@@ -1,0 +1,34 @@
+{
+  "id": "https",
+  "name": "HTTPS 单向认证",
+  "version": "1.0.0",
+  "category": "network",
+  "hw": "中",
+  "tags": [
+    "http"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "http",
+      "log",
+      "lp",
+      "rt"
+    ],
+    "pins": [],
+    "peripherals": [
+      "SIM"
+    ],
+    "controllers": [],
+    "extras": [],
+    "network": true
+  },
+  "readme": "",
+  "description": "先等驻网，再用 TLS 单向认证访问 https://httpbin.org/get。\n\n和“不校验证书”的写法不同：必须带站点对应的根 CA，否则 TLS 配置会失败。本例嵌入 Amazon Root CA 1。设备没校时时默认忽略证书有效期。\n"
+}

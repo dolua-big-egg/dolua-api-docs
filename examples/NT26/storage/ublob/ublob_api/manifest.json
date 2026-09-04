@@ -1,0 +1,31 @@
+{
+  "id": "ublob_api",
+  "name": "UBLOB 字节存储",
+  "version": "1.0.0",
+  "category": "store",
+  "hw": "低",
+  "tags": [
+    "ublob"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "log",
+      "rt",
+      "ublob"
+    ],
+    "pins": [],
+    "peripherals": [],
+    "controllers": [],
+    "extras": [],
+    "network": false
+  },
+  "readme": "",
+  "description": "演示 ublob.write / append / read / open 视图（read/size/crc32/md5/close）以及 stat/list/usage/remove。\n\n视图同时只能开 1 个。与 lua 脚本、ufs 共用 220KiB 配额。不依赖外设。\n"
+}

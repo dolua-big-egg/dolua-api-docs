@@ -1,0 +1,36 @@
+{
+  "id": "framekit_cmd",
+  "name": "FrameKit 拼包拆包",
+  "version": "1.0.0",
+  "category": "module",
+  "hw": "中",
+  "tags": [
+    "framekit",
+    "uart"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "framekit",
+      "log",
+      "rt",
+      "rtu",
+      "uart"
+    ],
+    "pins": [],
+    "peripherals": [],
+    "controllers": [
+      "UART1"
+    ],
+    "extras": [],
+    "network": false
+  },
+  "readme": "",
+  "description": "UART1 演示 framekit 按完整协议拼包拆包。协议与旧 RTU 相同：55AA+长度+payload+CRC16。\n\n上电打印粘包/断包/错包 HEX，请用 HEX 发送；也可 fk demo sticky|split|timeout。发得快也不会黏在回调里；超时内断包会合并，超时和错包丢弃。\n"
+}

@@ -1,0 +1,31 @@
+{
+  "id": "mq_api",
+  "name": "消息队列 mq",
+  "version": "1.0.0",
+  "category": "os",
+  "hw": "低",
+  "tags": [
+    "rt",
+    "mq"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ">=1.2.19"
+  },
+  "requires": {
+    "libs": [
+      "log",
+      "rt"
+    ],
+    "pins": [],
+    "peripherals": [],
+    "controllers": [],
+    "extras": [],
+    "network": false
+  },
+  "readme": "",
+  "description": "演示 rt.mq_create / send / recv / count / reset / delete。\n\n必须先 create。队列 FIFO，一条消息只唤醒一个等待者。和 mbox 广播不同。\n"
+}

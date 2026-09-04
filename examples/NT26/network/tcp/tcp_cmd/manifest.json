@@ -1,0 +1,33 @@
+{
+  "id": "tcp_cmd",
+  "name": "TCP 指令控制",
+  "version": "1.0.0",
+  "category": "network",
+  "hw": "低",
+  "tags": [
+    "tcp"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "rt",
+      "tcp",
+      "uart"
+    ],
+    "pins": [],
+    "peripherals": [],
+    "controllers": [
+      "UART1"
+    ],
+    "extras": [],
+    "network": true
+  },
+  "readme": "",
+  "description": ""
+}

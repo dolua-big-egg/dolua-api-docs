@@ -1,0 +1,33 @@
+{
+  "id": "dream_api",
+  "name": "dream 双色球大乐透",
+  "version": "1.0.0",
+  "category": "module",
+  "hw": "低",
+  "tags": [
+    "dream",
+    "random"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ">=1.2.19"
+  },
+  "requires": {
+    "libs": [
+      "dream",
+      "info",
+      "log",
+      "rt"
+    ],
+    "pins": [],
+    "peripherals": [],
+    "controllers": [],
+    "extras": [],
+    "network": false
+  },
+  "readme": "",
+  "description": "演示 dream 模块：双色球、大乐透真随机开号，生日种子的两种模式（混入 TRNG / stable 可复现），以及生日拼接当天日期作为种子。不依赖网络和外设。\n"
+}

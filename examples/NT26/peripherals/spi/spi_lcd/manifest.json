@@ -1,0 +1,37 @@
+{
+  "id": "spi_lcd",
+  "name": "LCD 模块 SPI 纯色刷屏",
+  "version": "1.0.0",
+  "category": "peripherals",
+  "hw": "高",
+  "tags": [
+    "spi",
+    "lcd",
+    "st7789"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "lcd",
+      "log",
+      "rt"
+    ],
+    "pins": [],
+    "peripherals": [],
+    "controllers": [
+      "SPI0"
+    ],
+    "extras": [
+      "ST7789"
+    ],
+    "network": false
+  },
+  "readme": "",
+  "description": "用 C 层 lcd 模块（lcd.new）经 SPI0 点亮 ST7789，循环红绿蓝白黑黄全屏填充。SPI/LSPI 细节封装在 lcd 内。\n\n分辨率 240x280。CS=GPIO8，BL/DC/RST=GPIO32/31/30。必须把 UART2 挪开。\n"
+}

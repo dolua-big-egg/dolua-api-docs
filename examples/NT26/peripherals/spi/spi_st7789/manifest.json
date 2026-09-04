@@ -1,0 +1,38 @@
+{
+  "id": "spi_st7789",
+  "name": "SPI ST7789 纯色刷屏",
+  "version": "1.0.0",
+  "category": "peripherals",
+  "hw": "高",
+  "tags": [
+    "spi",
+    "lcd",
+    "st7789"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "gpio",
+      "log",
+      "rt",
+      "spi"
+    ],
+    "pins": [],
+    "peripherals": [],
+    "controllers": [
+      "SPI0"
+    ],
+    "extras": [
+      "ST7789"
+    ],
+    "network": false
+  },
+  "readme": "",
+  "description": "SPI0 驱动 ST7789：最短初始化后循环红绿蓝白黑黄全屏填充。\n\n分辨率 240x280。CS=GPIO8，BL/DC/RST=GPIO32/31/30。SPI0 与 UART2 默认脚冲突，必须把 UART2 挪开。\n"
+}

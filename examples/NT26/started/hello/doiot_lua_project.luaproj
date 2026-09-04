@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "displayName": "hello",
+  "projectInfo": {
+    "softwareVersion": "1.0.0"
+  },
+  "main": "main.lua",
+  "modules": [],
+  "configs": [
+    "rtu_config.cfg"
+  ],
+  "selectedConfig": "rtu_config.cfg",
+  "internal": [
+    "manifest.json"
+  ],
+  "checked": [
+    "main.lua"
+  ],
+  "othersOrder": []
+}

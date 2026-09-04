@@ -1,0 +1,34 @@
+{
+  "id": "tcp",
+  "name": "TCP 托管连接",
+  "version": "1.0.0",
+  "category": "network",
+  "hw": "中",
+  "tags": [
+    "tcp"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "log",
+      "lp",
+      "rt",
+      "tcp"
+    ],
+    "pins": [],
+    "peripherals": [
+      "SIM"
+    ],
+    "controllers": [],
+    "extras": [],
+    "network": true
+  },
+  "readme": "",
+  "description": "先等驻网，再开 TCP 客户端。和 MQTT 类似：内部线程托管连接，断线自动重连。\n\n全系统最多 4 路。close 只是挂起，再连需要重新 open；delete 才会销毁实例。\n"
+}

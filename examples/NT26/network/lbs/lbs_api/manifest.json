@@ -1,0 +1,34 @@
+{
+  "id": "lbs",
+  "name": "基站定位",
+  "version": "1.0.0",
+  "category": "network",
+  "hw": "中",
+  "tags": [
+    "lbs"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "lbs",
+      "log",
+      "lp",
+      "rt"
+    ],
+    "pins": [],
+    "peripherals": [
+      "SIM"
+    ],
+    "controllers": [],
+    "extras": [],
+    "network": true
+  },
+  "readme": "",
+  "description": "先等驻网，再试用内置 lbs 定位。\n\n不需要 pid。可测单基站、多基站，以及尽量带地址的模式。没网时不测定位。\n"
+}

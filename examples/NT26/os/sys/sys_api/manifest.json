@@ -1,0 +1,32 @@
+{
+  "id": "sys_api",
+  "name": "sys 系统接口",
+  "version": "1.0.0",
+  "category": "os",
+  "hw": "低",
+  "tags": [
+    "sys"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "info",
+      "log",
+      "rt",
+      "sys"
+    ],
+    "pins": [],
+    "peripherals": [],
+    "controllers": [],
+    "extras": [],
+    "network": false
+  },
+  "readme": "",
+  "description": "演示 sys.version / reset_reason / option / delay_us / delay_ms / set_ts / nitz_reg。\n\n不调用 reset / poweroff。delay_us 是忙等，到毫秒请用 rt.delay。\n"
+}

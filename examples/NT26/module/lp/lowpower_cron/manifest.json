@@ -1,0 +1,37 @@
+{
+  "id": "lowpower_cron",
+  "name": "Cron 五分钟对齐唤醒",
+  "version": "1.0.0",
+  "category": "module",
+  "hw": "中",
+  "tags": [
+    "lp",
+    "cron"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "cron",
+      "info",
+      "log",
+      "lp",
+      "rt",
+      "sys"
+    ],
+    "pins": [],
+    "peripherals": [
+      "SIM"
+    ],
+    "controllers": [],
+    "extras": [],
+    "network": true
+  },
+  "readme": "",
+  "description": "先等驻网和时钟同步，再切 MODE_LOW_POWER_2，用 cron 按墙上时钟每 5 分钟整分唤醒。\n\n表达式是 0 */5 * * * ?。回调里只投递邮箱，打印放在独立任务。没网或未授时时不要测对齐。\n"
+}

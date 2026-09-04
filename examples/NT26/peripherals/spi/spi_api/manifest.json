@@ -1,0 +1,36 @@
+{
+  "id": "spi_api",
+  "name": "SPI 读 Flash JEDEC ID",
+  "version": "1.0.0",
+  "category": "peripherals",
+  "hw": "高",
+  "tags": [
+    "spi",
+    "flash"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "log",
+      "rt",
+      "spi"
+    ],
+    "pins": [],
+    "peripherals": [],
+    "controllers": [
+      "SPI0"
+    ],
+    "extras": [
+      "W25Qxx"
+    ],
+    "network": false
+  },
+  "readme": "",
+  "description": "用 SPI0 直接发 JEDEC 命令 0x9F 读外挂 NOR Flash 芯片 ID，演示 spi.new / transfer / set_cs。\n\n硬件为 SPI0 + GPIO8（片选）。不走 sfud。SPI0 与 UART2 默认脚冲突，必须把 UART2 挪开。W25Q64 常见 ID 为 EF 40 17。\n"
+}

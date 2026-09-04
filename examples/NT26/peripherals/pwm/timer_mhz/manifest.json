@@ -1,0 +1,35 @@
+{
+  "id": "timer_mhz",
+  "name": "PWM 1MHz",
+  "version": "1.0.0",
+  "category": "peripherals",
+  "hw": "中",
+  "tags": [
+    "pwm",
+    "timer",
+    "mhz"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "pwm",
+      "log",
+      "rt"
+    ],
+    "pins": [],
+    "peripherals": [],
+    "controllers": [
+      "TIMER1"
+    ],
+    "extras": [],
+    "network": false
+  },
+  "readme": "",
+  "description": "TIMER PWM 高频：F6E0 PIN101 输出 1 MHz / 50%，时钟 26M。必须用示波器观察，占空比步进约 4%。\n"
+}

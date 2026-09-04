@@ -1,0 +1,32 @@
+{
+  "id": "lowpower_vote",
+  "name": "低功耗投票",
+  "version": "1.0.0",
+  "category": "module",
+  "hw": "低",
+  "tags": [
+    "lp",
+    "task"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "log",
+      "lp",
+      "rt"
+    ],
+    "pins": [],
+    "peripherals": [],
+    "controllers": [],
+    "extras": [],
+    "network": false
+  },
+  "readme": "",
+  "description": "用 lp.vote_create 做多任务保活：有人 acquire 就保持常电，全部 release 后再延迟切入 MODE_LOW_POWER_2。\n\nA/B 两条任务错开干活。回调只打 WAKE / MODE_CHANGE。测电流时请关掉业务 log，串口打印会把休眠脉冲放大。\n"
+}

@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "displayName": "lvgl_demo",
+  "projectInfo": {
+    "softwareVersion": "1.0.0"
+  },
+  "main": "main.lua",
+  "modules": [
+    "statusbar.lua"
+  ],
+  "configs": [
+    "rtu_config.cfg"
+  ],
+  "selectedConfig": "rtu_config.cfg",
+  "internal": [],
+  "checked": [
+    "main.lua",
+    "statusbar.lua"
+  ],
+  "othersOrder": [
+    "manifest.json"
+  ]
+}

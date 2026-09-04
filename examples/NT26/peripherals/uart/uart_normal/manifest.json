@@ -1,0 +1,34 @@
+{
+  "id": "uart_normal",
+  "name": "UART 回调收发",
+  "version": "1.0.0",
+  "category": "peripherals",
+  "hw": "中",
+  "tags": [
+    "uart"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "log",
+      "rt",
+      "rtu",
+      "uart"
+    ],
+    "pins": [],
+    "peripherals": [],
+    "controllers": [
+      "UART1"
+    ],
+    "extras": [],
+    "network": false
+  },
+  "readme": "",
+  "description": "UART1 注册收包回调，按空闲超时和单包上限切包，再由独立任务回环写出。\n\n回调跑在调度循环里，必须立刻返回：不要 delay、不要 block、不要打长日志。适合看串口分包和回环是否正常。\n"
+}

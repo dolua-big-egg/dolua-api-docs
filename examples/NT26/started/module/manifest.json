@@ -1,0 +1,31 @@
+{
+  "id": "module",
+  "name": "自定义模块",
+  "version": "1.0.0",
+  "category": "started",
+  "hw": "低",
+  "tags": [
+    "led",
+    "gpio"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "gpio",
+      "rt"
+    ],
+    "pins": [],
+    "peripherals": [],
+    "controllers": [],
+    "extras": [],
+    "network": false
+  },
+  "readme": "",
+  "description": "演示如何把工程里的 .lua 做成可 require 的模块。\n\n本例把指示灯封装在 led.lua：主脚本只调 init / on / off，不直接碰 gpio。模块文件需要登记到工程的 modules 列表里才会打进包。\n"
+}

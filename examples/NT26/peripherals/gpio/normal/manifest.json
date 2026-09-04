@@ -1,0 +1,32 @@
+{
+  "id": "normal",
+  "name": "GPIO 基础",
+  "version": "1.0.0",
+  "category": "peripherals",
+  "hw": "低",
+  "tags": [
+    "gpio",
+    "led"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "gpio",
+      "log",
+      "rt"
+    ],
+    "pins": [],
+    "peripherals": [],
+    "controllers": [],
+    "extras": [],
+    "network": false
+  },
+  "readme": "",
+  "description": "GPIO 基础用法：按编号打开、配输入/输出、置位、翻转、读回，以及一段简单时序。\n\n默认 GPIO 9 做板载灯输出，GPIO 1 做上拉输入。适合作为其它 GPIO 示例的起点。\n"
+}

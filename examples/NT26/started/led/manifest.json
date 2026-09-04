@@ -1,0 +1,31 @@
+{
+  "id": "led",
+  "name": "LED 闪灯",
+  "version": "1.0.0",
+  "category": "started",
+  "hw": "低",
+  "tags": [
+    "gpio",
+    "led"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "gpio",
+      "rt"
+    ],
+    "pins": [],
+    "peripherals": [],
+    "controllers": [],
+    "extras": [],
+    "network": false
+  },
+  "readme": "",
+  "description": "用 GPIO 9 闪开发板指示灯。打开脚、配成输出后，循环拉高/拉低并延时。\n\n只演示最简单的亮灭。GPIO 中断、波形任务等进阶用法见外设目录下的其它工程。\n"
+}

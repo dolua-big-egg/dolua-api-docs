@@ -1,0 +1,31 @@
+{
+  "id": "hex_api",
+  "name": "HEX 编解码",
+  "version": "1.0.0",
+  "category": "module",
+  "hw": "低",
+  "tags": [
+    "hex"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "hex",
+      "log",
+      "rt"
+    ],
+    "pins": [],
+    "peripherals": [],
+    "controllers": [],
+    "extras": [],
+    "network": false
+  },
+  "readme": "",
+  "description": "演示 hex.bytes2hex 和 hex.hex2bytes：字节与十六进制字符串互转。\n\nbytes2hex 支持 string 或字节表；hex2bytes 按 mode 返回字节表或二进制 string。不依赖外设。\n"
+}

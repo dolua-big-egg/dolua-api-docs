@@ -1,0 +1,44 @@
+{
+  "id": "http_file_lfs",
+  "name": "HTTP 下载到 LFS",
+  "version": "1.0.0",
+  "category": "network",
+  "hw": "高",
+  "tags": [
+    "http",
+    "download",
+    "flash"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "gpio",
+      "http",
+      "lfs",
+      "log",
+      "lp",
+      "rt",
+      "sfud",
+      "spi"
+    ],
+    "pins": [],
+    "peripherals": [
+      "SIM"
+    ],
+    "controllers": [
+      "SPI0"
+    ],
+    "extras": [
+      "W25Qxx"
+    ],
+    "network": true
+  },
+  "readme": "",
+  "description": "先等驻网，把文件经 HTTP 落到 SPI 外挂 Flash 上的 LittleFS，再按块打印。\n\n硬件为 SPI0 + GPIO8（片选），外挂 W25Qxx。SPI0 默认脚和 UART2 冲突，必须在配置里把 UART2 挪开，日志也改走挪开后的 UART2。需要外接 Flash。\n"
+}

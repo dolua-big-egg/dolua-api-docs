@@ -1,0 +1,37 @@
+{
+  "id": "modbus_rs485",
+  "name": "Modbus RS485 轮询",
+  "version": "1.0.0",
+  "category": "module",
+  "hw": "中",
+  "tags": [
+    "modbus",
+    "uart",
+    "rs485"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "log",
+      "modbus",
+      "rt",
+      "rtu",
+      "uart"
+    ],
+    "pins": [],
+    "peripherals": [],
+    "controllers": [
+      "UART1"
+    ],
+    "extras": [],
+    "network": false
+  },
+  "readme": "",
+  "description": "UART1 模拟 RS485：发出读保持寄存器请求，uart.block 等一整包应答，再用 modbus.analyze 解析整数和浮点。\n\n串口助手请开 HEX，按注释里的示例帧回复。真实 485 的 DE/RE 方向脚需按板子自行控制。\n"
+}

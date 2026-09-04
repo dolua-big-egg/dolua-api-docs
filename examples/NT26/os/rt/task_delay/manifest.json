@@ -1,0 +1,31 @@
+{
+  "id": "task_delay",
+  "name": "多任务与 delay",
+  "version": "1.0.0",
+  "category": "os",
+  "hw": "低",
+  "tags": [
+    "rt",
+    "task"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ">=1.2.19"
+  },
+  "requires": {
+    "libs": [
+      "log",
+      "rt"
+    ],
+    "pins": [],
+    "peripherals": [],
+    "controllers": [],
+    "extras": [],
+    "network": false
+  },
+  "readme": "",
+  "description": "演示 rt.task_start 和 rt.delay：同一 Lua 虚拟机里多条协程轮流跑。\n\n入口本身也是协程。循环里必须 delay 让出，否则其它任务会被饿死。\n"
+}

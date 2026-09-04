@@ -1,0 +1,34 @@
+{
+  "id": "wifiscan_api",
+  "name": "WiFi 扫描定位",
+  "version": "1.0.0",
+  "category": "network",
+  "hw": "中",
+  "tags": [
+    "wifiscan"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "log",
+      "lp",
+      "rt",
+      "wifiscan"
+    ],
+    "pins": [],
+    "peripherals": [
+      "SIM"
+    ],
+    "controllers": [],
+    "extras": [],
+    "network": true
+  },
+  "readme": "",
+  "description": "先 wifiscan.scan 周围 AP，驻网后再 wifiscan.location 向 DoIoT 要经纬度。\n\n扫描不需要上网；定位要能扫到 AP 且 PDP 已激活。没网时不测 location。\n"
+}

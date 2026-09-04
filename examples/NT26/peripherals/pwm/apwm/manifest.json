@@ -1,0 +1,33 @@
+{
+  "id": "apwm",
+  "name": "APWM 慢闪",
+  "version": "1.0.0",
+  "category": "peripherals",
+  "hw": "低",
+  "tags": [
+    "pwm",
+    "apwm",
+    "aon"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "pwm",
+      "log",
+      "rt"
+    ],
+    "pins": [],
+    "peripherals": [],
+    "controllers": [],
+    "extras": [],
+    "network": false
+  },
+  "readme": "",
+  "description": "AON 常电 PWM：F6E0 PIN101 出 APWM1，周期 1024ms 慢闪。给休眠状态灯用，不是 kHz 调光。\n\n必须显式 mode=MODE_APWM。F6E0 上 PIN100/101/16 对应 APWM0/1/2。\n"
+}

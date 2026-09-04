@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "displayName": "flashdb_ts",
+  "projectInfo": {
+    "softwareVersion": "1.0.0"
+  },
+  "main": "main.lua",
+  "modules": [
+    "flash.lua"
+  ],
+  "configs": [
+    "rtu_config.cfg"
+  ],
+  "selectedConfig": "rtu_config.cfg",
+  "internal": [],
+  "checked": [
+    "main.lua",
+    "flash.lua"
+  ],
+  "othersOrder": [
+    "manifest.json"
+  ]
+}

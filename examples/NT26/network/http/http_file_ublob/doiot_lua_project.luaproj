@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "projectInfo": {
+    "softwareVersion": "1.0.0"
+  },
+  "main": "main.lua",
+  "modules": [],
+  "configs": [
+    "rtu_config.cfg"
+  ],
+  "selectedConfig": "rtu_config.cfg",
+  "internal": [],
+  "checked": [
+    "main.lua"
+  ],
+  "othersOrder": [
+    "manifest.json"
+  ]
+}

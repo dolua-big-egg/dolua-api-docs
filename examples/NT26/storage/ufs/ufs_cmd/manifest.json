@@ -1,0 +1,33 @@
+{
+  "id": "ufs_cmd",
+  "name": "UFS 指令控制",
+  "version": "1.0.0",
+  "category": "store",
+  "hw": "低",
+  "tags": [
+    "ufs"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "rt",
+      "uart",
+      "ufs"
+    ],
+    "pins": [],
+    "peripherals": [],
+    "controllers": [
+      "UART1"
+    ],
+    "extras": [],
+    "network": false
+  },
+  "readme": "",
+  "description": "UART1 指令调用 ufs.write / read / cmp / remove / stat / list / usage。\n\nwrite 可写 string/number/bool/nil/示例表。文件名不要带路径分隔符。\n"
+}

@@ -1,0 +1,31 @@
+{
+  "id": "interrupt",
+  "name": "GPIO 中断",
+  "version": "1.0.0",
+  "category": "peripherals",
+  "hw": "中",
+  "tags": [
+    "gpio"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "gpio",
+      "log",
+      "rt"
+    ],
+    "pins": [],
+    "peripherals": [],
+    "controllers": [],
+    "extras": [],
+    "network": false
+  },
+  "readme": "",
+  "description": "演示 IO 边沿回调。底层中断只负责唤醒和消抖，Lua 回调跑在调度循环里，不是实时中断服务。\n\nGPIO 1 上拉输入，双边沿加 20ms 滤波。回调里只投递邮箱，由独立任务再打日志。把 IO1 对地短接或接按键即可看到边沿。\n"
+}

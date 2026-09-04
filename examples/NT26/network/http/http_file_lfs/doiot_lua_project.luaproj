@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "displayName": "http_file_lfs",
+  "projectInfo": {
+    "softwareVersion": "1.0.10",
+    "cloudUserGroupNo": "949_group_3302"
+  },
+  "packageConfig": {
+    "exportPath": "d:\\307n\\now-new2\\server\\server\\lua-demo\\NT26\\network\\http\\http_file_lfs\\http_file_lfs-1.0.9.luapk"
+  },
+  "scriptProcess": {
+    "cloud": {},
+    "export": {},
+    "usb": {}
+  },
+  "main": "main.lua",
+  "modules": [
+    "mod/download.lua",
+    "mod/flash.lua"
+  ],
+  "configs": [
+    "config/rtu_config.cfg"
+  ],
+  "selectedConfig": "config/rtu_config.cfg",
+  "internal": [],
+  "checked": [
+    "main.lua",
+    "mod/download.lua",
+    "mod/flash.lua"
+  ],
+  "othersOrder": [
+    "http_file_lfs-1.0.9.luapk",
+    "manifest.json"
+  ]
+}

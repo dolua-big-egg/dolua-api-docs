@@ -1,0 +1,29 @@
+{
+  "id": "hello",
+  "name": "hello world",
+  "version": "1.0.0",
+  "category": "started",
+  "hw": "低",
+  "tags": [
+    "log"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "rt"
+    ],
+    "pins": [],
+    "peripherals": [],
+    "controllers": [],
+    "extras": [],
+    "network": false
+  },
+  "readme": "",
+  "description": "每秒通过 print 向串口输出 hello world。\n\nprint 走模块 UART（默认 UART1），不是电脑终端。适合确认脚本已经跑起来、串口接线正确。\n"
+}

@@ -1,0 +1,32 @@
+{
+  "id": "io_task",
+  "name": "GPIO 波形任务",
+  "version": "1.0.0",
+  "category": "peripherals",
+  "hw": "中",
+  "tags": [
+    "gpio",
+    "led"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "gpio",
+      "log",
+      "rt"
+    ],
+    "pins": [],
+    "peripherals": [],
+    "controllers": [],
+    "extras": [],
+    "network": false
+  },
+  "readme": "",
+  "description": "把指示灯闪烁交给 IO 引擎，Lua 只切换模式，不必为每盏灯开一个高频任务。\n\nGPIO 9 预注册常灭、常亮、慢闪、快闪、心跳等波形，业务里 wave_set 切换即可。波形时长按 100ms 对齐，适合人眼可辨的状态灯，不是示波器级定时。\n"
+}

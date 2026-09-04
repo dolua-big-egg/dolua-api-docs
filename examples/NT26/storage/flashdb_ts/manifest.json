@@ -1,0 +1,42 @@
+{
+  "id": "flashdb_ts",
+  "name": "FlashDB TS 时序库",
+  "version": "1.0.0",
+  "category": "store",
+  "hw": "高",
+  "tags": [
+    "flashdb",
+    "ts",
+    "flash",
+    "spi"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "flashdb",
+      "gpio",
+      "log",
+      "random",
+      "rt",
+      "sfud",
+      "spi"
+    ],
+    "pins": [],
+    "peripherals": [],
+    "controllers": [
+      "SPI0"
+    ],
+    "extras": [
+      "W25Qxx"
+    ],
+    "network": false
+  },
+  "readme": "",
+  "description": "SPI 外挂 NOR Flash 整片挂 FlashDB TS：append / iter / peek / del / pop。首次格式化异步打进度。\n\n硬件为 SPI0 + GPIO8（片选）。容量按 sfud 实测整片使用，不固定 16MB，不混用 KV/LittleFS。SPI0 与 UART2 默认脚冲突，必须把 UART2 挪开。\n"
+}

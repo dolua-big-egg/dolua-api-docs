@@ -1,0 +1,31 @@
+{
+  "id": "tls_api",
+  "name": "TLS 加解密",
+  "version": "1.0.0",
+  "category": "module",
+  "hw": "低",
+  "tags": [
+    "tls"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "log",
+      "rt",
+      "tls"
+    ],
+    "pins": [],
+    "peripherals": [],
+    "controllers": [],
+    "extras": [],
+    "network": false
+  },
+  "readme": "",
+  "description": "演示 tls 模块：hash/hmac、base64、crc、AES/DES/RC4 加解密和 onenet token。\n\n按 features 跳过未编译的算法。摘要默认 hex；encrypt 结果为二进制。不依赖外设。\n"
+}

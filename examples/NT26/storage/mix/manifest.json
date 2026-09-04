@@ -1,0 +1,45 @@
+{
+  "id": "mix",
+  "name": "同片混挂 LittleFS + TS + KV",
+  "version": "1.0.0",
+  "category": "store",
+  "hw": "高",
+  "tags": [
+    "lfs",
+    "flashdb",
+    "kv",
+    "ts",
+    "flash",
+    "spi"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "flashdb",
+      "gpio",
+      "lfs",
+      "log",
+      "random",
+      "rt",
+      "sfud",
+      "spi"
+    ],
+    "pins": [],
+    "peripherals": [],
+    "controllers": [
+      "SPI0"
+    ],
+    "extras": [
+      "W25Qxx"
+    ],
+    "network": false
+  },
+  "readme": "",
+  "description": "同一片 SPI 外挂 NOR Flash 上同时挂 LittleFS、FlashDB TS、FlashDB KV。容量按 sfud 实测：一半给文件系统，剩下对半给 TS/KV（奇数扇区则一份奇数一份偶数）。\n\n硬件为 SPI0 + GPIO8（片选）。SPI0 与 UART2 默认脚冲突，必须把 UART2 挪开。换此工程会按新区格式化，覆盖原先整片 demo 的数据。\n"
+}

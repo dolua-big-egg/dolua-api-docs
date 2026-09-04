@@ -1,0 +1,36 @@
+{
+  "id": "mqtt",
+  "name": "MQTT 托管连接",
+  "version": "1.0.0",
+  "category": "network",
+  "hw": "中",
+  "tags": [
+    "mqtt",
+    "cloud"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "info",
+      "log",
+      "lp",
+      "mqtt",
+      "rt"
+    ],
+    "pins": [],
+    "peripherals": [
+      "SIM"
+    ],
+    "controllers": [],
+    "extras": [],
+    "network": true
+  },
+  "readme": "",
+  "description": "先等驻网，再连 MQTT。连接由内部线程托管，断线会自动重连，脚本不必在回调里自己再 open。\n\n默认连 mqtt.doiot.cn:1883，client_id 用 IMEI。上线后向 /device/<IMEI> 发一条，并订阅 /server/<IMEI>。\n"
+}

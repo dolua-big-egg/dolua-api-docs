@@ -1,0 +1,30 @@
+{
+  "id": "log",
+  "name": "日志输出",
+  "version": "1.0.0",
+  "category": "started",
+  "hw": "低",
+  "tags": [
+    "log"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "log",
+      "rt"
+    ],
+    "pins": [],
+    "peripherals": [],
+    "controllers": [],
+    "extras": [],
+    "network": false
+  },
+  "readme": "",
+  "description": "演示 log.info / log.warn / log.error 三级日志。\n\n和 print 不同：log 带级别、函数名和源码行号，支持 printf 格式化，输出串口也可单独配置。\n"
+}

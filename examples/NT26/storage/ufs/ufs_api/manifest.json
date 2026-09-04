@@ -1,0 +1,31 @@
+{
+  "id": "ufs_api",
+  "name": "UFS 对象存储",
+  "version": "1.0.0",
+  "category": "store",
+  "hw": "低",
+  "tags": [
+    "ufs"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "log",
+      "rt",
+      "ufs"
+    ],
+    "pins": [],
+    "peripherals": [],
+    "controllers": [],
+    "extras": [],
+    "network": false
+  },
+  "readme": "",
+  "description": "演示 ufs.write / read / cmp / stat / list / usage / remove。\n\n写入 nil/bool/number/string/array/table 并读回比较。与 lua 脚本、ublob 共用 220KiB 配额。不依赖外设。\n"
+}

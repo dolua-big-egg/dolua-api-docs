@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "displayName": "lowpower_api",
+  "projectInfo": {
+    "softwareVersion": "1.0.0"
+  },
+  "packageConfig": {
+    "exportPath": "d:\\307n\\now-new2\\server\\server\\lua-demo\\NT26\\module\\lp\\lp_normal\\lp_normal-1.0.1.luapk"
+  },
+  "scriptProcess": {
+    "cloud": {},
+    "export": {},
+    "usb": {}
+  },
+  "main": "main.lua",
+  "modules": [],
+  "configs": [
+    "rtu_config.cfg"
+  ],
+  "selectedConfig": "rtu_config.cfg",
+  "internal": [],
+  "checked": [
+    "main.lua"
+  ],
+  "othersOrder": [
+    "manifest.json"
+  ]
+}

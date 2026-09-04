@@ -1,0 +1,34 @@
+{
+  "id": "virt_api",
+  "name": "虚拟 AT",
+  "version": "1.0.0",
+  "category": "module",
+  "hw": "低",
+  "tags": [
+    "virat",
+    "at"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "log",
+      "rt",
+      "virat"
+    ],
+    "pins": [],
+    "peripherals": [
+      "SIM"
+    ],
+    "controllers": [],
+    "extras": [],
+    "network": false
+  },
+  "readme": "",
+  "description": "演示 virat.exec（App AT）和 virat.ril_exec（EC平台引擎）。\n\nexec 查 VERSION/IMEI/CSQ 等已注册指令；再用 exec 打 ECDNSCFG? 看未注册失败，然后 ril_exec 同一条走 EC平台引擎。只查询，不写 NVM。能用 Lua API 的不要走虚拟 AT。除非官方指导，否则不要往 EC平台引擎发指令。没插 SIM 时 ICCID/IMSI 等可能为空或报错。\n"
+}

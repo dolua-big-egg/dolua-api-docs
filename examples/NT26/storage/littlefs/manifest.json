@@ -1,0 +1,40 @@
+{
+  "id": "littlefs",
+  "name": "LittleFS 整片文件系统",
+  "version": "1.0.0",
+  "category": "store",
+  "hw": "高",
+  "tags": [
+    "lfs",
+    "flash",
+    "spi"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "gpio",
+      "lfs",
+      "log",
+      "rt",
+      "sfud",
+      "spi"
+    ],
+    "pins": [],
+    "peripherals": [],
+    "controllers": [
+      "SPI0"
+    ],
+    "extras": [
+      "W25Qxx"
+    ],
+    "network": false
+  },
+  "readme": "",
+  "description": "SPI 外挂 NOR Flash 整片挂 LittleFS：写读文件、建目录、列目录、改名删除。\n\n硬件为 SPI0 + GPIO8（片选）。容量按 sfud 实测整片使用，不固定 16MB，不混用 FlashDB。SPI0 与 UART2 默认脚冲突，必须把 UART2 挪开。\n"
+}

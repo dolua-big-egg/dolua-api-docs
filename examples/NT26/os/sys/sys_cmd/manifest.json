@@ -1,0 +1,33 @@
+{
+  "id": "sys_cmd",
+  "name": "sys 指令控制",
+  "version": "1.0.0",
+  "category": "os",
+  "hw": "低",
+  "tags": [
+    "sys"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "rt",
+      "sys",
+      "uart"
+    ],
+    "pins": [],
+    "peripherals": [],
+    "controllers": [
+      "UART1"
+    ],
+    "extras": [],
+    "network": false
+  },
+  "readme": "",
+  "description": "UART1 指令调用 sys.version / option / delay / reset / poweroff。\n\ndelay_us 是忙等，本 demo 拒绝过长微秒以免看门狗复位。reset / poweroff 会真正复位或关机。\n"
+}

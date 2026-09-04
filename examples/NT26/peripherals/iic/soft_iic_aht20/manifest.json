@@ -1,0 +1,35 @@
+{
+  "id": "soft_iic_aht20",
+  "name": "软件 I2C 读 AHT20",
+  "version": "1.0.0",
+  "category": "peripherals",
+  "hw": "中",
+  "tags": [
+    "i2c",
+    "soft",
+    "sensor"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "log",
+      "rt",
+      "soft_i2c"
+    ],
+    "pins": [],
+    "peripherals": [],
+    "controllers": [],
+    "extras": [
+      "AHT20"
+    ],
+    "network": false
+  },
+  "readme": "",
+  "description": "用两根普通 IO 模拟 I2C 主机，读取 AHT20，不占用硬件 I2C 控制器。\n\n本例 SDA=GPIO8、SCL=GPIO9。可同时开多路，只要脚不冲突。同样需要外接 AHT20。\n"
+}

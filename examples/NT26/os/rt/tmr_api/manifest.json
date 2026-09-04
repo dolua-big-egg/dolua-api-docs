@@ -1,0 +1,31 @@
+{
+  "id": "tmr_api",
+  "name": "定时器 tmr",
+  "version": "1.0.0",
+  "category": "os",
+  "hw": "低",
+  "tags": [
+    "rt",
+    "tmr"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "log",
+      "rt"
+    ],
+    "pins": [],
+    "peripherals": [],
+    "controllers": [],
+    "extras": [],
+    "network": false
+  },
+  "readme": "",
+  "description": "演示 rt.tmr_once / tmr_loop / tmr_stop / tmr_start / tmr_delete。\n\n回调在调度循环里执行，必须立刻返回。不需要 mbox。最多 8 路。\n"
+}

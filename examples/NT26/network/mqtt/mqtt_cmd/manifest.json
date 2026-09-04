@@ -1,0 +1,34 @@
+{
+  "id": "mqtt_cmd",
+  "name": "MQTT 指令控制",
+  "version": "1.0.0",
+  "category": "network",
+  "hw": "低",
+  "tags": [
+    "mqtt"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "info",
+      "mqtt",
+      "rt",
+      "uart"
+    ],
+    "pins": [],
+    "peripherals": [],
+    "controllers": [
+      "UART1"
+    ],
+    "extras": [],
+    "network": true
+  },
+  "readme": "",
+  "description": ""
+}

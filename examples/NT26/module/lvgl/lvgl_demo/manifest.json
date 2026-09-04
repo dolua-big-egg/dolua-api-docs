@@ -1,0 +1,41 @@
+{
+  "id": "spi_lvgl",
+  "name": "LCD + LVGL 控件刷屏",
+  "version": "1.0.0",
+  "category": "peripherals",
+  "hw": "高",
+  "tags": [
+    "spi",
+    "lcd",
+    "st7789",
+    "lvgl"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "lcd",
+      "lvgl",
+      "log",
+      "rt",
+      "info"
+    ],
+    "pins": [],
+    "peripherals": [],
+    "controllers": [
+      "SPI0"
+    ],
+    "extras": [
+      "ST7789",
+      "LVGL"
+    ],
+    "network": false
+  },
+  "readme": "",
+  "description": "与 spi_lcd 同一套 ST7789/SPI0 接线。lcd.new 后把 panel 交给 lvgl.create。顶栏在 statusbar 模块，每秒刷新 HH:MM:SS。create 之后 Lua 的 panel:full 会失败。须使用已编入 lua_lvgl 的 AP 固件。UART2 必须 pin_map=1。\n"
+}

@@ -1,0 +1,35 @@
+{
+  "id": "timer",
+  "name": "PWM 呼吸灯",
+  "version": "1.0.0",
+  "category": "peripherals",
+  "hw": "低",
+  "tags": [
+    "pwm",
+    "timer",
+    "led"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "pwm",
+      "log",
+      "rt"
+    ],
+    "pins": [],
+    "peripherals": [],
+    "controllers": [
+      "TIMER1"
+    ],
+    "extras": [],
+    "network": false
+  },
+  "readme": "",
+  "description": "TIMER 硬件 PWM：F6E0 PIN101 输出 1 kHz PWM1，占空比 0~100 循环，接 LED 可见呼吸效果。\n\n不要再 gpio.open 同一颗脚。\n"
+}

@@ -1,0 +1,36 @@
+{
+  "id": "http_file_ublob",
+  "name": "HTTP 下载到 ublob",
+  "version": "1.0.0",
+  "category": "network",
+  "hw": "中",
+  "tags": [
+    "http",
+    "download"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "http",
+      "log",
+      "lp",
+      "rt",
+      "ublob"
+    ],
+    "pins": [],
+    "peripherals": [
+      "SIM"
+    ],
+    "controllers": [],
+    "extras": [],
+    "network": true
+  },
+  "readme": "",
+  "description": "先等驻网，把小文件下到系统内置的 ublob，再用 view 流式读取。\n\nublob 和 ufs 共用约 80KB 配额，只适合配置、证书、短固件这类小对象。响应体不进 Lua 字符串，比整包下到内存更省 RAM。\n"
+}

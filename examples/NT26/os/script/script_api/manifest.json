@@ -1,0 +1,31 @@
+{
+  "id": "script_api",
+  "name": "脚本 AB 副本",
+  "version": "1.0.0",
+  "category": "os",
+  "hw": "低",
+  "tags": [
+    "script"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "log",
+      "rt",
+      "script"
+    ],
+    "pins": [],
+    "peripherals": [],
+    "controllers": [],
+    "extras": [],
+    "network": false
+  },
+  "readme": "",
+  "description": "演示 script.info 查询当前及 A/B 槽脚本副本；仅在 trial 模式调用 confirm。\n\n不演示 switch / rollback。槽无效或非 trial 时用 pcall 避免抛错中断。\n"
+}

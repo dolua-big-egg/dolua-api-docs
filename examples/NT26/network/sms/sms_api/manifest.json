@@ -1,0 +1,34 @@
+{
+  "id": "sms_api",
+  "name": "短信收发",
+  "version": "1.0.0",
+  "category": "network",
+  "hw": "中",
+  "tags": [
+    "sms"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "log",
+      "lp",
+      "rt",
+      "sms"
+    ],
+    "pins": [],
+    "peripherals": [
+      "SIM"
+    ],
+    "controllers": [],
+    "extras": [],
+    "network": true
+  },
+  "readme": "",
+  "description": "先等驻网，再注册 sms.reg 收新短信和发送结果。\n\n文件顶部 DA 填手机号才会 send_async；空串只收不发。没网时不测短信。\n"
+}

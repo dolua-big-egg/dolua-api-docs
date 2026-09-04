@@ -1,0 +1,31 @@
+{
+  "id": "random_api",
+  "name": "random 随机数",
+  "version": "1.0.0",
+  "category": "module",
+  "hw": "低",
+  "tags": [
+    "random"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "random",
+      "log",
+      "rt"
+    ],
+    "pins": [],
+    "peripherals": [],
+    "controllers": [],
+    "extras": [],
+    "network": false
+  },
+  "readme": "",
+  "description": "演示 random 模块：random/randint/uniform/randrange，choice/shuffle/sample/choices，字符集常量和失败路径。底层 TRNG，不依赖网络和外设。\n"
+}

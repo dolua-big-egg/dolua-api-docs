@@ -1,0 +1,31 @@
+{
+  "id": "rtu_api",
+  "name": "RTU 通道查询",
+  "version": "1.0.0",
+  "category": "module",
+  "hw": "中",
+  "tags": [
+    "rtu"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "log",
+      "rt",
+      "rtu"
+    ],
+    "pins": [],
+    "peripherals": [],
+    "controllers": [],
+    "extras": [],
+    "network": false
+  },
+  "readme": "",
+  "description": "演示 rtu.option / is_connect / wait_connect / reg_chcb。\n\n只改本次 pass_up/pass_down 并还原。不写 *_cfg（会落盘）。不自动向通道发数。通道须在模组 RTU 配置里先配好。\n"
+}

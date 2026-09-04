@@ -1,0 +1,34 @@
+{
+  "id": "rndis_api",
+  "name": "RNDIS USB 网卡",
+  "version": "1.0.0",
+  "category": "network",
+  "hw": "中",
+  "tags": [
+    "rndis"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "log",
+      "rndis",
+      "rt"
+    ],
+    "pins": [],
+    "peripherals": [
+      "SIM",
+      "USB"
+    ],
+    "controllers": [],
+    "extras": [],
+    "network": true
+  },
+  "readme": "",
+  "description": "演示 rndis.get / saved / set：USB 当 4G 网卡。\n\nset 只改本次，脚本结束会还原。不调用 save，避免改开机策略。电脑要看到网卡需 USB 已连接且 bound=1。\n"
+}

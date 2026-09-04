@@ -1,0 +1,32 @@
+{
+  "id": "pins",
+  "name": "PWM 管脚表",
+  "version": "1.0.0",
+  "category": "peripherals",
+  "hw": "低",
+  "tags": [
+    "pwm",
+    "pins"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "pwm",
+      "log",
+      "rt"
+    ],
+    "pins": [],
+    "peripherals": [],
+    "controllers": [],
+    "extras": [],
+    "network": false
+  },
+  "readme": "",
+  "description": "打印当前型号所有可 PWM 的 PAD：正相通道、互补 n、APWM。不出波，用来对照原理图选脚。\n"
+}

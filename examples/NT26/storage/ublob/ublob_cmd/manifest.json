@@ -1,0 +1,33 @@
+{
+  "id": "ublob_cmd",
+  "name": "UBLOB 指令控制",
+  "version": "1.0.0",
+  "category": "store",
+  "hw": "低",
+  "tags": [
+    "ublob"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "rt",
+      "uart",
+      "ublob"
+    ],
+    "pins": [],
+    "peripherals": [],
+    "controllers": [
+      "UART1"
+    ],
+    "extras": [],
+    "network": false
+  },
+  "readme": "",
+  "description": "UART1 指令调用 ublob.write / append / read / open 及 view.read/size/crc32/md5/close。\n\n同时只能开 1 个视图，用完 view close。不要循环写大块。\n"
+}

@@ -1,0 +1,34 @@
+{
+  "id": "http_request",
+  "name": "HTTP GET/POST",
+  "version": "1.0.0",
+  "category": "network",
+  "hw": "中",
+  "tags": [
+    "http"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "http",
+      "log",
+      "lp",
+      "rt"
+    ],
+    "pins": [],
+    "peripherals": [
+      "SIM"
+    ],
+    "controllers": [],
+    "extras": [],
+    "network": true
+  },
+  "readme": "",
+  "description": "先等驻网，再用 http.request 发 GET 和 POST。get / post 只是快捷写法，最终都走 request。\n\nHTTP 没有托管线程，也没有自动重连：一次调用占着当前协程直到结束。测试地址为 httpbin 的 /get 与 /post。\n"
+}

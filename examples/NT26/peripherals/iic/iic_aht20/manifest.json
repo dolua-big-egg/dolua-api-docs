@@ -1,0 +1,36 @@
+{
+  "id": "iic_aht20",
+  "name": "硬件 I2C 读 AHT20",
+  "version": "1.0.0",
+  "category": "peripherals",
+  "hw": "中",
+  "tags": [
+    "i2c",
+    "sensor"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "i2c",
+      "log",
+      "rt"
+    ],
+    "pins": [],
+    "peripherals": [],
+    "controllers": [
+      "I2C0"
+    ],
+    "extras": [
+      "AHT20"
+    ],
+    "network": false
+  },
+  "readme": "",
+  "description": "用硬件 I2C0 读取 AHT20 温湿度传感器。\n\n设备地址 0x38，命令和数据必须是字符串，不能传字节表。初始化成功后周期性采样。需要外接 AHT20。\n"
+}

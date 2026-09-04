@@ -1,0 +1,33 @@
+{
+  "id": "info_api",
+  "name": "info 设备信息",
+  "version": "1.0.0",
+  "category": "module",
+  "hw": "低",
+  "tags": [
+    "info"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "info",
+      "log",
+      "rt"
+    ],
+    "pins": [],
+    "peripherals": [
+      "SIM"
+    ],
+    "controllers": [],
+    "extras": [],
+    "network": false
+  },
+  "readme": "",
+  "description": "演示 info 模块只读接口：身份、驻网、小区、信号、本机时间和 APN。\n\n不改 CFUN、不写 APN。没插 SIM 时不少字段会是 nil / 99 / -1。授时写时钟见 NTP 示例。\n"
+}

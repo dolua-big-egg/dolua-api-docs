@@ -1,0 +1,32 @@
+{
+  "id": "info",
+  "name": "info 设备信息",
+  "version": "1.0.0",
+  "category": "started",
+  "hw": "低",
+  "tags": [
+    "info",
+    "log"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "info",
+      "log",
+      "rt"
+    ],
+    "pins": [],
+    "peripherals": [],
+    "controllers": [],
+    "extras": [],
+    "network": false
+  },
+  "readme": "",
+  "description": "读取模组身份和驻网状态：IMEI、IMSI、ICCID、射频开关、信号质量和 PDP 是否激活。\n\n没有插 SIM 时，不少字段会是空值或失败码（例如 csq=99）。授时请看独立的 NTP 示例。\n"
+}

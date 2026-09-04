@@ -1,0 +1,31 @@
+{
+  "id": "modbus_api",
+  "name": "Modbus 解析 API",
+  "version": "1.0.0",
+  "category": "module",
+  "hw": "低",
+  "tags": [
+    "modbus"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "log",
+      "modbus",
+      "rt"
+    ],
+    "pins": [],
+    "peripherals": [],
+    "controllers": [],
+    "extras": [],
+    "network": false
+  },
+  "readme": "",
+  "description": "用一帧模拟的 Modbus RTU 应答演示 modbus.analyze 和 modbus.crc。\n\nanalyze 抽出 UINT16 / FLOAT32；crc(\"gen\") 生成 CRC16，crc(\"check\") 校验整帧最后两字节。不发串口。\n"
+}

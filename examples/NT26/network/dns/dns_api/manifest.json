@@ -1,0 +1,34 @@
+{
+  "id": "dns",
+  "name": "DNS 解析",
+  "version": "1.0.0",
+  "category": "network",
+  "hw": "中",
+  "tags": [
+    "dns"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "dns",
+      "log",
+      "lp",
+      "rt"
+    ],
+    "pins": [],
+    "peripherals": [
+      "SIM"
+    ],
+    "controllers": [],
+    "extras": [],
+    "network": true
+  },
+  "readme": "",
+  "description": "先等驻网，再读取/临时修改 DNS，然后解析域名。\n\n开机默认用运营商下发的 DNS。dns.set 只在本次运行有效，掉电不保存。没网时本示例会直接结束，不测解析。\n"
+}

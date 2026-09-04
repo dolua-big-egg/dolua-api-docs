@@ -1,0 +1,36 @@
+{
+  "id": "mbox_uart",
+  "name": "mbox 串口投递",
+  "version": "1.0.0",
+  "category": "os",
+  "hw": "中",
+  "tags": [
+    "rt",
+    "mbox",
+    "uart"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "log",
+      "rt",
+      "rtu",
+      "uart"
+    ],
+    "pins": [],
+    "peripherals": [],
+    "controllers": [
+      "UART1"
+    ],
+    "extras": [],
+    "network": false
+  },
+  "readme": "",
+  "description": "用 UART1 演示 rt.mbox_send / mbox_recv。\n\n串口回调只投递、立刻返回；独立协程 recv 后再回写。不要在回调里 delay。\n"
+}

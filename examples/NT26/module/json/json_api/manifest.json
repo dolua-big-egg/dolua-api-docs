@@ -1,0 +1,31 @@
+{
+  "id": "json_api",
+  "name": "JSON 编解码",
+  "version": "1.0.0",
+  "category": "module",
+  "hw": "低",
+  "tags": [
+    "json"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "json",
+      "log",
+      "rt"
+    ],
+    "pins": [],
+    "peripherals": [],
+    "controllers": [],
+    "extras": [],
+    "network": false
+  },
+  "readme": "",
+  "description": "演示 json.encode / json.decode / json.option。\n\n编解码对象和数组，并用 empty_arr、num_sci 控制空表和整数格式。不依赖外设。\n"
+}

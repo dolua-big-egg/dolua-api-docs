@@ -1,0 +1,31 @@
+{
+  "id": "lowpower_api",
+  "name": "低功耗模式轮换",
+  "version": "1.0.0",
+  "category": "module",
+  "hw": "低",
+  "tags": [
+    "lp"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "log",
+      "lp",
+      "rt"
+    ],
+    "pins": [],
+    "peripherals": [],
+    "controllers": [],
+    "extras": [],
+    "network": false
+  },
+  "readme": "",
+  "description": "正式低功耗 demo：每 2 分钟在 MODE_NORMAL / MODE_LOW_POWER / MODE_LOW_POWER_2 之间轮换，不含 PSM。\n\n注册网络回调观察驻网和模式切换。不操作 GPIO 或串口业务。\n"
+}

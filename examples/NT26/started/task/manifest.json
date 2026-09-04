@@ -1,0 +1,31 @@
+{
+  "id": "task",
+  "name": "多任务",
+  "version": "1.0.0",
+  "category": "started",
+  "hw": "低",
+  "tags": [
+    "task",
+    "log"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "log",
+      "rt"
+    ],
+    "pins": [],
+    "peripherals": [],
+    "controllers": [],
+    "extras": [],
+    "network": false
+  },
+  "readme": "",
+  "description": "演示协作式多任务：同一 Lua 虚拟机里多条协程轮流跑，不是操作系统抢占线程。\n\n主入口本身也是一条协程，顶层就可以 delay。要用 rt.task_start 再开任务，并在循环里让出，否则其它任务会被饿死。\n"
+}

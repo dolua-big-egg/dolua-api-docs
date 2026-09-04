@@ -1,0 +1,34 @@
+{
+  "id": "uart_block",
+  "name": "UART 阻塞读",
+  "version": "1.0.0",
+  "category": "peripherals",
+  "hw": "中",
+  "tags": [
+    "uart"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "log",
+      "rt",
+      "rtu",
+      "uart"
+    ],
+    "pins": [],
+    "peripherals": [],
+    "controllers": [
+      "UART1"
+    ],
+    "extras": [],
+    "network": false
+  },
+  "readme": "",
+  "description": "用 uart.block 同步等待一整包，适合 Modbus / RS485 这种一问一答。\n\nblock 会让出当前协程，不会卡死整台 Lua。全脚本同一时刻只能有一个 block。本例走 UART1，发出提示后等待回复。\n"
+}

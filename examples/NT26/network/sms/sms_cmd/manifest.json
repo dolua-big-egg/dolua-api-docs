@@ -1,0 +1,35 @@
+{
+  "id": "sms_cmd",
+  "name": "短信指令控制",
+  "version": "1.0.0",
+  "category": "network",
+  "hw": "低",
+  "tags": [
+    "sms"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "rt",
+      "sms",
+      "uart"
+    ],
+    "pins": [],
+    "peripherals": [
+      "SIM"
+    ],
+    "controllers": [
+      "UART1"
+    ],
+    "extras": [],
+    "network": true
+  },
+  "readme": "",
+  "description": "UART1 输入 sms send <号码> <内容> 异步发短信。\n\n收信和发送结果打到串口。须手机卡。不要循环连发。\n"
+}

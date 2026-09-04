@@ -1,0 +1,34 @@
+{
+  "id": "ntp",
+  "name": "NTP 校时",
+  "version": "1.0.0",
+  "category": "network",
+  "hw": "中",
+  "tags": [
+    "ntp"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "log",
+      "lp",
+      "ntp",
+      "rt"
+    ],
+    "pins": [],
+    "peripherals": [
+      "SIM"
+    ],
+    "controllers": [],
+    "extras": [],
+    "network": true
+  },
+  "readme": "",
+  "description": "先等驻网，再向 NTP 服务器问一次时间。\n\n默认阿里云 NTP。可以选择只读时间，或把 UTC 写进本机时钟。没网时不测对时。\n"
+}
