@@ -1,6 +1,6 @@
 # spi
 
-**文档版本** `1.1.0`
+**文档版本** `1.1.1`
 
 对象化 SPI 主机。`spi.new` 打开一路控制器，之后在对象上发、收、全双工对传。每路控制器同一时刻只允许一个实例。
 
@@ -18,7 +18,7 @@ dev:transfer("\x9F\x00\x00\x00")   -- 等价
 -- { 0x9F, 0x00 }                  -- 错
 ```
 
-当前机型 **SPI0** 固定在 pin66～pin29 这一组，和 UART2 默认脚重叠。外挂 Flash / 自己摸总线时，通常要在 `rtu_config.cfg` 里把 UART2 挪开：`[uart.2] pin_map=1`。demo 片选用 GPIO8（模块 pin66）。
+当前机型 **SPI0** 固定：SCLK PIN 29（PDDR 26）、MOSI PIN 67（PDDR 24）、MISO PIN 28（PDDR 25），片选常用 GPIO8 / PIN 66。完整对照见 [硬件表 4.3](../../hardware/pro.md#43-spi)。这组 SCLK/MISO 和 UART2 **出厂** `pin_map=2` 重叠。外挂 Flash / 自己摸总线时，在 `rtu_config.cfg` 把 UART2 改成 `pin_map=1` 或 `0`。
 
 彩屏请用 [`lcd`](../module/lcd.md)，不要本模块再发屏命令。NOR 文件系统走 [`sfud`](../module/sfud.md)，片选用 GPIO 对象，不要和 `cs_gpio`+`set_cs` 两套一起抢同一脚。
 
@@ -592,3 +592,4 @@ end
 | 1.0.0 | 2026-09-04 | 首版 |
 | 1.0.1 | 2026-09-04 | 修正跨目录文档链接，demo 路径改为 examples/ |
 | 1.1.0 | 2026-09-05 | 补全错误文案/错误码与可能原因 |
+| 1.1.1 | 2026-09-05 | SPI0 脚改为 PIN+PDDR，并链到硬件落盘表 |

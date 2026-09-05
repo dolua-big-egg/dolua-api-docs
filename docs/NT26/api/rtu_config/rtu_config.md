@@ -1,6 +1,6 @@
 # rtu_config
 
-**文档版本** `1.0.0`
+**文档版本** `1.0.1`
 
 这不是 `require("…")` 模块。它是模组开机时解析的 **声明式配置文件** `rtu_config.cfg`：只改文件里写到的段和 key，没写到的字段保持机内当前值。Lua 的 [`rtu`](../module/rtu.md)、[`uart`](../peripherals/uart.md)、[`sms`](../module/sms.md)、[`lbs`](../network/lbs.md) 等运行时模块 **读的是这份文件落盘后的业务配置**，不是另起一套通道。
 
@@ -501,7 +501,7 @@ N = 1..3。证书组，供 MQTT / HTTP 的 `ssl_id` 引用。
 | `stop_bits` | 整数 | 1 或 2 | 停止位 |
 | `parity` | 整数 | 0 无，1 奇，2 偶 | 校验 |
 | `flow_control` | 整数 | 0 无，1 RTS/CTS | 流控 |
-| `pin_map` | 整数 | 0～255 | 引脚组，`0` 默认。F6E0：UART2 常见 0/1/2，UART3 常见 0/1。UART2 默认组常与 SPI0 重叠，外挂 Flash 写 `pin_map=1` |
+| `pin_map` | 整数 | 0～255 | 引脚组。NT26-PRO 全部组与 PIN/PDDR 见 [硬件表 4.1](../hardware/pro.md#41-uart)。UART2 出厂是 `2`（与 SPI0 重叠），外挂 Flash 写 `1` 或 `0`；UART3 出厂 `0`，另有组 `1` |
 | `max_packet_size` | 整数 | 0～12288 | 单包上限；`0` 表示不按这套分包（产品常用 1～12288） |
 | `max_wait_ms` | 整数 | 0～60000 | 空闲断包 ms |
 | `max_packets` | 整数 | 0～64 | 待处理包深度 |
@@ -1065,3 +1065,4 @@ log_route=1
 | 版本 | 日期 | 说明 |
 | --- | --- | --- |
 | 1.0.0 | 2026-09-05 | 首版：`rtu_config.cfg` 语法、全部已接入段与 key、总覆盖权、联合/独立影响、错误码与未接入段 |
+| 1.0.1 | 2026-09-05 | `[uart.N] pin_map` 改为指向硬件落盘表（UART2 出厂组 2） |
