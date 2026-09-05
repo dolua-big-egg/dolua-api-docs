@@ -11,6 +11,10 @@ description: >-
 
 # 这是 DoLua / DoIoT Lua 工程
 
+## 仓库隔离（致命）
+
+本目录 `dolua/` 是**开源文档仓**，只推送到 `dolua-api-docs`（Gitee / GitHub）。上层 `PLAT/` 才是**绝密私密 SDK**，只推送到 `ec718-sdk`。禁止给本仓加 `ec718-sdk` remote，禁止把 SDK 源码推进文档仓。详见 `PLAT/.cursor/rules/repo-remotes.mdc`。
+
 当前对话处理的是 **DoLua（DoIoT Lua）设备脚本工程**，不是普通 Node/Web 项目。
 
 **dolua** 是成都度云未来科技有限公司模组上的 Lua 运行时：外设、网络、存储、系统能力都以 `require("模块名")` 的形式提供给脚本。当前公开型号是 **NT26**（含 NT26 PRO）。语言是 **Lua 5.5**，但标准库之外的能力全部来自平台预加载模块，**不是** LuatOS / Air800 / NodeMCU / OpenWrt / 电脑端 Lua。

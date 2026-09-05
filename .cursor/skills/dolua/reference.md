@@ -1,5 +1,7 @@
 # DoLua 模块地图与选型
 
+本仓只推 `dolua-api-docs`，禁止推 `ec718-sdk`。SDK 在上层 `PLAT/`。
+
 需要某模块的参数、返回值、失败约定时，打开对应 markdown，不要凭记忆。本地路径相对文档仓根；网上用 Gitee raw，失败再用 GitHub raw。
 
 **Gitee 前缀**（优先）
