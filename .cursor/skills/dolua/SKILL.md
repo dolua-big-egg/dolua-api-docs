@@ -37,7 +37,7 @@ description: >-
    - `https://raw.githubusercontent.com/dolua-big-egg/dolua-api-docs/main/docs/NT26/api/README.md`
    - 单篇：`https://raw.githubusercontent.com/dolua-big-egg/dolua-api-docs/main/docs/NT26/api/<dir>/<module>.md`
 
-`<dir>` 只能是 `module` / `network` / `peripherals`。模块 → 路径对照见 [reference.md](reference.md)。
+`<dir>` 只能是 `module` / `network` / `peripherals` / `rtu_config`。模块 → 路径对照见 [reference.md](reference.md)。`rtu_config.cfg` 不是 `require` 模块，语法与全部 key 在 `docs/NT26/api/rtu_config/rtu_config.md`。
 
 查完 API 后，**对照同页给出的示例目录**打开 `main.lua`，按可烧录工程抄写法。不要从零手写第一份脚本去试接口。
 

@@ -30,6 +30,14 @@
 
 短信文档在 `module/`：[sms.md](module/sms.md) → [sms_api](../../../examples/NT26/network/sms/sms_api)、[sms_cmd](../../../examples/NT26/network/sms/sms_cmd)。
 
+## 配置 `rtu_config/`
+
+不是 `require` 模块。开机解析工程 config 分区里的 `rtu_config.cfg`（落到 `/rtu_config.cfg`），按段写入 RTU / UART / 映射等业务配置。未写的 key 保持机内原值。
+
+| 文档 | 说明 |
+| --- | --- |
+| [rtu_config.md](rtu_config/rtu_config.md) | 文件语法、全部段与 key、总覆盖权、联合影响、错误码 |
+
 ## 模块 `module/`
 
 含系统、存储、协议与工具。对应示例可能在 `os/`、`storage/` 或 `module/`。

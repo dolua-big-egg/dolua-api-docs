@@ -173,13 +173,20 @@ HTTP 落内部盘走 `ublob`（或外挂 `lfs`），不要 `http.save` 进 `ufs`
 
 有 `doiot_*` MCP 时用工具改分区和文件，不要手改 luaproj。
 
-配置常见 `rtu_config.cfg`：
+配置常见 `rtu_config.cfg`（开机解析 `/rtu_config.cfg`，**不是** `require` 模块）。完整语法、每个 key、总覆盖权与联合影响：
+
+- 本地：`docs/NT26/api/rtu_config/rtu_config.md`
+- Gitee raw：`.../docs/NT26/api/rtu_config/rtu_config.md`
+
+最小 Lua 工程通常只需：
 
 ```
 [lua]
 print_route=1
 log_route=1
 ```
+
+改 UART 脚/分包、关 NET 灯、配 DTU 四路、占位符总闸，都写这份文件，不要在脚本里猜。`[script.N]` 当前不会被解析。
 
 `manifest.json` 是例程元数据（id、requires.libs 等），给工具展示用；运行时入口仍是 `main.lua`。
 
