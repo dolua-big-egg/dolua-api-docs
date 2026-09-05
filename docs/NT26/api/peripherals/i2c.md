@@ -1,6 +1,6 @@
 # i2c
 
-**文档版本** `1.0.1`
+**文档版本** `1.1.0`
 
 对象化硬件 I2C 主机。按控制器编号打开一路，再 `write` / `read` / 寄存器读写。每路同时只能有一个实例。
 
@@ -332,20 +332,24 @@ obj:deinit()
 | 接口 | 成功 | 失败 |
 | --- | --- | --- |
 | `new` | userdata | **抛** |
-| `write` / `mem_write` / `bus_recover` | `true` | `false` |
-| `read` / `mem_read` | string | `nil` |
-| `scan` | table（可空） | 空表 |
+| `write` / `mem_write` / `bus_recover` | `true` | 只 `false`（**无**错误串） |
+| `read` / `mem_read` | string | 只 `nil`（**无**错误串） |
+| `scan` | table（可空） | 空表（未初始化或扫描失败也是空表，**无**错误串） |
 | `id` | integer | — |
 | `deinit` | `true` | 不失败 |
 
+`new` 缺整数 `id`、方法缺对象 / 地址 / 数据：标准 Lua 参数错。需要收 `new` 时用 `pcall`。
+
 抛错摘要：
 
-| 摘要 | 何时 |
+| 摘要 | 可能原因 |
 | --- | --- |
-| `invalid i2c_id …` | `id` 不是 0/1 |
-| `i2cN already in use` | 该路已有实例 |
-| `mutex init failed` | 模块初始化失败 |
-| `i2c init failed: N` | 硬件没打开（驱动未编进、脚冲突等） |
+| `invalid i2c_id N` | `id` 不是 `i2c.I2C0`(0) / `i2c.I2C1`(1)；`N` 是传入的整数 |
+| `mutex init failed` | 打开控制器时系统互斥量创建失败 |
+| `i2cN already in use` | 该路已有实例未 `deinit`（`N` 为 0 或 1） |
+| `i2c init failed: N` | 控制器没打开。`N` 是底层返回码：脚被别的外设占用、该路未编进、或硬件初始化失败 |
+
+读写失败**没有**第二返回值：对象已 `deinit`、`data` 为空、`len` 为 0、地址无应答、NACK、或总线卡死都会变成 `false`/`nil`。先 `scan` 看地址，再考虑 `bus_recover`。
 
 不是 userdata 却调方法：抛元表类型错。
 
@@ -409,3 +413,4 @@ local raw = bus:read(ADDR, 7)
 | --- | --- | --- |
 | 1.0.0 | 2026-09-04 | 首版 |
 | 1.0.1 | 2026-09-04 | 修正跨目录文档链接，demo 路径改为 examples/ |
+| 1.1.0 | 2026-09-05 | 补全错误文案/错误码与可能原因 |

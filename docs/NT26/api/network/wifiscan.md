@@ -1,6 +1,6 @@
 # wifiscan
 
-**文档版本** `1.0.0`
+**文档版本** `1.1.0`
 
 同步 WiFi 扫描与云端 WiFi 定位。纯函数模块：`scan` 扫周围 AP，`location` 先扫再向云端要经纬度。没有对象、没有回调、没有后台轮询。
 
@@ -342,7 +342,19 @@ SSID 最长 32 字节（不含结尾 0）。下标从 1 起，与 `#list` 一致
 
 配置不是 table、`channel_id` / `scan` 不是 table、数字 key 不是 integer：抛 Lua 类型错，不是三返回值。
 
-`scan` 失败时 `err_msg` 都是 `"wifi scan failed"`，用 `err_code` 区分超时还是其它扫描失败。`location` 在扫描阶段失败：超时是 `ERR_TIMEOUT`，其余扫描失败是 `ERR_GET_WIFI_SCAN`（不会把扫描拒参再映射成 `ERR_INVALID_PARAM`）。HTTP / 解析失败时第三返回值是对应英文短句。
+`scan` 失败时 `err_msg` 都是 `"wifi scan failed"`，用 `err_code` 区分。`location` 扫描阶段：超时 `ERR_TIMEOUT`，其余扫描失败 `ERR_GET_WIFI_SCAN`。定位阶段文案与 [`lbs`](lbs.md) 完成后同一套英文短句。
+
+未导出但会出现的码：
+
+| `err_code` | 典型 `err_msg` | 可能原因 |
+| --- | --- | --- |
+| `-2` | `memory alloc failed` | 组包失败 |
+| `-6` | `get pid failed` | 读不到产品 ID |
+| `-7` / `-8` / `-9` / `-14` | `http connect/send/recv/dns failed` | 定位云连不上；先驻网 |
+| `-11` | `server response error` | 云端业务错 |
+| `-10` | `parse response failed` 或 `wifi location empty result` | 回包坏，或经纬度为空 |
+
+`location` AP 少于 `min_ap_count`：`ERR_INVALID_PARAM`。诊断：`scan` 空表不是失败；`location` 先保证扫到足够 AP 且已驻网。
 
 ---
 
@@ -466,3 +478,4 @@ end
 | 版本 | 日期 | 说明 |
 | --- | --- | --- |
 | 1.0.0 | 2026-09-04 | 首版 |
+| 1.1.0 | 2026-09-05 | 补全未导出错误码、文案与可能原因 |

@@ -1,6 +1,6 @@
 # tcp
 
-**文档版本** `1.0.1`
+**文档版本** `1.1.0`
 
 全托管 TCP 客户端。`create` 建实例并拉起工作线程；`open` 只把目标设成「要连上」。之后连网、断线重连、收包都由内部自动跑，消息和状态用回调回来。全系统最多 `tcp.MAX_CLIENTS` 路（当前 4）。
 
@@ -559,6 +559,31 @@ function cb(ev)
 | `status` | boolean | 无效对象也是 `false` |
 | `wait_connect` | `true` | `false` 或 `false, err` |
 
+### 11.1 接口返回的 `err` 文本
+
+| `err` | 出现在 | 可能原因 |
+| --- | --- | --- |
+| `callback function required` | `create` | 第 1 参不是 function |
+| `rt vm context missing` | `create` | 不在脚本 VM |
+| `mutex init failed` | `create` | 系统互斥量没建起来 |
+| `tcp client limit reached (max N)` | `create` | 整机已满 4 路（N 为当时上限） |
+| `net_tcp_create failed` | `create` | 底层客户端没建起来 |
+| `tcp create race` | `create` | 并发抢槽 |
+| `invalid tcp client` | 各方法 | 已 `delete` / 被 GC / 不是本对象 |
+| `set_param host failed` | `open` | host 没写下发 |
+| `set_param port failed` | `open` | port 没写下发 |
+| `open failed` | `open` | 没进入「要连」：句柄坏或内部失败 |
+| `send failed` | `send` | 未连接或发送失败 |
+| `send_async failed` | `send_async` | 未连接或异步排队失败 |
+
+**抛错**：`port required`（`open` 没给端口）、`data required`（`send`/`send_async` 空数据）、`tcp mutex init failed`（模块装载失败）。`wait_connect` 内部还可能抛 `invalid internal wait topic` / `wait must run in coroutine/task` / `wait no task slot`。
+
+### 11.2 回调 `ev.event == "error"` 的 `ev.code`
+
+TCP 的 `ev.code` **不是** 一套稳定的 Lua 枚举，而是套接字层当时的 **errno**（连上/断开/收数据时为 `0`）。非 0 表示协议栈报了错：对端拒绝、重置、超时、未驻网导致连不上等。
+
+诊断：调用当场看 `err` 文本；已经 `open` 却总进 `error`/`disconnected`，先 `lp.wait_link`，再查 host/port。不要把某次看到的 errno 数字写成跨版本契约。
+
 ---
 
 ## 12. 资源上限与生命周期
@@ -693,3 +718,4 @@ end
 | --- | --- | --- |
 | 1.0.0 | 2026-09-04 | 首版 |
 | 1.0.1 | 2026-09-04 | 修正跨目录文档链接，demo 路径改为 examples/ |
+| 1.1.0 | 2026-09-05 | 补全 `err` 文案；说明回调 `ev.code` 为套接字 errno 及可能原因 |

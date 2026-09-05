@@ -1,6 +1,6 @@
 # ufs
 
-**文档版本** `1.1.1`
+**文档版本** `1.2.0`
 
 纯函数模块。把 **可序列化的 Lua 值**（配置表、状态、短字符串）写成内部受限文件，读回仍是 Lua 对象。自带格式化，落盘会压缩。适合短小对象，不适合大二进制、也不适合流式拼文件。
 
@@ -394,20 +394,33 @@ ufs/ublob 可写上限 limit = shared_limit − 脚本区落盘
 
 缺 string 类型的 `name`：**抛错**。
 
-常见 `err` 摘要：
+`err` 全表（存储层 + 编解码）：
 
-| `err` | 何时 |
+| `err` | 可能原因 |
 | --- | --- |
-| `not found` | 读/stat 目标不存在 |
-| `quota exceeded` | 共享配额不够 |
-| `invalid param` | 文件名非法等 |
-| `io error` / `fs error` | 存储失败 |
-| `bad record` | 落盘记录损坏 |
-| `unsupported value type` | function 等 |
-| `table too large` / `table depth exceeded` | 表超限 |
-| `unsupported table key` | 键类型不支持 |
-| `not msgpack ufs data` | 不是本模块格式 |
-| `反序列化失败` | 编码损坏或不完整 |
+| `ok` | 不会作为失败第二返回值出现 |
+| `not found` | `read`/`stat`/`remove` 名字不存在 |
+| `quota exceeded` | 与脚本区、ublob 共用配额满；删文件或缩短对象。看 `usage()` |
+| `invalid param` | 文件名非法（空、过长、非法字符） |
+| `io error` | 介质读写失败 |
+| `not empty` | 当前仓一般碰不到（无目录树） |
+| `not dir` | 同上 |
+| `already exists` | 内部已存在冲突（少见） |
+| `bad record` | 落盘记录损坏，删了重写 |
+| `fs error` | 未单独翻译的存储码 |
+| `table too large` | 单表超过 4096 项，或编码将超 80 KiB |
+| `table depth exceeded` | 嵌套超过 10 层 |
+| `float unsupported` | 出现了非整数 number（用整数或先格式化成 string） |
+| `string too large` | 单个 string 太大 |
+| `unsupported table key` | 键不是合法类型（只要 string/integer） |
+| `unsupported value type` | function / userdata / thread 不能落盘 |
+| `msgpack buffer alloc failed` | 编码缓冲分配失败 |
+| `not msgpack ufs data` | 文件不是本模块格式（别用 ublob 同名去 read） |
+| `序列化失败-输出为空` | 编码结果空 |
+| `read target is dir` / `cmp target is dir` | 目标被当成目录（当前仓少见） |
+| cmp 的 `cmp_strerror` 原文 | 编解码库报的细节（损坏或不完整） |
+
+诊断：`quota exceeded` 先 `usage()` 再合并小文件；`unsupported *` 改数据结构；`not found` 查名字是否写过、是否写到了 ublob。
 
 ---
 
@@ -488,3 +501,4 @@ ufs.remove("d_tbl")
 | 1.0.0 | 2026-09-04 | 首版 |
 | 1.1.0 | 2026-09-04 | 配额改为与脚本区共用、额度按型号；列出 NT26 PRO 合计 220 KB |
 | 1.1.1 | 2026-09-04 | 修正跨目录文档链接，demo 路径改为 examples/ |
+| 1.2.0 | 2026-09-05 | 补全全部 `err` 文案与可能原因 |

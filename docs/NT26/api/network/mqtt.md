@@ -1,6 +1,6 @@
 # mqtt
 
-**文档版本** `1.0.1`
+**文档版本** `1.1.0`
 
 全托管 MQTT 客户端。`create` 建实例并拉起工作线程；`open` 只把目标设成「要连上」。之后连 broker、断线重连、收报文都由内部自动跑，消息和状态用回调回来。全系统最多 4 路。
 
@@ -805,6 +805,8 @@ c:open(host, port, device_name, product_id, access_key)
 
 ## 13. 错误与返回约定
 
+先看返回形态，再拿 `err` 字符串或回调 `ev.code` 对下面两张表。类型错（缺回调、QoS 越界、`pub` 参数组合不对）走 **抛错**，不是 `nil, err`。
+
 | 接口 | 成功 | 失败 |
 | --- | --- | --- |
 | `create` | userdata | `nil, err` |
@@ -815,6 +817,95 @@ c:open(host, port, device_name, product_id, access_key)
 | `pub` / `pub_async` | `true` | `false[, err]`；参数组合/QoS 不合法会抛错 |
 | `status` | boolean | 无效对象也是 `false` |
 | `wait_connect` | `true` | `false` 或 `false, err` |
+
+模块表没有导出这些数字常量。诊断时直接比对 `ev.code` 的整数。
+
+### 13.1 接口返回的 `err` 文本
+
+| `err` | 出现在 | 可能原因 |
+| --- | --- | --- |
+| `callback function required` | `create` | 第 1 参不是 function |
+| `rt vm context missing` | `create` | 不在脚本虚拟机里调（几乎只会出现在错误嵌入） |
+| `mutex init failed` | `create` | 系统资源不够，重启后再试 |
+| `mqtt client limit reached (max 4)` | `create` | 整机已有 4 路未 `delete`；含其它脚本 |
+| `net_mqtt_create failed` | `create` | 底层客户端没建起来，内存或协议栈未就绪 |
+| `net_mqtt_init failed` | `create` | 初始化失败，看缓冲/内存 |
+| `apply config failed` | `create` | `cfg` 里某项底层拒收（过长、非法） |
+| `mqtt create race` | `create` | 并发 `create` 抢同一槽，串行再建 |
+| `invalid mqtt client` | 各方法 | 对象已 `delete`、被 GC、或不是本模块对象 |
+| `open failed` | `open` | 目标没设成「要连」：句柄无效、已在拆、内部 open 失败 |
+| `set_param failed` | `open` | host/port 没写进底层 |
+| `close failed` | `close` | 句柄已无效 |
+| `subscribe failed` | `sub` | 未连接、主题非法、内部订失败 |
+| `unsubscribe failed` | `unsub` | 未订过或未连接 |
+| `unsub_auto failed` | `unsub_auto` | 自动订阅表操作失败 |
+| `auto_sub qos must be in [0..2]` | `auto_sub` | 表里某条 QoS 越界（返回值失败，不一定抛） |
+| `auto_sub list too large` | `auto_sub` | 超过 20 条 |
+| `auto_sub failed` | `auto_sub` | 内部登记失败 |
+| `publish failed` | `pub` | 未连接、主题非法、内部发送失败 |
+| `publish_async failed` | `pub_async` | 队列满或句柄无效 |
+| `update failed` | `update` | 句柄无效或参数没吃进去 |
+| `set_param failed (client_id)` | `auth` | client_id 没写下发 |
+| `set_param failed (username)` | `auth` | username 没写下发 |
+| `set_param failed (password)` | `auth` | password / access key 没写下发 |
+| `platform must be 'onenet' or 'normal'` | `platform` | 拼写不是这两字 |
+
+**抛错**（`pcall` 才能接到）：
+
+| 摘要 | 可能原因 |
+| --- | --- |
+| `port must be in [1..65535]` | `open` 的端口 |
+| `qos must be in [0..2]` | `sub` / `pub` / `pub_async` |
+| `usage: pub(topic,payload,qos,retain) or pub(topic,qos,retain)` | `pub` 参数个数/类型对不上两种形态 |
+| `mqtt mutex init failed` | 模块装载时系统互斥量没建起来（整模块不可用） |
+
+`bad argument #n`：该 string/function/integer 的位置给了别的类型。
+
+### 13.2 回调 `ev.event == "error"` 时的 `ev.code`
+
+同一路连续相同 `code` 不会再投递（避免重连刷屏）。连上后计数清零，下次新码会再来。
+
+| `ev.code` | 含义 | 可能原因 |
+| --- | --- | --- |
+| `0` | 无错（一般不会以 error 事件出现） | — |
+| `1000` | TCP 连不上 | host/port 错、对端没开、防火墙、还没驻网 |
+| `1001` | 建 socket 失败 | 资源耗尽、协议栈异常 |
+| `1002` | DNS 失败 | 域名错、DNS 没配、未驻网 |
+| `1003` | TCP 超时 | 链路差、IP 不可达 |
+| `1004` | TCP 已断开 | 对端关连接、中间网络掉 |
+| `1005` | TCP 发送失败 | 已断或发送缓冲 |
+| `1006` | TCP 接收失败 | 已断或读失败 |
+| `1100` | CONNACK：协议版本拒 | broker 不接受当前 MQTT 版本 |
+| `1101` | CONNACK：client_id 拒 | ID 空、重复、格式不合 broker |
+| `1102` | CONNACK：服务器不可用 | broker 过载或未就绪 |
+| `1103` | CONNACK：用户名/密码错 | `auth` 三元组或测试站密码不对 |
+| `1104` | CONNACK：未授权 | ACL / 证书 / OneNET token |
+| `1105` | MQTT 连接失败（通用） | 握手没走完，看前后是否先有 100x |
+| `1106` | MQTT 连接超时 | CONNACK 一直不来 |
+| `1107` | 连接缓冲溢出 | client_id/用户信息过长或缓冲偏小 |
+| `1200` | 订阅失败 | 主题/QoS 被拒，或当时未真正连上 |
+| `1201` | 取消订阅失败 | 主题不存在于当前会话 |
+| `1202` | 发布失败 | 未连接、主题非法、QoS |
+| `1203` | 发布队列满 | 发太快；降速或等连上再 `pub` |
+| `1204` | 会话循环失败（通用） | 看是否伴随 1205～1207 |
+| `1205` | 读/套接字超时或出错 | 链路闪断，随后会重连 |
+| `1206` | 心跳无 PINGRESP | 中间设备吃包、keepalive 过短/过长 |
+| `1207` | 发 PUBACK/PUBREL 失败 | 上行卡住 |
+| `1208` | 主动断开失败 | 少见，句柄已坏 |
+| `1300` | 参数无效 | 某次内部调用参数被拒 |
+| `1301` | 句柄无效 | 对象已拆仍在用 |
+| `1302` | 未初始化 | `create` 未成功就当已连用 |
+| `1303` | 未连接 | 在 `connected` 之前 `pub`/`sub`（`pub_async` 可排队，同步 `pub` 常失败） |
+| `1304` | 已连接 | 内部状态冲突，少见 |
+| `1305` | 主题无效 | 空串、非法通配 |
+| `1306` | QoS 无效 | 不是 0/1/2 |
+| `1400` | 内存分配失败 | 减小 `rx_buf`/`tx_buf`，少开路数 |
+| `1401` | 缓冲区太小 | 报文大于 create 时的缓冲；加大再 `create` |
+| `1500` | 未知 | 对不上上面的码 |
+| `1501` | 内部错误 | 协议栈异常，可 `close` 再 `open` |
+| `1502` | 工作线程错误 | 线程没跑起来或已退出 |
+
+诊断顺序：先看 `err` 文本（调用当场失败）→ 再看是否收到 `connected` → 再看 `error` 的 `ev.code`。`1002`/`1000` 先查 `lp.wait_link` 和 host；`1103`/`1104` 查三元组；`1401` 查包长和缓冲。
 
 ---
 
@@ -973,3 +1064,4 @@ broker 关掉连接后日志会看到 `disconnected`，然后内部自己再连�
 | --- | --- | --- |
 | 1.0.0 | 2026-09-04 | 首版 |
 | 1.0.1 | 2026-09-04 | 修正跨目录文档链接，demo 路径改为 examples/ |
+| 1.1.0 | 2026-09-05 | 补全接口 `err` 文案与回调 `ev.code` 全表，并写可能原因 |

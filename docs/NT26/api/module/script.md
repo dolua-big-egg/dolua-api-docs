@@ -1,6 +1,6 @@
 # script
 
-**文档版本** `1.0.1`
+**文档版本** `1.1.0`
 
 纯函数模块。查询当前正在跑的脚本副本（boot bundle），以及 A/B 两槽的清单；试运行（trial）成功后可 `confirm`。
 
@@ -227,13 +227,25 @@ end
 
 ## 9. 错误与返回约定
 
+业务失败 **抛错**，没有 `nil, err`，也没有数字业务码。查询对槽、尝试 `confirm` 请用 `pcall`。
+
 | 接口 | 成功 | 失败 |
 | --- | --- | --- |
 | `info` | table | **抛** |
 | `confirm` | `true` | **抛** |
-| `switch` / `rollback` | 预留，不要调用 | — |
+| `switch` / `rollback` | 预留，不要调用；失败也 **抛** | |
 
-槽无效、非 trial 时 `confirm` 都会中断脚本。查询对槽、尝试 confirm 请用 `pcall`，与 [examples/NT26/os/script/script_api](../../../../examples/NT26/os/script/script_api) 一致。
+**抛错摘要**
+
+| 摘要 | 可能原因 |
+| --- | --- |
+| `script.info: slot invalid or manifest unavailable` | `info("A"/"B")` 槽名非法，或该槽没有可读清单 |
+| `script.info: bundle not ready` | 无参 `info()` 时当前 boot 副本还没就绪 |
+| `script.confirm: not in trial or mismatch` | 当前不是 trial，或确认条件不匹配 |
+| `script.switch: slot invalid or incomplete` | 目标槽非法或副本不完整（预留接口，不要当业务用） |
+| `script.rollback failed` | 回退失败（预留接口） |
+
+`slot` 不是字符串：Lua 标准类型错。`rollback` 可带可选原因串，缺省为 `"script rollback"`（这是传给回退路径的说明，不是返回给脚本的 `err`）。
 
 ---
 
@@ -310,3 +322,4 @@ end
 | --- | --- | --- |
 | 1.0.0 | 2026-09-04 | 首版 |
 | 1.0.1 | 2026-09-04 | 修正跨目录文档链接，demo 路径改为 examples/ |
+| 1.1.0 | 2026-09-05 | 补全错误与返回约定：全部抛错摘要与可能原因 |

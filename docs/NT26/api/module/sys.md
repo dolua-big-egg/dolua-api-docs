@@ -1,6 +1,6 @@
 # sys
 
-**文档版本** `1.0.1`
+**文档版本** `1.1.0`
 
 系统级工具模块：版本与复位原因、串口路由、授时、看门狗、复位/关机，以及 **不让出 Lua 协程** 的三类延时。日常等待请优先用 `rt.delay`。
 
@@ -518,11 +518,28 @@ function cb(ts)
 | --- | --- | --- |
 | `delay_ms` / `delay_until` / `delay_us` | 无返回 | 缺参走 Lua 类型错 |
 | `wdt_kick` | 无返回 | — |
-| `option` 读/写 | integer 路由 | 抛错 |
+| `option` 读/写 | integer 路由 | **抛** |
 | `version` / `reset_reason` | table | — |
 | `reset` / `poweroff` | 通常不再返回 | — |
-| `set_ts` / `set_ts_ms` | `true` | `false`（`<=0` 或写失败） |
-| `nitz_reg` | `true` | 递归登记 `false`；否则抛错 |
+| `set_ts` / `set_ts_ms` | `true` | `false`（无 `err`：`<=0` 或写失败） |
+| `nitz_reg` | `true` | 回调里再登记：`false`（无 `err`）；否则 **抛** |
+
+缺参、类型错走 Lua 标准 `bad argument #n`。`option` 写值不是整数：`integer expected`。
+
+**抛错摘要**
+
+| 摘要 | 可能原因 |
+| --- | --- |
+| `sys.option: usage sys.option(key) or sys.option(key, value)` | 参数个数不是 1 或 2 |
+| `sys.option: unsupported key` | 键不是 `"print_route"` / `"log_route"` |
+| `sys.option: print_route must be 1, 2 or 3` | 写 `print_route` 时 UART 编号不是 1/2/3 |
+| `sys.option: log_route must be 1, 2 or 3` | 写 `log_route` 时 UART 编号不是 1/2/3 |
+| `nitz_reg not allowed in quick callback` | 在快捷回调上下文里登记 NITZ |
+| `main vm not found` | 当前没有主脚本虚拟机 |
+| `register rt topic failed` | 内部事件 topic 登记失败（资源或调度未就绪） |
+| `register PS MM event failed: N` | 基站授时事件登记失败，`N` 为协议栈返回码 |
+
+`set_ts` / `set_ts_ms` 与 `nitz_reg` 递归失败**没有**第二返回值。`true`/`false` 当布尔用即可。
 
 ---
 
@@ -642,3 +659,4 @@ end
 | --- | --- | --- |
 | 1.0.0 | 2026-09-04 | 首版 |
 | 1.0.1 | 2026-09-04 | 修正跨目录文档链接，demo 路径改为 examples/ |
+| 1.1.0 | 2026-09-05 | 补全错误与返回约定：全部抛错摘要与可能原因 |

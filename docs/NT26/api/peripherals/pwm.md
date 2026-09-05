@@ -1,6 +1,6 @@
 # pwm
 
-**文档版本** `1.0.1`
+**文档版本** `1.1.0`
 
 对象化硬件 PWM。按模块管脚号或芯片 PAD 打开一路，再 `start` 出波。波形由 TIMER 或常电 APWM 产生，不是 GPIO 翻转。
 
@@ -502,37 +502,52 @@ comp = { type = pwm.INPUT_PINNO, id = n_pin }
 | `open` | userdata | **抛** |
 | `pins` | 表 | 空表也是成功 |
 | `start` | `true` | **抛** |
-| `set_duty` / `set_freq` | `true` | `false` |
-| `stop` | `true` | `false` |
+| `set_duty` / `set_freq` | `true` | 只 `false`（已 close、占空比/频率越界、或底层失败；**无**错误串） |
+| `stop` | `true` | 只 `false`（底层停失败；已 close 仍返回 `true`） |
 | `close` | `true` | — |
-| `info` | table | `nil` |
+| `info` | table | `nil`（对象已 close） |
 
-`start` 配置类抛错：
+`open`/`start` 缺整数、缺对象：标准 Lua 参数错。需要收这两处时用 `pcall`。
 
-| 文案 | 原因 |
+抛错摘要：
+
+| 摘要 | 可能原因 |
 | --- | --- |
-| `start expects a table` | 第二参不是表 |
-| `invalid mode` / `freq` / `duty` / `clk` / `stop` / `period` / `high` / `low` | 对应键不是数字 |
-| `freq must be > 0` | `freq` 有填但 ≤0 |
-| `duty must be 0~100` | 占空比越界 |
-| `high and low must be set together` | 只写了其中一个 |
+| `invalid type, expect INPUT_PDDR/INPUT_PINNO` | `open` 第一参不是 `pwm.INPUT_PDDR` / `INPUT_PINNO` |
+| `invalid id` | `open` 的脚号/PAD 不在 0～255 |
+| `pwm.open failed: …` | 占脚失败；`…` 见下层短句 |
+| `start expects a table` | `start` 第二参不是表 |
+| `invalid mode` | `mode` 有填但不是数字 |
+| `invalid freq` | `freq` 有填但不是数字 |
+| `freq must be > 0` | `freq` 有填且 ≤0 |
+| `invalid duty` | `duty` 有填但不是数字 |
+| `duty must be 0~100` | `duty` 有填且不在 0～100 |
+| `invalid clk` | `clk` 有填但不是数字 |
+| `invalid stop` | `stop` 有填但不是数字 |
+| `invalid period` | `period` 有填但不是数字 |
+| `invalid high` | `high` 有填但不是数字 |
+| `invalid low` | `low` 有填但不是数字 |
+| `high and low must be set together` | 只写了 `high` 或只写了 `low` |
 | `comp expects {type,id}` | `comp` 不是表 |
-| `invalid comp.type` / `invalid comp.id` | 不是数字 |
-| `comp needs type and id` | 缺键 |
-| `pwm already closed` | 对象已 close |
-| `pwm.start failed: …` | 下层，见下表 |
+| `invalid comp.type` | `comp.type` 不是数字 |
+| `invalid comp.id` | `comp.id` 不是数字 |
+| `comp needs type and id` | `comp` 缺 `type` 或 `id` |
+| `pwm already closed` | 对象已 `close` 再 `start` |
+| `pwm.start failed: …` | 开波失败；`…` 见下层短句 |
 
-`open` / `start` 下层摘要：
+`open` / `start` 下层短句（接在 `pwm.open failed:` / `pwm.start failed:` 后面）：
 
-| 片段 | 含义 |
+| 片段 | 可能原因 |
 | --- | --- |
-| `invalid param` | 频率 0、时钟非法、APWM 档位/高低点非法、模式非法 |
-| `pin not found / no pwm` | 脚不在表里 |
-| `pwm busy` | PAD / TIMER 通道 / APWM 序号 / 互补脚被占 |
-| `pin has no such pwm function` | 这颗脚没有所选模式，或互补通道对不上 |
-| `pwm hw failed` | 定时器配置失败 |
+| `ok` | 成功映射，不会出现在失败摘要里 |
+| `invalid param` | 频率为 0、时钟非法、APWM 档位/高低点非法、或模式数字对不上 |
+| `pin not found / no pwm` | 这颗脚不在本机 PWM 表里（先 `pwm.pins()`） |
+| `pwm busy` | 同一 PAD、TIMER 通道、APWM 序号、或互补脚已被别的对象占用 |
+| `pin has no such pwm function` | 这颗脚没有所选 `mode`，或互补通道对不上 |
+| `pwm hw failed` | 定时器/硬件配置失败 |
+| `pwm error` | 未单独翻译的底层码 |
 
-需要收 `open`/`start` 时用 `pcall`。
+诊断：`pin not found` 先跑 `pwm.pins()` 对照脚号；`pwm busy` 先 `close` 占用同一 PAD 的对象；`invalid type` 不要传 GPIO 模块的 `INPUT_*`。
 
 ---
 
@@ -619,3 +634,4 @@ ch:start({
 | --- | --- | --- |
 | 1.0.0 | 2026-09-04 | 首版 |
 | 1.0.1 | 2026-09-04 | 修正跨目录文档链接，demo 路径改为 examples/ |
+| 1.1.0 | 2026-09-05 | 补全错误文案/错误码与可能原因 |

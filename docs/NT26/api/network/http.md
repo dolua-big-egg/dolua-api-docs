@@ -1,6 +1,6 @@
 # http
 
-**文档版本** `1.0.1`
+**文档版本** `1.1.0`
 
 同步 HTTP/HTTPS 客户端。纯函数模块：一次 `request` 从发到收完，没有对象、没有托管线程、没有自动重连。响应体可以进 Lua 字符串，也可以落到 **ublob**、已挂载的 **LittleFS**，或已挂载的 FlashDB。
 
@@ -567,39 +567,42 @@ HTTP 状态不是 2xx 时，只要收包和写盘成功，仍返回这张表。�
 
 类型错（opts 不是 table、url 不是字符串等）走 Lua 抛错，不是三返回值。
 
-协议层错误（未导出符号）：
+协议层错误（模块表 **没有** 导出这些数字）：
 
-| 值 | `err_msg` | 含义 |
+| 值 | `err_msg` | 可能原因 |
 | --- | --- | --- |
-| `-1` | `invalid param` | 入参非法；非法 headers 也是 `-1`（文案 `invalid headers`） |
-| `-2` | `invalid url` | URL 非法 |
-| `-3` | `out of memory` | 内存不足 |
-| `-4` | `dns resolve failed` | DNS 失败（含未驻网） |
-| `-5` | `socket failed` | socket |
-| `-6` | `connect failed` | TCP 连不上 |
-| `-7` | `tls failed` | TLS 握手 |
-| `-8` | `timeout` | 超时 |
-| `-9` | `send failed` | 发送 |
-| `-10` | `recv failed` | 接收 |
-| `-11` | `connection closed` | 对端关闭 |
-| `-12` | `parse header failed` | 头解析 |
-| `-13` | `parse chunked failed` | chunked |
-| `-14` | `content-length required` | 要求 CL 但没有 |
-| `-15` | `response too large` | 超过 `max_response_size` |
+| `-1` | `invalid param` | URL/opts 非法。非法 headers 也是 `-1`，文案改为 `invalid headers` |
+| `-2` | `invalid url` | 不是 `http://`/`https://`、缺 host、规范化失败 |
+| `-3` | `out of memory` | 响应体或内部缓冲分配失败；减小 `max_response_size` 或改 `save` |
+| `-4` | `dns resolve failed` | 域名错、未驻网、DNS 没配。先 `lp.wait_link` |
+| `-5` | `socket failed` | 建/绑 socket 失败，协议栈忙或句柄无效 |
+| `-6` | `connect failed` | 对端没开、端口错、防火墙、仅 IPv6 等 |
+| `-7` | `tls failed` | HTTPS 握手失败、证书模式与 `tls_mode`/`ca_cert` 不匹配、固件未开 TLS |
+| `-8` | `timeout` | 连/发/收超时；加大 opts 超时或查链路 |
+| `-9` | `send failed` | 请求发出去一半连接断了 |
+| `-10` | `recv failed` | 收响应失败，对端或链路 |
+| `-11` | `connection closed` | 对端先关；短连接正常结束有时也会走到这，看是否已有部分头 |
+| `-12` | `parse header failed` | 对端不是合法 HTTP 头 |
+| `-13` | `parse chunked failed` | chunked 不完整或格式坏 |
+| `-14` | `content-length required` | 这次请求要求 Content-Length，响应没给 |
+| `-15` | `response too large` | 超过 `max_response_size`；改上限或改 `save` 落盘 |
+| 其它负值 | `http request failed` | 未单独翻译的底层码 |
 
-落盘错误从 **-20** 起（请求阶段或写盘阶段）：
+落盘错误从 **-20** 起（组 save 描述或写盘时）：
 
-| 值 | `err_msg` | 含义 |
+| 值 | `err_msg` | 可能原因 |
 | --- | --- | --- |
 | `-20` | `save invalid param` | 文件名/路径/key 空或过长；`save` 不是 string/table |
-| `-21` | `save quota exceeded` | ublob 配额或 LittleFS 无空间 |
-| `-22` | `save io error` | 写盘 IO |
-| `-23` | `save out of memory` | 写盘内存 |
+| `-21` | `save quota exceeded` | ublob 与脚本区共用配额满；或 LittleFS 没空间 |
+| `-22` | `save io error` | 写盘 IO，介质或挂载异常 |
+| `-23` | `save out of memory` | 写盘时分配失败 |
 | `-24` | `save failed` | 其它写盘失败 |
-| `-25` | `save payload too large` | 超过 KV/TS 容量 |
-| `-26` | `save target type invalid` | 对象类型不对或未挂载；固件未开 LFS |
+| `-25` | `save payload too large` | 超过 KV/TS 单条容量 |
+| `-26` | `save target type invalid` | `save.lfs`/`kv`/`ts` 对象类型不对、未挂载；或固件未开 LFS |
 
-TLS 配置失败：`err_msg` 为 `"tls configure failed"`，码可能是 `-1`～`-4`，用文案区分。
+TLS 配置失败：`err_msg` 为 `"tls configure failed"`，码可能是 `-1`～`-4`，**以文案为准**。`http.save.lfs` 在固件关掉 LittleFS 时 **抛** `lfs save unsupported (APP_LFS_ENABLE=0)`。
+
+诊断：`-4`/`-6`/`-8` 先查驻网和 URL；`-7` 查证书与 `tls_mode`；`-15`/`-21`/`-25` 查体积和配额；`-26` 查挂载对象是否还活着。
 
 ---
 
@@ -760,3 +763,4 @@ f:close()
 | --- | --- | --- |
 | 1.0.0 | 2026-09-04 | 首版 |
 | 1.0.1 | 2026-09-04 | 修正跨目录文档链接，demo 路径改为 examples/ |
+| 1.1.0 | 2026-09-05 | 协议/落盘错误码补全可能原因，并写未翻译码与 LFS 关闭时的抛错 |

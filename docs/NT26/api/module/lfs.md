@@ -1,6 +1,6 @@
 # lfs
 
-**文档版本** `1.0.1`
+**文档版本** `1.1.0`
 
 对象化的 **LittleFS**：在已经 `sfud.bind` 好的外挂 NOR 上挂一块 POSIX 风格文件系统。路径如 `"/demo.txt"`，可建目录、开关文件、流式读写和摘要。
 
@@ -625,8 +625,8 @@ LFS 进度表 **没有** FlashDB 那种 `kind` / `addr` / `repaired`。
 
 ## 11. 错误与返回约定
 
-缺参、`cfg` 不是表、路径类型不对：`luaL_check*` **抛**类型错。  
-已卸载的 `fs`：**抛** `"lfs fs closed"`。
+缺参、`cfg` 不是表、路径类型不对：标准 Lua 参数错，需要 `pcall` 才能收。  
+已卸载的 `fs`：**抛** `"lfs fs closed"`。`d:read` 列完是单独一个 `nil`（不是错误）。
 
 业务失败：
 
@@ -636,29 +636,67 @@ LFS 进度表 **没有** FlashDB 那种 `kind` / `addr` / `repaired`。
 | `open` / `dir` / `stat` | 对象或表 | `nil, err` |
 | `mkdir` / `remove` / `rename` / `sync` | `true` | `nil, err` |
 | `unmount` | `true` | `false, "unmount failed"` |
-| `name` / `info` | string / 表 | （fs 已关则抛） |
+| `name` / `info` | string / 表 | fs 已关则抛 |
 | `f:read` / 摘要 | string 或 integer | `nil, err` |
 | `f:write` / `seek` / `tell` / `size` | integer | `nil, err` |
 | `f:close` / `d:close` | `true` | `false, err` |
 | `d:read` | 表；列完单独 `nil` | `nil, err` |
 
-常见 `err`：
+抛错摘要：
 
-| 文案 | 何时 |
+| 摘要 | 可能原因 |
 | --- | --- |
-| `invalid sfud object` | 第一参不是已初始化的 sfud |
-| `invalid lfs cfg` | `size` 不合法、名过长等 |
-| `partition oob` | 分区超出芯片 |
-| `async lfs mount requires rt context` | 异步但不在 rt 里 |
-| `too many lfs mount jobs` / `too many lfs instances` | 超过 4 |
-| `on_event register failed` / `mount thread failed` | 异步启动失败 |
-| `partition erase failed` | 异步预擦失败 |
-| `partition register failed` / `mount failed` / `lfs init failed` / `mutex failed` | 建挂失败 |
-| `bad mode` | `open` 的 mode 不是那六种 |
-| `bad file` | 文件/目录已关 |
-| `invalid param` | 摘要区间非法 |
-| `md5 not enabled` | 固件未编 MD5 |
-| `ok` / `io error` / `corrupt` / `no entry` / `exist` / `not dir` / `is dir` / `not empty` / `file too big` / `invalid` / `no space` / `no memory` / `name too long` / `lfs error` | 文件系统层 |
+| `lfs fs closed` | `fs` 已 `unmount` 或被回收后再调 `open`/`mkdir`/`stat` 等 |
+
+挂载与对象固定 `err`：
+
+| `err` | 可能原因 |
+| --- | --- |
+| `invalid sfud object` | 第一参不是已 `sfud.bind` 成功的对象，或芯片未认片 |
+| `invalid lfs cfg` | `size` 不是正整数、小于 8 KB、`offset` 为负、或 `name` 超过 23 字节 |
+| `partition oob` | `offset + size` 超出芯片容量 |
+| `async lfs mount requires rt context` | 写了 `on_event` 或整数 `mount_timeout_ms`，但当前不在 `rt` 调度里 |
+| `too many lfs mount jobs` | 同时进行的异步挂载超过 4 |
+| `too many lfs instances` | 整机已挂满 4 个 LFS |
+| `on_event register failed` | 异步进度话题登记失败 |
+| `mount thread failed` | 异步挂载线程没建起来 |
+| `partition register failed` | 分区名重名、范围非法、或与已挂分区冲突 |
+| `mutex failed` | 该文件系统的互斥量创建失败 |
+| `mount failed` | 挂载失败且没有更细码；异步超时或结果丢失时也会落到这句 |
+| `lfs init failed` | 挂载/格式化失败，且不是上面几条专用码 |
+| `mount job invalid` | 异步完成后任务号已无效 |
+| `mount userdata failed` | 挂载成功但组装 `fs` 对象失败（随后会卸掉刚挂上的盘） |
+| `bad mode` | `open` 的 mode 不是 `r` / `w` / `a` / `r+` / `w+` / `a+` |
+| `unmount failed` | `unmount` 底层卸载失败（仍有未关文件，或介质忙） |
+| `invalid param` | 摘要/CRC 的 `offset` 为负、或只给 offset 却越过文件末尾、或 `len` 为负 |
+| `no mem` | 把摘要打成 hex 时内部缓冲不够（正常 16 字节 MD5 路径不应出现） |
+| `md5 not enabled` | 当前固件未编进 MD5 |
+| `md5 starts failed` | MD5 上下文启动失败 |
+| `md5 update failed` | 流式更新 MD5 失败 |
+| `md5 finish failed` | MD5 收尾失败 |
+
+文件系统层短句（`open`/`read`/`write`/`mkdir`/`remove`/`rename`/`stat`/`dir`/`sync`/`close` 等）：
+
+| `err` | 可能原因 |
+| --- | --- |
+| `ok` | 成功映射，不会作为失败第二返回值 |
+| `io error` | 片上读写失败：接线、片选、或芯片无应答 |
+| `corrupt` | 文件系统元数据损坏，考虑按配置格式化后重挂 |
+| `no entry` | 路径不存在 |
+| `exist` | 目标已存在（`mkdir` 等同名冲突） |
+| `not dir` | 路径存在但不是目录 |
+| `is dir` | 对目录做了文件操作（当文件 `open`/`remove` 等） |
+| `not empty` | 删非空目录 |
+| `bad file` | 文件/目录对象已 `close`，或从未打开成功 |
+| `file too big` | 写入后将超过 LittleFS 单文件上限 |
+| `invalid` | 参数对当前操作不合法（偏移、标志、或路径形态） |
+| `no space` | 分区没有剩余空间 |
+| `no memory` | 文件系统运行时内存不足 |
+| `no attr` | 请求的属性不存在 |
+| `name too long` | 路径组件超过 255 字节 |
+| `lfs error` | 未单独翻译的文件系统码 |
+
+诊断：`partition oob` 用 `flash:capacity()` 重算 `offset`/`size`；`no entry` 先 `stat`；`bad file` 不要对已 `close` 的句柄再读；`lfs fs closed` 说明 `fs` 已卸，要重新 `mount`。
 
 ---
 
@@ -761,3 +799,4 @@ f:close()
 | --- | --- | --- |
 | 1.0.0 | 2026-09-04 | 首版 |
 | 1.0.1 | 2026-09-04 | 修正跨目录文档链接，demo 路径改为 examples/ |
+| 1.1.0 | 2026-09-05 | 补全错误文案/错误码与可能原因 |

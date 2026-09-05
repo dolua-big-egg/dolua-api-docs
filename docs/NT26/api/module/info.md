@@ -1,6 +1,6 @@
 # info
 
-**文档版本** `1.0.1`
+**文档版本** `1.1.0`
 
 纯函数查询模块：本机身份、驻网/信号/小区、默认 APN、本机时钟。没有对象、没有回调。授时写钟走 [`ntp`](../network/ntp.md) / [`sys`](sys.md)，本模块只读（APN 和 `cfun` 除外）。
 
@@ -638,21 +638,38 @@ Lua 普通字符串里 `%` 没有特殊含义，`"%Y-%m-%d"` 可以直接传。�
 
 ## 9. 错误与返回约定
 
+多数查询失败**没有**第二返回值错误串，也**没有**统一 `err` 文本。用返回值本身判断。
+
 | 接口 | 成功 | 失败 |
 | --- | --- | --- |
-| `iccid` / `imei` / `imsi` | string | `nil` |
+| `iccid` / `imei` / `imsi` | string | 单独 `nil` |
 | `csq` | 0–31 | **99** |
 | `cereg` | 0–5 | **-1** |
 | `islink` | 1 或 0 | **-1** |
-| `serv_cell` / `mult_cell` / `signal` / `time` / `getapn` | table | `nil` |
-| `times` / `timezone` / `timestamp*` | string / integer | `nil` |
+| `serv_cell` / `mult_cell` / `signal` / `time` / `getapn` | table | 单独 `nil` |
+| `times` / `timezone` / `timestamp*` | string / integer | 单独 `nil` |
 | `time_ready` / `nitz_ready` | boolean | 锁失败当 `false` |
 | `tick` / `tick_ms` | integer | 不失败 |
-| `setapn` / `apn_factory_reset` | `true` | `false`；`setapn` 参数个数不对则 **抛** |
+| `setapn` / `apn_factory_reset` | `true` | `false`（无 `err`）；`setapn` 参数个数不对则 **抛** |
 | `cfun(GET)` | `true, cfun` | `false` |
 | `cfun(其它)` | `true` | `false`；方法非法 **抛** |
 
-失败多数没有第二返回值错误串。
+**何时 `nil` / `false` / 特殊整数（无错误码）**
+
+- `nil`：锁失败、协议栈读失败、SIM/身份未就绪、时间未授时
+- `csq() == 99`：尚未测到或射频未就绪
+- `cereg() == -1` / `islink() == -1`：锁失败或查询失败（`islink` 不要当布尔用）
+- `setapn` 返回 `false`：APN 字符串过长/拷贝失败、鉴权值非法、锁失败、协议栈写失败
+- `cfun` 返回 `false`：锁失败或协议栈拒绝
+
+**抛错摘要**
+
+| 摘要 | 可能原因 |
+| --- | --- |
+| `setapn(apn [, user, pass [, auth]])` | 一个参数都没给，或只给了 APN+用户、漏了密码（必须 1 个，或 ≥3 个） |
+| `invalid cfun method` | `cfun` 第一参不是 `CFUN_GET` / `CFUN_MIN` / `CFUN_FULL` / `RF_OFF` |
+
+缺参、类型错走 Lua 标准 `bad argument #n`。
 
 ---
 
@@ -725,3 +742,4 @@ end
 | --- | --- | --- |
 | 1.0.0 | 2026-09-04 | 首版 |
 | 1.0.1 | 2026-09-04 | 修正跨目录文档链接，demo 路径改为 examples/ |
+| 1.1.0 | 2026-09-05 | 补全错误与返回约定：抛错摘要、无错误码失败形态与可能原因 |

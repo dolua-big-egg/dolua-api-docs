@@ -1,6 +1,6 @@
 # lbs
 
-**文档版本** `1.0.1`
+**文档版本** `1.1.0`
 
 同步基站定位。纯函数模块：向模组内置云端服务上报小区信息，换经纬度和（可选）地址。没有对象、没有 Lua 回调、没有 `open`。
 
@@ -309,17 +309,37 @@ end
 
 配置不是 table、数字 key 不是 integer：抛 Lua 类型错，不是三返回值。
 
-`sync` 提交阶段常见文案：
+模块只导出 `lbs.ERR_OK`（`0`）、`lbs.ERR_BUSY`（`-4`）、`lbs.ERR_TIMEOUT`（`-12`）。其它负数仍会出现在第二返回值里，按下面全表认。
 
-| `err_msg` | 含义 |
-| --- | --- |
-| `"lbs busy"` | `ERR_BUSY`，已有一路在飞 |
-| `"submit lbs request failed"` | 提交失败（模式非法、模块未就绪等） |
-| `"create semaphore failed"` / `"wait lbs callback failed"` | 同步等待失败 |
+**同一数字可能对应不同文案**：`-1` 既可能是定位参数非法，也可能是提交阶段的通用失败。**先看 `err_msg`。**
 
-完成后的失败文案来自错误码对应的英文短句，例如 `"network not ready"`、`"timeout"`、`"get cell info failed"`。
+| `err_code` | `err_msg` | 可能原因 |
+| --- | --- | --- |
+| `-4` | `lbs busy` | 已有一路 `sync` 没结束；等它完再调 |
+| `-1` | `create semaphore failed` | 同步等待对象没建起来，系统资源 |
+| `-1` | `wait lbs callback failed` | 等结果时被打断或信号异常 |
+| （提交返回值） | `submit lbs request failed` | 模式非法、模块未就绪、参数被应用层拒（常见 `-2`） |
+| （加载返回值） | `load lbs config failed` | 配置表写进内部失败 |
+| `0` | （成功不走这里） | — |
+| `-1` | `invalid param` | 定位参数无效（与上面 `-1` 文案不同） |
+| `-2` | `memory alloc failed` | 组包/缓冲分配失败 |
+| `-3` | `network not ready` | 未驻网；先 `lp.wait_link` |
+| `-4` | `get cell info failed` | **注意：** 完成后的 `-4` 文案若是这句，是读基站失败，不是 busy。busy 的文案一定是 `lbs busy` |
+| `-5` | `get imei failed` | 读不到 IMEI |
+| `-6` | `get pid failed` | 读不到产品 ID |
+| `-7` | `http connect failed` | 定位服务器 TCP 连不上 |
+| `-8` | `http send failed` | 请求没发出去 |
+| `-9` | `http recv failed` | 响应没收全 |
+| `-14` | `http dns failed` | 定位域名解析失败 |
+| `-10` | `parse response failed` | 云端回包不是预期 JSON/字段 |
+| `-11` | `server response error` | 云端业务错误，可看结果表里的 `server_err_msg`（成功路径才有表） |
+| `-12` | `timeout` | HTTP/整体超时 |
+| `-13` | `get wifi scan failed` | 本模块基站定位一般碰不到；Wi‑Fi 定位见 [`wifiscan`](wifiscan.md) |
+| 其它 | `unknown error` | 未翻译的码 |
 
-`cache` 失败文案恒为 `"lbs cache not ready"`。
+`cache`：尚未成功过 `sync` 时 `nil, err_code, "lbs cache not ready"`。`err_code` 为内部未就绪码，**认文案**。
+
+诊断：`lbs busy` 等上一趟；`network not ready` / `http dns` 查驻网；`get cell info` 查天线和是否已注册小区；`timeout` 加大超时或查服务器。
 
 ---
 
@@ -430,3 +450,4 @@ end
 | --- | --- | --- |
 | 1.0.0 | 2026-09-04 | 首版 |
 | 1.0.1 | 2026-09-04 | 修正跨目录文档链接，demo 路径改为 examples/ |
+| 1.1.0 | 2026-09-05 | 补全 err_code/err_msg 全表与可能原因，并说明 -1/-4 要先看文案 |

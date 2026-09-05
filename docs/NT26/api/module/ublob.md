@@ -1,6 +1,6 @@
 # ublob
 
-**文档版本** `1.1.1`
+**文档版本** `1.2.0`
 
 纯字节存储。值必须是 **string**（Lua 的 string 就是字节流，可含 `\0`）。适合流式拼文件、稍大的二进制；读侧有 **view**，整包留在视图缓冲里，切片才进 Lua 堆，摘要可以完全不进 Lua 堆。
 
@@ -512,21 +512,23 @@ HTTP 落到 ublob 也吃这块配额；超限时 HTTP 侧是保存失败码，�
 
 缺参、类型不对：**抛错**（`read` 的 offset/len、`write` 的 data 等）。
 
-常见 `err`：
+`err` 全表：
 
-| `err` | 何时 |
+| `err` | 可能原因 |
 | --- | --- |
-| `not found` | 文件不存在 |
-| `quota exceeded` | 共享配额不够 |
-| `invalid param` | 文件名非法、负偏移、明文超 256 KiB 等 |
-| `no mem` | 解压或视图缓冲不够 |
-| `io error` / `fs error` / `bad record` | 存储或记录损坏 |
-| `too many open views` | 已有未关闭的 view |
-| `closed` | 对已 close 的 view 操作 |
-| `md5 not enabled` | 固件未开 MD5 |
+| `not found` | 名字没写过（ufs 同名看不见） |
+| `quota exceeded` | 与脚本区、ufs 共用配额满 |
+| `invalid param` | 文件名非法、负偏移、单文件明文超 256 KiB、append 参数非法 |
+| `no mem` | 解压或视图切片分配失败 |
+| `io error` / `fs error` / `bad record` | 介质或记录损坏 |
+| `too many open views` | 同时只允许 1 个 view，先 `view:close()` |
+| `closed` | view 已 close 还 `read`/`crc32`/`md5` |
+| `md5 not enabled` | 这版固件没编 MD5 |
+| `md5 starts failed` / `md5 update failed` / `md5 finish failed` | 摘要计算中途失败，关 view 重开再试 |
 | `read target is dir` / `open target is dir` | 目标是目录（当前仓少见） |
+| 以及与 ufs 相同的存储层短句 | `not empty` / `already exists` 等，见 [`ufs` 错误表](ufs.md#10-错误与返回约定) |
 
-切片越界是成功空读，不是 `"invalid param"`（负偏移才是）。
+切片越界是成功空读，不是 `"invalid param"`（负偏移才是）。诊断：`too many open views` 查是否漏 close；`quota` 看 `usage()`；`closed` 不要把 view 存过 `close` 再用。
 
 ---
 
@@ -622,3 +624,4 @@ HTTP 落到 ublob 后同样 `open` 分块读，见 [examples/NT26/network/http/h
 | 1.0.0 | 2026-09-04 | 首版 |
 | 1.1.0 | 2026-09-04 | 配额改为与脚本区共用、额度按型号；列出 NT26 PRO 合计 220 KB |
 | 1.1.1 | 2026-09-04 | 修正跨目录文档链接，demo 路径改为 examples/ |
+| 1.2.0 | 2026-09-05 | 补全全部 `err` 文案与可能原因 |

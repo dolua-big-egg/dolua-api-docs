@@ -1,6 +1,6 @@
 # json
 
-**文档版本** `1.0.1`
+**文档版本** `1.1.0`
 
 纯函数 JSON 编解码。Lua 值 ↔ 紧凑 JSON 文本。没有对象、没有回调。失败返回 `nil, err`，不抛业务错（`option` 的非法键除外）。
 
@@ -331,14 +331,48 @@ json.option("num_dp", -1)      -- 回到默认精度模式
 | --- | --- | --- |
 | `encode` | string | `nil, err` |
 | `decode` | Lua 值 | `nil, err` |
-| `option` 读/写 | 当前设置 | 非法键/参数个数/**取值类型**：**抛** |
+| `option` 读/写 | 当前设置 | 非法键/参数个数/取值：**抛** |
 
-`encode`/`decode` 缺参时的 `err`：
+`encode`/`decode` **不抛**业务错；编解码器内部失败被收成 `nil, err`。`option` 失败才抛。缺参、类型错走 Lua 标准 `bad argument #n`。
 
-- `"json encode expects one argument"`
-- `"json decode expects a string argument"`
+**`encode` / `decode` 返回的 `err`**
 
-内部转失败时 `err` 可能是编解码器原文（`Cannot serialise number: must not be NaN or Infinity`、`excessively sparse array`、`Expected … at character N` 等）。配置函数不可用时 option 抛 `"json.option: option function unavailable"`。
+| `err` | 可能原因 |
+| --- | --- |
+| `json encode expects one argument` | `encode` 一个参数都没给 |
+| `json decode expects a string argument` | `decode` 一个参数都没给 |
+| `json conversion failed` | 编解码器返回了空结果（极少） |
+| `Cannot serialise number: must not be NaN or Infinity` | 数字是 NaN / Infinity，且 `bad_num` 为 `"off"` |
+| `Cannot serialise table: excessively sparse array` | 数组下标过疏（默认不允许） |
+| `Cannot serialise <类型>: table key must be a number or string` | 表键既不是 number 也不是 string（`<类型>` 为实际键类型名） |
+| `Cannot serialise <类型>: type not supported` | 值是 function / userdata / thread 等不能编码的类型 |
+| `Cannot serialise, excessive nesting (N)` | 编码嵌套超过上限（默认 100，`N` 为当前深度） |
+| `Expected <期望> but found <实际> at character N` | JSON 语法不对。`<期望>` 如 `value`、`object key string`、`colon`、`comma or object end`、`comma or array end`、`the end`；`<实际>` 可能是 token 名，或词法错误原文（见下表）；`N` 从 1 计 |
+| `Found too many nested data structures (N) at character M` | 解码嵌套超过上限（默认 100） |
+| `JSON parser does not support UTF-16 or UTF-32` | 输入带 UTF-16/32 BOM，本模块只收 UTF-8 |
+| `Memory allocation error in CJSON protected call` | 编解码过程中分配失败 |
+
+词法失败时，`Expected … but found …` 里的 `<实际>` 可能是：
+
+| 片段 | 可能原因 |
+| --- | --- |
+| `unexpected end of string` | 字符串没闭合 |
+| `invalid unicode escape code` | `\uXXXX` 非法 |
+| `invalid escape code` | 反斜杠后不是合法转义 |
+| `invalid number` | 数字写法非法（或 Inf/NaN/十六进制，默认解码不允许） |
+| `invalid token` | 当前位置不是合法 JSON token |
+
+**`option` 抛错摘要**
+
+| 摘要 | 可能原因 |
+| --- | --- |
+| `json.option: unsupported key` | 键不在短名/长名白名单 |
+| `json.option: usage json.option(key) or json.option(key, value)` | 参数个数不是 1 或 2 |
+| `json.option: option function unavailable` | 对应配置入口不存在（固件异常） |
+| `found too many arguments` | 下层配置入口收到多余参数 |
+| `expected integer between A and B` | 整型选项越界（`A`/`B` 随该项而变，如深度 ≥1） |
+
+布尔/枚举选项写了不认识的字符串时，走 Lua 标准 `invalid option`。`option` 内部配置失败会把下层原文原样抛出。
 
 ---
 
@@ -398,3 +432,4 @@ local v, e = json.decode("{bad")   -- nil, 错误串
 | --- | --- | --- |
 | 1.0.0 | 2026-09-04 | 首版 |
 | 1.0.1 | 2026-09-04 | 修正跨目录文档链接，demo 路径改为 examples/ |
+| 1.1.0 | 2026-09-05 | 补全错误与返回约定：全部 `err` 文本、抛错摘要与可能原因 |

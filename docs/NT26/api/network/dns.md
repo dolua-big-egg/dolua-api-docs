@@ -1,6 +1,6 @@
 # dns
 
-**文档版本** `1.0.1`
+**文档版本** `1.1.0`
 
 读/改当前生效的 DNS 服务器，并做同步域名解析。纯函数模块：没有对象、没有回调、没有后台解析任务。
 
@@ -338,12 +338,31 @@ end
 | `set` | `true` | `false, err` |
 | `resolve` | IPv4 字符串 | `nil, err` |
 | `clear_cache` | `true` | `false, err` |
-| `active_cid` | integer | `nil` |
-| `cids` | 状态数组 | `nil` |
+| `active_cid` | integer | 单独 `nil`（无 `err`） |
+| `cids` | 状态数组 | 单独 `nil`（无 `err`） |
 
-类型错、缺参、非法 `cid`、空 `set`、非法 DNS 表：抛 Lua 错，不是 `nil`/`false`。
+缺参、类型错走 Lua 标准 `bad argument #n`。
 
-常见 `err` 短句：`"get dns fail"`、`"set dns fail"`、`"resolve fail"`、`"clear cache fail"`、`"mutex fail"`。
+**返回的 `err`**
+
+| `err` | 可能原因 |
+| --- | --- |
+| `mutex fail` | 并发锁创建或获取失败（系统资源紧张） |
+| `get dns fail` | 读该 CID 的 DNS 列表失败：承载未就绪、协议栈拒绝 |
+| `set dns fail` | 写入 DNS 失败：地址不被接受、承载未就绪 |
+| `resolve fail` | 未驻网、DNS 不可达、主机名空/非法、超时、该 CID 无解析能力 |
+| `clear cache fail` | 清缓存被协议栈拒绝 |
+
+`active_cid` / `cids` 失败只有 `nil`，**无错误码**。可能原因：锁失败，或当前没有激活 CID / 读激活表失败。先 `lp.wait_link` 再查。
+
+**抛错摘要**
+
+| 摘要 | 可能原因 |
+| --- | --- |
+| `invalid cid` | `cid` 不在 `0`～`255` |
+| `dns.set requires at least one server` | `set` 一个参数都没给 |
+| `invalid dns table` | 表形式 `set` 时长度 ≤0 或超过 4 |
+| `no valid dns server` | 参数收完后没有一条有效服务器字符串 |
 
 ---
 
@@ -457,3 +476,4 @@ end
 | --- | --- | --- |
 | 1.0.0 | 2026-09-04 | 首版 |
 | 1.0.1 | 2026-09-04 | 修正跨目录文档链接，demo 路径改为 examples/ |
+| 1.1.0 | 2026-09-05 | 补全错误与返回约定：全部 `err` 文本、抛错摘要与可能原因 |

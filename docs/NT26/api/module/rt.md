@@ -1,6 +1,6 @@
 # rt
 
-**文档版本** `1.0.1`
+**文档版本** `1.1.0`
 
 运行时调度：协作式任务、让出延时、信箱、显式队列、软件定时器。没有对象。脚本里的「多任务」是同一虚拟机里的协程，不是操作系统抢占线程。
 
@@ -591,6 +591,42 @@ topic 名字空间：mbox 的订阅槽和 mq 的队列槽是两套，各最多 1
 
 让出类在主状态（非协程）上：`wait must run in coroutine/task`。槽满：`wait no task slot`。
 
+**抛错摘要**
+
+| 摘要 | 可能原因 |
+| --- | --- |
+| `rt context not found` | 不在脚本 VM（几乎只见于错误嵌入） |
+| `wait must run in coroutine/task` | 在非协程上下文 `delay`/`mbox_recv`/`wait_connect` |
+| `wait no task slot` / `no task slot` | 任务槽满（含入口，约 16） |
+| `wait timer create failed` / `wait timer start failed` | 系统定时器资源 |
+| `no subscriber slot` / `subscriber full` | mbox 订阅满（topic 124 / 每 topic 回调 8） |
+| `mbox msgpack encode failed (max N bytes): …` | 投递的值编码超过 8192 或类型不能打包 |
+| `mbox data alloc failed` | 投递缓冲分配失败 |
+| `evt queue full` | 事件队列 128 满，生产快于消费 |
+| `no timer slot` | 8 路定时器用完 |
+| `tmr_once create/start failed` / `tmr_loop create/start failed` | 系统定时器 |
+| `task start failed: …` | 协程没建起来 |
+| `invalid uart id` | 内部串口等待 id 非法 |
+| `invalid internal wait topic` | 内部同步 topic 空（tcp/mqtt wait_connect 异常） |
+| `invalid flashdb/lfs mount topic` | 异步挂载 topic 非法 |
+
+**`mq_*` / `tmr_stop` 等返回的 `err`**
+
+| `err` | 可能原因 |
+| --- | --- |
+| `bad depth` | `mq_create` 深度不是 1～128 |
+| `exists` | 同名队列已在 |
+| `no slot` | 队列名字数量满（124） |
+| `no memory` | 队列缓冲分配失败 |
+| `not found` | 名字不存在或定时器 id 无效 |
+| `encode failed (max N bytes): …` | `mq_send` 值超 8192 或不能打包 |
+| `wake failed` | 唤醒接收方失败 |
+| `pop failed` | 出队失败 |
+| `stop failed` / `start failed` | 定时器启停失败 |
+| `busy` | 内部同步等待同 topic 重入（uart block / wait_connect） |
+
+诊断：`evt queue full` 回调里少 `mbox_send` 大表、加快工作协程 `mbox_recv`；`no task slot` 少开死循环任务；`encode failed` 不要投 function/userdata。
+
 ---
 
 ## 10. 资源上限与生命周期
@@ -682,3 +718,4 @@ local ok, data, err = rt.mq_recv("demo_mq", 100)
 | --- | --- | --- |
 | 1.0.0 | 2026-09-04 | 首版 |
 | 1.0.1 | 2026-09-04 | 修正跨目录文档链接，demo 路径改为 examples/ |
+| 1.1.0 | 2026-09-05 | 补全抛错摘要、mq/tmr 的 err 文案与可能原因 |

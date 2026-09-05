@@ -1,6 +1,6 @@
 # framekit
 
-**文档版本** `1.0.1`
+**文档版本** `1.1.0`
 
 对象化帧解析模块。用一份 JSON 描述二进制协议，把 UART / TCP 上乱七八糟的字节流裁成一个一个独立完整帧。核心是 **流式解析**；组包只是附属。
 
@@ -597,19 +597,94 @@ function(ev)
 | `config_json` / `info` | string / table | `nil, err` |
 | `close` | `true` | 不失败 |
 
-`create` 常见 `err`：
+不是 userdata 却调用方法：抛 Lua 标准类型错，不是 `framekit closed`。兜底 `unknown` 仅在内部未带出原因时出现。
 
-| 摘要 | 何时 |
+**固定 `err`**
+
+| `err` | 可能原因 |
 | --- | --- |
-| `json string required` | 第一参不是非空 JSON 字符串，表里也没有 `json` |
-| `rt context not found` | 不在调度上下文 |
+| `mutex alloc failed` | 模块互斥锁创建失败 |
+| `json string required` | 第一参不是 string，表里也没有 `json` 字符串 |
+| `rt context not found` | 不在脚本调度上下文 |
 | `no framekit slot` | 已有 8 个实例 |
-| `no memory` | 解析缓存没申请到 |
-| `mutex alloc failed` | 模块初始化失败 |
-| `framekit callback register failed` | 内部投递登记失败 |
-| JSON / 校验 hint | 缺字段、模式不在白名单、`header.size` 非法等 |
+| `no memory` | 解析缓存或导出缓冲分配失败 |
+| `framekit callback register failed` | 内部到期/事件投递登记失败 |
+| `framekit closed` | 已 `close` 或对象已回收仍调方法 |
 
-不是 userdata 却调用方法：抛类型错（元表检查），不是 `framekit closed`。
+**当作 `err` / 第二返回值的状态名**
+
+| 文本 | 可能原因 |
+| --- | --- |
+| `ok` | 成功（正常不会当失败返回） |
+| `arg` | 参数空或配置指针无效 |
+| `unsupported` | 组合不被支持 |
+| `json` | JSON 文本解析失败（同时看 hint） |
+| `no_memory` | 内部缓冲不够 |
+| `pattern` | 模式不在白名单（定长或变长两种） |
+| `timeout` | 半包等到 `rx_timeout_ms` |
+| `checksum` | 校验字节对不上 |
+| `incomplete` | 半包未齐（`input`/`poll` 成功时也可能内部处于此态） |
+| `unknown` | 未翻译的状态 |
+
+**`create` / `config_json` 的 JSON 与校验 hint（原样作为 `err`）**
+
+| `err` | 可能原因 |
+| --- | --- |
+| `expected '<字符>'` | JSON 当前位置不是该字符 |
+| `expected string` | 该处应是 JSON 字符串 |
+| `expected unsigned integer` | 该处应是无符号整数 |
+| `expected ',' or '}'` | 对象少逗号或少右括号 |
+| `expected ',' or '}' in header` / `in tail` / `in length` / `in payload` / `in checksum` / `in top-level object` | 对应对象里语法不完整 |
+| `unsupported escape sequence` | 字符串转义非法 |
+| `string too long` | 字符串超过内部上限 |
+| `unterminated string` | 字符串没闭合 |
+| `integer out of range` | 整数字面值溢出 |
+| `unsupported JSON value` | 出现了不支持的 JSON 值类型 |
+| `header is required` / `header object must not be empty` | 缺包头或 `header` 为空对象 |
+| `header requires value_hex and size` | 包头缺字段 |
+| `header.size must be 1..4` | 包头长度非法 |
+| `header.value_hex length does not match header.size` | hex 长度与 `size` 不一致 |
+| `unknown field in header` | `header` 里有不认识的键 |
+| `tail requires size` / `tail.size must be 0..4` | 包尾长度非法 |
+| `tail.size is 0 but tail.value_hex is not empty` | 声明无包尾却给了 hex |
+| `tail requires value_hex when enabled` | 启用包尾但缺 hex |
+| `tail.value_hex length does not match tail.size` | 包尾 hex 长度不对 |
+| `unknown field in tail` | `tail` 里有不认识的键 |
+| `length object must not be empty` | `length` 为空对象 |
+| `length requires size, endian and includes` | 长度域缺字段 |
+| `length.size must be 1, 2 or 4` | 长度域宽度非法 |
+| `length.endian must be 'big' or 'little'` | 端序写错 |
+| `length.includes is invalid` | `includes` 不是白名单值 |
+| `unknown field in length` | `length` 里有不认识的键 |
+| `payload is required` / `payload object must not be empty` | 缺载荷或为空对象 |
+| `payload requires mode` | 缺 `mode` |
+| `payload.mode must be 'fixed' or 'variable'` | 模式写错 |
+| `payload.fixed mode requires fixed_size` | 定长却没给 `fixed_size` |
+| `payload.variable must not contain fixed_size` | 变长却带了 `fixed_size` |
+| `unknown field in payload` | `payload` 里有不认识的键 |
+| `checksum object must not be empty` | `checksum` 为空对象 |
+| `checksum requires algorithm, size, endian and scope` | 校验缺字段 |
+| `checksum.algorithm is invalid` | 算法名不在白名单 |
+| `checksum.endian must be 'big' or 'little'` | 端序写错 |
+| `checksum.scope is invalid` | 范围不是白名单值 |
+| `checksum.size must be 1, 2 or 4` | 校验宽度非法 |
+| `unknown field in checksum` | `checksum` 里有不认识的键 |
+| `unknown top-level field '<键>'` | 顶层多了不认识的键 |
+| `top level object must not be empty` | 整份 JSON 是空对象 |
+| `trailing characters after top-level object` | 顶层对象后面还有垃圾字符 |
+| `max_frame_size is required` | 缺最大帧长 |
+| `variable payload requires length field` | 变长却没配 `length` |
+| `fixed payload must not contain length field` | 定长却配了 `length` |
+| `header is required and size must be 1..4 bytes` | 校验：包头缺失或长度非法 |
+| `max_frame_size and queue_depth must be non-zero` | 最大帧长或队列深度为 0 |
+| `fixed payload requires payload.fixed_size > 0` | 定长 `fixed_size` 为 0 |
+| `header/tail size exceeds allowed 1..4 bytes` | 包头/包尾超过 4 字节 |
+| `checksum size enabled but algorithm not set` | 开了校验宽度却没算法 |
+| `checksum size does not match algorithm width` | 校验宽度与算法不一致 |
+| `unsupported pattern; allowed only M+D(fixed)[+E][+C] or M+L+D(var)[+E][+C]` | 字段组合不在两种白名单模式 |
+| `json_text/cfg is null` / `cfg/json_text invalid` | 内部入参空（脚本侧少见） |
+| `json_text buffer too small` | 导出 JSON 缓冲不够 |
+| `cfg is null` | 内部配置空 |
 
 ---
 
@@ -707,3 +782,4 @@ fk:input(a .. b)
 | --- | --- | --- |
 | 1.0.0 | 2026-09-04 | 首版 |
 | 1.0.1 | 2026-09-04 | 修正跨目录文档链接，demo 路径改为 examples/ |
+| 1.1.0 | 2026-09-05 | 补全错误与返回约定：全部 `err` 文本、状态名、JSON hint 与可能原因 |

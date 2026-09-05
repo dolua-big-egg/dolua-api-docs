@@ -1,6 +1,6 @@
 # soft_i2c
 
-**文档版本** `1.0.1`
+**文档版本** `1.1.0`
 
 对象化软件 I2C 主机。用两根普通 GPIO 模拟 SCL/SDA，不占用硬件 I2C 控制器。可同时开多路（脚不要冲突）。
 
@@ -352,21 +352,23 @@ obj:deinit()
 | 接口 | 成功 | 失败 |
 | --- | --- | --- |
 | `new` | userdata | **抛** |
-| `write` / `is_ready` / `test_hardware` | `true` | `false` |
-| `read` | string | `nil` |
-| `scan` | table（可空） | 空表 |
+| `write` / `is_ready` / `test_hardware` | `true` | 只 `false`（**无**错误串） |
+| `read` | string | 只 `nil`（**无**错误串） |
+| `scan` | table（可空） | 空表（未初始化也是空表，**无**错误串） |
 | `state` / `error` | integer | — |
 | `pins` | 两个 integer | — |
 | `deinit` | `true` | 不失败 |
 
+`sda`/`scl` 不是整数、`data` 不是字符串、缺对象：标准 Lua 参数错。需要收 `new` 时用 `pcall`。
+
 抛错摘要：
 
-| 摘要 | 何时 |
+| 摘要 | 可能原因 |
 | --- | --- |
-| `invalid input, expect INPUT_GPIO/INPUT_PINNO` | `cfg.input` 不是那两个值 |
-| `soft_i2c init failed: N` | 脚解析失败或初始化失败 |
+| `invalid input, expect INPUT_GPIO/INPUT_PINNO` | `cfg.input` 写了整数，但不是 `soft_i2c.INPUT_GPIO` / `INPUT_PINNO` |
+| `soft_i2c init failed: N` | 脚号解析失败、脚已被占用、或软件总线初始化失败。`N` 是底层返回码 |
 
-`sda`/`scl` 不是整数、`data` 不是字符串：Lua 类型错。
+读写 / `is_ready` / `test_hardware` 失败没有文案：对象已 `deinit`、从设备无应答、超时、或接线错误都会变成 `false`/`nil`。`error()` 只给整数状态，没有对应英文短句表。先 `test_hardware` 再 `scan`。
 
 ---
 
@@ -427,3 +429,4 @@ local raw = bus:read(ADDR, 7)
 | --- | --- | --- |
 | 1.0.0 | 2026-09-04 | 首版 |
 | 1.0.1 | 2026-09-04 | 修正跨目录文档链接，demo 路径改为 examples/ |
+| 1.1.0 | 2026-09-05 | 补全错误文案/错误码与可能原因 |

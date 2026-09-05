@@ -1,6 +1,6 @@
 # modbus
 
-**文档版本** `1.0.1`
+**文档版本** `1.1.0`
 
 纯函数。从一帧二进制里按规则抠数，以及算 / 校验 Modbus RTU 的 CRC16。没有对象、没有主从状态机、不发串口。
 
@@ -332,39 +332,40 @@ end
 
 | 接口 | 成功 | 用法错 | 规则 / 校验失败 |
 | --- | --- | --- | --- |
-| `analyze` | 结果表 | **抛** | `nil` |
+| `analyze` | 结果表 | **抛** | `nil`（无 `err`：规则对不上数据） |
 | `crc` `"gen"` | `true,` 2 字节串 | `false, reason` | — |
 | `crc` `"check"` | `true` | `false, reason` | `false, "crc mismatch"` |
 
-`analyze` 抛错摘要：
+`pcall` 只包得住 `analyze` 的抛错；`crc` 不用 `pcall`。没有数字业务码。
 
-| 文案 | 原因 |
+**`analyze` 抛错摘要**
+
+| 摘要 | 可能原因 |
 | --- | --- |
 | `need data+rule` | 不是恰好 2 个参数 |
 | `rule must table` | 第二参不是表 |
 | `data must str/table` | 第一参既不是 string 也不是表 |
-| `empty data string` / `empty data array` | 长度为 0 |
-| `data[N] not number` | 表里第 N 项不是数字 |
-| `data[N] need 0-255` | 超出单字节 |
-| `rule table empty` | `rules` 长度为 0 |
-| `alloc data fail` | 分配失败（极少） |
+| `empty data string` | 数据串长度为 0 |
+| `empty data array` | 数据表长度为 0 |
+| `data[N] not number` | 表里第 `N` 项不是数字（`N` 从 1 计） |
+| `data[N] need 0-255` | 第 `N` 项超出单字节 |
+| `rule table empty` | 规则表长度为 0 |
+| `alloc data fail` | 拷贝数据表时分配失败（极少） |
 
-`crc` 的 `reason`：
+**`crc` 返回的 `reason`**
 
-| 文案 | 原因 |
+| `reason` | 可能原因 |
 | --- | --- |
 | `need data+mode` | 不是恰好 2 个参数 |
 | `mode must string` | 第二参不是 string |
-| `mode need gen/check` | 不是这两个词 |
+| `mode need gen/check` | 不是 `"gen"` / `"check"` |
 | `data must str/table` | 第一参类型不对 |
 | `empty data` | 空串或空表 |
-| `data too long` | 超过 256 |
+| `data too long` | 超过 256 字节 |
 | `data item not integer` | 表元素不是整数 |
-| `data item need 0-255` | 超出单字节 |
-| `too short` | `check` 时短于 3 字节 |
-| `crc mismatch` | 末两字节对不上 |
-
-`pcall` 只包得住 `analyze` 的抛错；`crc` 不用 `pcall`。
+| `data item need 0-255` | 表元素超出单字节 |
+| `too short` | `"check"` 时短于 3 字节（载荷+CRC） |
+| `crc mismatch` | 末两字节与载荷算出来的 CRC 对不上 |
 
 ---
 
@@ -438,3 +439,4 @@ end
 | --- | --- | --- |
 | 1.0.0 | 2026-09-04 | 首版 |
 | 1.0.1 | 2026-09-04 | 修正跨目录文档链接，demo 路径改为 examples/ |
+| 1.1.0 | 2026-09-05 | 补全错误与返回约定：全部抛错摘要、`crc` 返回文本与可能原因 |

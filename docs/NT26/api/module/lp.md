@@ -1,6 +1,6 @@
 # lp
 
-**文档版本** `1.0.1`
+**文档版本** `1.1.0`
 
 低功耗与驻网模块。用来设定休眠**目标**、等驻网、收网络/唤醒事件，以及用投票在“有业务要保活”和“允许睡”之间切换。本模块还提供本地 SIM 配置读写和运行时切卡。
 
@@ -828,21 +828,50 @@ release ─(票 →0)─→ 等 sleep_delay_ms ──→ 目标 = 创建时的 s
 
 | 接口 | 成功 | 失败 |
 | --- | --- | --- |
-| `set_mode` | 无返回 | 抛错 |
+| `set_mode` | 无返回 | **抛** |
 | `get_mode` | integer | — |
 | `islink` | `0` 或 `1` | — |
-| `wait_link` / `wait_attach` | boolean | 超时 `false`；非法上下文抛错 |
-| `reg_netcb` | `true` | 抛错 |
+| `wait_link` / `wait_attach` | boolean | 超时 `false`；不在协程里 **抛**（与 `rt.delay` 同类） |
+| `reg_netcb` | `true` | **抛** |
 | `vote_create` | userdata | `nil, err` |
 | `config` | table | `nil, err` |
-| `simslot` | integer 槽位 | 抛错 |
+| `simslot` | integer 槽位 | **抛** |
 | `acquire` / `release` / `vote` / `clear` | `true` | `false, err` |
-| `status` | table | 抛错 |
+| `status` | table | **抛** |
 
-```lua
-local vote, err = lp.vote_create({sleep_mode = lp.MODE_NORMAL})
--- vote == nil, err == "invalid sleep mode"
-```
+缺参、类型错走 Lua 标准 `bad argument #n`。`wait_link` 不在任务协程里时，抛错摘要与 `rt` 等待相同（如 `wait must run in coroutine/task`）。
+
+**返回的 `err`**
+
+| `err` | 可能原因 |
+| --- | --- |
+| `invalid sleep mode` | `vote_create` 的 `sleep_mode` 不是合法休眠档 |
+| `invalid max_keys` | `max_keys` 不在 1～32 |
+| `invalid sleep_delay_ms` | `sleep_delay_ms < 0` |
+| `vote instance limit reached` | 已有 8 个 vote 实例 |
+| `out of memory` | 分配 key 表失败 |
+| `invalid vote instance` | 对象已回收 / 不是本模块 vote |
+| `invalid key` | key 为空或超过 31 字节 |
+| `key table full` | 该实例活跃 key 已满（`max_keys`） |
+| `key not active` | `release` 的 key 当前没在投 |
+| `schedule sleep failed` | 最后一把 key 放开后，安排休眠失败 |
+| `read failed` | `config` 读本地配置失败 |
+| `invalid param` | `config` 表字段取值非法（如 `remember` 不是 0/1） |
+| `write failed` | `config` 写回失败 |
+
+**抛错摘要**
+
+| 摘要 | 可能原因 |
+| --- | --- |
+| `invalid sleep mode: N` | `set_mode` 传入的整数 `N` 不是合法档 |
+| `reg_netcb not allowed in quick callback` | 在快捷回调里登记网络回调 |
+| `main vm not found` | 当前没有主脚本虚拟机 |
+| `register rt topic failed` | 内部网络事件 topic 登记失败 |
+| `invalid vote instance` | `status` 时对象已失效 |
+| `get sim slot failed` | 读当前卡槽失败 |
+| `invalid current sim slot` | `simslot(0)` 翻转时当前槽不是 1/2 |
+| `invalid sim_id (0\|1\|2)` | `simslot` 参数不在 0/1/2 |
+| `invalid sim_id` | 槽号无法映射到硬件 |
 
 ---
 
@@ -1000,3 +1029,4 @@ end
 | --- | --- | --- |
 | 1.0.0 | 2026-09-04 | 首版 |
 | 1.0.1 | 2026-09-04 | 修正跨目录文档链接，demo 路径改为 examples/ |
+| 1.1.0 | 2026-09-05 | 补全错误与返回约定：全部 `err` 文本、抛错摘要与可能原因 |

@@ -1,6 +1,6 @@
 # sfud
 
-**文档版本** `1.0.1`
+**文档版本** `1.1.0`
 
 对象化的 **SPI NOR Flash** 驱动。用已初始化的 SPI 对象 + GPIO 片选认片，得到 Flash 对象后读、写、擦。FlashDB、LittleFS 都挂在这个对象上，不直接碰 SPI。
 
@@ -342,9 +342,7 @@ NOR Flash 不是 RAM：
 
 ## 9. 错误与返回约定
 
-缺参、类型不对：`luaL_check*` **抛** Lua 类型错。
-
-业务失败走返回值，不抛。
+缺参、类型不对：**抛** Lua 标准 `bad argument #n`。业务失败走返回值，不抛。
 
 | 接口 | 成功 | 失败 |
 | --- | --- | --- |
@@ -353,24 +351,48 @@ NOR Flash 不是 RAM：
 | `write` / `erase` / `erase_write` | `true` | `false, err` |
 | `unbind` | `true` | 仅互斥失败时 `false, err` |
 
-常见 `err`：
+**固定 `err`**
 
-| 文案 | 何时 |
+| `err` | 可能原因 |
 | --- | --- |
-| `invalid spi object` / `spi not initialized` | 第一参不是已初始化的 SPI |
-| `invalid name, max 31 chars` | 空名或超长 |
+| `mutex init failed` | 互斥锁创建失败（系统资源） |
+| `invalid spi object` | 第一参不是 SPI 对象 |
+| `spi not initialized` | SPI 对象还没初始化 |
+| `invalid name, max 31 chars` | 名为空或超过 31 字符 |
 | `invalid cs gpio object` | 第三参不是 GPIO 对象 |
-| `flash name 'x' already bound` | 同名占用 |
-| `too many flash devices, max 8` | 槽满 |
-| `sfud_device_init failed: …` | 认片失败（接线、脚冲突、超时等） |
-| `flash not initialized` | 未 bind 或已 unbind |
-| `size must be > 0` / `data length must be > 0` | 长度为 0 |
-| `size too large, max 65536 bytes` / `data too large, max 65536 bytes` | 超过单次上限 |
-| `read failed: …` / `write failed: …` / `erase failed: …` | 总线或地址错误 |
+| `flash name '<名>' already bound` | 同名已被占用（`<名>` 为你传入的名字） |
+| `too many flash devices, max 8` | 整机已绑满 8 颗 |
+| `flash not initialized` | 未 `bind`、已 `unbind`，或对象已失效 |
+| `size must be > 0` | `read` 长度为 0 |
+| `data length must be > 0` | `write` / `erase` / `erase_write` 长度为 0 |
+| `size too large, max 65536 bytes` | `read` 单次超过 64 KB |
+| `data too large, max 65536 bytes` | 写/擦单次超过 64 KB |
 | `out of memory` | 读缓冲分配失败 |
-| `mutex init failed` | 锁创建失败 |
 
-失败原因串里可能出现：`not found`、`write error`、`read error`、`timeout`、`address out of bound`、`unknown error`。
+**带原因与数字码的 `err`（格式固定）**
+
+形如 `操作 failed: <原因> (<码>)`。`bind` 认片失败时操作为 `sfud_device_init`：
+
+| 全文形态 | 可能原因 |
+| --- | --- |
+| `sfud_device_init failed: <原因> (<码>)` | 认片失败：接线、片选、SPI 脚冲突、芯片不支持、超时 |
+| `read failed: <原因> (<码>)` | 读总线失败或地址越界 |
+| `write failed: <原因> (<码>)` | 写失败（未擦除、写保护、越界、超时） |
+| `erase failed: <原因> (<码>)` | 擦除失败 |
+| `erase_write failed: <原因> (<码>)` | 先擦后写失败 |
+
+`<原因>` 与 `<码>` 对照：
+
+| 码 | `<原因>` | 可能原因 |
+| --- | --- | --- |
+| `1` | `not found` | 芯片型号未识别或不支持 |
+| `2` | `write error` | 写周期失败、写保护、总线错误 |
+| `3` | `read error` | 读周期失败、总线错误 |
+| `4` | `timeout` | 等待芯片就绪超时（接线/供电/`timeout_ms` 过短） |
+| `5` | `address out of bound` | 地址或长度超出芯片容量 |
+| 其它 | `unknown error` | 未单独翻译的码 |
+
+诊断：`already bound` 先 `unbind` 或换名；`not initialized` 检查是否还持有 `bind` 返回的对象；`address out of bound` 用 `capacity` 核对偏移。
 
 ---
 
@@ -457,3 +479,4 @@ local kv, ke = flashdb.kv(flash, {
 | --- | --- | --- |
 | 1.0.0 | 2026-09-04 | 首版 |
 | 1.0.1 | 2026-09-04 | 修正跨目录文档链接，demo 路径改为 examples/ |
+| 1.1.0 | 2026-09-05 | 补全错误与返回约定：全部 `err` 文本、数字码与可能原因 |

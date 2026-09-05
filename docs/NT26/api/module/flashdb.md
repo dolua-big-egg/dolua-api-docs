@@ -1,6 +1,6 @@
 # flashdb
 
-**文档版本** `1.0.1`
+**文档版本** `1.1.0`
 
 对象化的 **FlashDB**：在已经 `sfud.bind` 好的外挂 NOR 上开 **KV 库** 或 **时序库（TS）**。值按 MessagePack 存，Lua 侧直接收发 string / number / bool / table。
 
@@ -515,7 +515,7 @@ KV 单值编码上限 **4096** 字节（含编码头）。TS 单条上限是该�
 
 ## 11. 错误与返回约定
 
-缺参、`cfg` 不是表、`iter` 第二参不是函数：`luaL_check*` **抛**类型错。
+缺参、`cfg` 不是表、`iter` 第二参不是函数：标准 Lua 参数错，需要 `pcall` 才能收。`kv:del` 失败、`ts:clean` 未初始化、`kv:get` 不存在或解码失败：**没有**第二返回值。
 
 业务失败返回值：
 
@@ -523,34 +523,90 @@ KV 单值编码上限 **4096** 字节（含编码头）。TS 单条上限是该�
 | --- | --- | --- |
 | `kv` / `ts` | userdata | `nil, err` |
 | `kv:set` / `ts:append` | `true` | `false, err` |
-| `kv:get` | 值；或不存在单独 `nil` | 见 7.2 |
+| `kv:get` | 值；或不存在单独 `nil` | 未初始化 / 值超限 / 分配失败见下表；解码失败只 `nil` |
 | `kv:del` | `true` | 只 `false` |
 | `ts:last_time` | integer | `nil, err` |
-| `ts:iter` / `ts:clean` | `true` | `iter` 未初始化时 `false, err` |
+| `ts:iter` | `true` | 未初始化时 `false, err` |
+| `ts:clean` | `true` | 未初始化也返回 `true` |
 | `peek` / `pop` | `true, cnt, value` 或空 `true, nil, nil` | `false, err` |
-| `del_oldest` | `true` | `false, err` |
+| `del_oldest` | `true`（含库已空） | `false, err` |
 | `name` | string 或 `nil` | 不抛 |
 
-常见 `err`：
+`kv init failed: …`、`ts init failed: …`、`set failed: …`、`append failed: … (cnt=N payload=M)`、`del oldest failed: …`、`peek oldest failed: …`、`pop oldest failed: …` 里的 `…` 来自下表底层短句。
 
-| 文案 | 何时 |
+底层短句（出现在上述前缀之后，或单独作为 `err`）：
+
+| `err` 片段 | 可能原因 |
 | --- | --- |
-| `invalid sfud object` | 第一参不是已初始化的 sfud |
-| `invalid kv cfg` / `invalid ts cfg` | `size` 缺失、≤0、小于 8KB、名为空且自动名失败、名过长等 |
-| `max_len required` | TS 未给 `max_len` |
-| `too many kv instances` / `too many ts instances` | 超过 8 |
-| `too many default kv entries` | 默认表过多或编码失败 |
-| `partition register failed` | 分区登记失败（重名、范围等） |
-| `partition erase failed` | 预擦失败 |
-| `kv init failed: …` / `ts init failed: …` | 建库失败 |
-| `async kv mount requires rt context` / `async ts mount requires rt context` | 异步但当前不在 rt 调度里 |
-| `on_event register failed` / `mount thread failed` | 异步启动失败 |
-| `mount failed` / `mount slot invalid` | 异步结束时槽已没 |
-| `kv not initialized` / `ts not initialized` | 对象已拆或未建好 |
-| `set failed: …` / `append failed: …` | 底层写失败；含 `storage full`、`erase error`、`write error` 等 |
-| `mutex failed` | 锁创建失败 |
+| `ok` | 成功映射，不会作为失败第二返回值 |
+| `erase error` | 片上擦除失败：分区未按擦除粒度对齐、片选/接线、或芯片忙 |
+| `read error` | 读分区失败：接线、供电、或分区头损坏 |
+| `write error` | 写分区失败：写保护、接线、或介质损坏 |
+| `partition not found` | 分区名未登记成功，或登记后已被拆掉再访问 |
+| `kv name error` | 键名非法或找不到该键（过长、空、或库内格式不对） |
+| `kv name exist` | 键名冲突（重建默认项或内部重名） |
+| `storage full` | 分区写满。KV 删旧键再写；TS 开 `rollover` 或加大 `size` |
+| `init failed` | 建库失败：分区太小、头损坏且不允许格式化、或介质不可用 |
+| `unknown error` | 未单独翻译的底层码 |
 
-底层串还可能是：`ok`、`erase error`、`read error`、`write error`、`partition not found`、`kv name error`、`kv name exist`、`storage full`、`init failed`、`unknown error`。
+挂载与对象固定 `err`：
+
+| `err` | 可能原因 |
+| --- | --- |
+| `invalid sfud object` | 第一参不是已 `sfud.bind` 成功的对象，或芯片未认片 |
+| `invalid kv cfg` | `size` 不是正整数、`offset` 为负、分区小于 8 KB、或 `name` 超过 23 字节 |
+| `invalid ts cfg` | 同上（TS 配置） |
+| `max_len required` | `flashdb.ts` 未给正整数 `max_len` |
+| `too many kv instances` | 整机已有 8 个 KV |
+| `too many ts instances` | 整机已有 8 个 TS |
+| `too many default kv entries` | `default` 超过 32 条，或某条默认值编码失败（单条编码上限 512） |
+| `partition register failed` | 分区名重名、范围越界、或与已挂分区重叠 |
+| `partition erase failed` | 预擦失败：越出芯片容量、擦除粒度不对、或片上擦除失败 |
+| `kv init failed: …` | 建 KV 失败；`…` 见上表底层短句 |
+| `ts init failed: …` | 建 TS 失败；`…` 同上 |
+| `async kv mount requires rt context` | 写了 `on_event` 或整数 `mount_timeout_ms`，但当前不在 `rt` 调度里 |
+| `async ts mount requires rt context` | 同上（TS） |
+| `on_event register failed` | 异步进度话题登记失败 |
+| `mount thread failed` | 异步挂载线程没建起来（系统资源不足） |
+| `mount failed` | 异步结束时没有更具体文案：超时、worker 失败、或结果丢失 |
+| `mount slot invalid` | 异步完成后槽已释放（对象被回收、或槽号已无效） |
+| `mutex failed` | 该库的互斥量创建失败 |
+| `kv not initialized` | KV 对象已拆、挂载未完成、或挂载失败后的空壳 |
+| `ts not initialized` | 同上（TS） |
+
+读写与编解码 `err`：
+
+| `err` | 可能原因 |
+| --- | --- |
+| `msgpack encode failed` | 编码失败且没有更细文案 |
+| `set failed: …` | `kv:set` 底层写失败；`…` 常见 `storage full` / `write error` / `erase error` |
+| `value too large` | `kv:get` 读到的编码长度超过 4096 |
+| `alloc failed` | 读值或读 TS 记录时分配缓冲失败 |
+| `ts encode failed (max_len=N): …` | `append` 编码失败；`N` 是配置的 `max_len`，`…` 是编码细节 |
+| `ts encode failed (max_len=N)` | 同上，但没有更细编码文案 |
+| `ts payload too large: encoded=A max_len=B` | 编码后长度 `A` 为 0 或大于 `max_len`=`B` |
+| `append failed: … (cnt=N payload=M)` | TS 追加失败；`N` 是本次时间戳，`M` 是编码字节数 |
+| `read failed` | TS 记录读回长度为 0 |
+| `invalid arg` | 读最老记录时内部参数不完整（正常脚本路径少见） |
+| `read oldest failed` | 遍历最老记录时读/分配失败 |
+| `peek oldest failed` | `peek_oldest` 失败且没有更细文案 |
+| `pop oldest failed` | `pop_oldest` 失败且没有更细文案 |
+| `peek oldest failed: …` / `pop oldest failed: …` | 取出后标删除失败；`…` 见底层短句 |
+| `del oldest failed` | `del_oldest` 失败且没有更细文案 |
+| `del oldest failed: …` | 标删除失败；`…` 见底层短句 |
+| `table too large` | `set`/`append`/`default` 单表项数过多 |
+| `table depth exceeded` | 嵌套超过编码上限 |
+| `float unsupported` | 值里出现了非整数 number |
+| `string too large` | 单个 string 超编码上限 |
+| `unsupported table key type: …` | 表键不是 string / number / boolean |
+| `unsupported value type: …` | function / userdata / thread 等不能编码 |
+| `msgpack buffer alloc failed` | 编码缓冲分配失败 |
+| `encode overflow: used A/B bytes, next write needs C bytes` | 编码将超过上限（KV 4096，TS 为 `max_len`，默认项 512） |
+| `encode overflow: used A/B bytes (…)` | 同上，带底层写失败说明 |
+| `cmp write failed` | 编码写缓冲失败且没有溢出细节 |
+| `not msgpack data` | 解码侧看到的不是本库格式（`get` 会删键后只返回 `nil`，一般看不到这句） |
+
+诊断：`invalid sfud object` 先确认 `sfud.bind` 成功；`storage full` 查分区大小和 `rollover`；`async * requires rt context` 不要在非 `rt` 协程里写 `on_event` / `mount_timeout_ms`；`value too large` / `ts payload too large` 缩小写入结构或加大 `max_len`。
 
 ---
 
@@ -669,3 +725,4 @@ end
 | --- | --- | --- |
 | 1.0.0 | 2026-09-04 | 首版 |
 | 1.0.1 | 2026-09-04 | 修正跨目录文档链接，demo 路径改为 examples/ |
+| 1.1.0 | 2026-09-05 | 补全错误文案/错误码与可能原因 |

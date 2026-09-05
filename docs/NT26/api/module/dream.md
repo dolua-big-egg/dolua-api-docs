@@ -1,6 +1,6 @@
 # dream
 
-**文档版本** `1.0.0`
+**文档版本** `1.1.0`
 
 纯函数。按福利彩票规则抽双色球 / 大乐透注数。独立模块，`require("dream")`，不是 `random` 的子表。
 
@@ -222,16 +222,20 @@ end
 | --- | --- | --- |
 | `ssq` / `dlt` 及别名 | 注数表 | `nil, err` |
 
-| `err` | 原因 |
+没有数字业务码。部分位置类型不对会 **抛** Lua 标准整数检查，不完全都是 `nil, err`。推荐表形式 `dream.ssq({ count = 5, seed = "…" })`。
+
+**返回的 `err`**
+
+| `err` | 可能原因 |
 | --- | --- |
 | `count out of range` | 注数不是 1～100 |
-| `invalid seed` | 种子类型不对或空串 |
-| `invalid stable` | `stable` 不是布尔/整数 |
-| `invalid argument` | 第一参类型不支持 |
-| `trng failed` | 硬件随机失败（含 `stable=false` 混盐时） |
+| `invalid seed` | 种子不是 string/integer，或空串 |
+| `invalid stable` | `stable` 不是布尔（也不是可当布尔读的整数） |
+| `invalid argument` | 第一参既不是 nil、也不是 number/string/table |
+| `trng failed` | 硬件真随机失败（纯随机，或 `stable=false` 混盐时） |
 | `draw failed` | 已开种子流却抽号失败（极少） |
 
-`count` / `seed` 位置上类型需是整数或合法种子时，错误的 Lua 类型可能 **抛错**（整数检查），不完全都是 `nil, err`。推荐用表形式 `dream.ssq({ count = 5, seed = "…" })`。
+兜底 `random error` 仅在内部未带出原因时出现。
 
 ---
 
@@ -284,3 +288,4 @@ local dlt = dream.dlt(2)
 | 版本 | 日期 | 说明 |
 | --- | --- | --- |
 | 1.0.0 | 2026-09-04 | 首版 |
+| 1.1.0 | 2026-09-05 | 补全错误与返回约定：全部 `err` 文本与可能原因 |

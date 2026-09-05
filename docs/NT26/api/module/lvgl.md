@@ -1,6 +1,6 @@
 # lvgl
 
-**文档版本** `1.0.0`
+**文档版本** `1.1.0`
 
 把已经 `lcd.new` 好的彩屏交给图形栈：控件、主题、脏区刷新都走本模块。刷屏在独立任务里跑，脚本只要建树、改字、改样式，然后 `rt.delay` 让出即可。
 
@@ -875,7 +875,36 @@ rt.delay(-1)   -- 或业务循环里正常 delay；让出后独立任务才画
 | 其余 `ui:*` / `style:set` | `true` | 未 create / 非法 userdata：**抛错** |
 | `deinit`（无 ui） | `true` | — |
 
-用 `pcall(lvgl.create, panel, opts)` 接住工厂失败。控件句柄类型不对时多半是 `invalid lvgl object`，不是 `nil`。
+用 `pcall(lvgl.create, panel, opts)` 接住工厂失败。
+
+**抛错摘要全表**
+
+| 摘要 | 可能原因 |
+| --- | --- |
+| `lvgl already created` | 已有 ui 未 `deinit` |
+| `arg#1 must be lcd object` | 第 1 参不是 `lcd.new` 的对象 |
+| `lcd not initialized` | 面板没 new 成功或已 deinit |
+| `lcd size is 0` | 宽高为 0，查 lcd cfg |
+| `lv_display_create failed (check mem_max)` | 图形堆不够，加大 `mem_max` |
+| `draw buf alloc failed (check mem_max)` | 整屏/条带缓冲分配失败；关 `double_buf` 或改 `partial` |
+| `draw buf2 alloc failed (check mem_max)` | 第二块缓冲失败 |
+| `line buf alloc failed (check mem_max)` | 行转换缓冲失败 |
+| `lcd set owned failed` | 面板交不出（已被占用） |
+| `lvgl task start failed` | 图形任务没起来，系统线程/信号量 |
+| `call lvgl.create first` | 还没 create 就调了 `lvgl.label` 等 |
+| `lvgl ui not initialized` | ui 已 deinit 还在用 |
+| `invalid lvgl object` | 控件句柄无效或不是本模块对象 |
+| `invalid lvgl style` | 样式对象无效或已被 GC |
+| `invalid parent` | 父亲句柄坏或当前没有屏幕 |
+| `label create failed` / `btn create failed` / `obj create failed` | 控件堆不够，看 `ui:mem()`，加大 `mem_max` 或少建控件 |
+
+**返回值失败**
+
+| 摘要 | 可能原因 |
+| --- | --- |
+| `false, "not a label"` | `set_text` 的目标是按钮/容器，不是 `ui:label` 的句柄 |
+
+诊断：create 抛错看 `mem_max` 和是否已 create；`bound to lvgl` 出现在 **lcd** 侧；`not a label` 对按钮要用内部 label 或改 `set_style` 文字色而不是 `set_text(btn)`。
 
 ---
 
@@ -981,3 +1010,4 @@ rt.delay(-1)
 | 版本 | 日期 | 说明 |
 | --- | --- | --- |
 | 1.0.0 | 2026-09-05 | 首版 |
+| 1.1.0 | 2026-09-05 | 补全全部抛错/返回文案与可能原因 |

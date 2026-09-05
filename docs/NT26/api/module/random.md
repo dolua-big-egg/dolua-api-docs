@@ -1,6 +1,6 @@
 # random
 
-**文档版本** `1.0.1`
+**文档版本** `1.1.0`
 
 纯函数随机数。数值、从序列里抽、洗牌、不放回 / 可放回抽样。熵来自芯片真随机，不是 `math.random`。没有对象、没有回调、不能设种子。
 
@@ -356,32 +356,38 @@ random.choices(random.hexdigits, nil, 16)
 
 ## 8. 错误与返回约定
 
+业务失败走 `nil, err`，不抛。缺参/类型错部分接口会抛 Lua 标准 `bad argument`。没有数字业务码。兜底文案 `random error` 仅在内部未带出原因时出现。
+
 | 接口 | 成功 | 业务失败 | 类型 / 缺参 |
 | --- | --- | --- | --- |
 | `random` | number | `nil, err` | — |
 | `randint` / `uniform` | number/integer | `nil, err` | 缺参或类型 **抛** |
 | `randrange` | integer | `nil, err` | `start`/`stop`/`step` 非整数 **抛**；少参则 `nil, err` |
-| `choice` / `shuffle` | 元素或原表 | `nil, err` | 见上表 |
+| `choice` / `shuffle` | 元素或原表 | `nil, err` | 见下表 |
 | `sample` | 表或 string | `nil, err` | `k` 非整数 **抛** |
 | `choices` | 表或 string | `nil, err` | `k` 或权重元素类型不对可能 **抛** |
 
-常见 `err`：
+**返回的 `err`**
 
-| 文案 | 出现在 |
+| `err` | 可能原因 |
 | --- | --- |
-| `trng failed` | 硬件没给出随机数 |
-| `randrange requires start, stop[, step]` | 参数不够 |
+| `trng failed` | 硬件真随机没给出数（各抽样接口都可能） |
+| `randrange requires start, stop[, step]` | `randrange` 参数少于 2 个 |
 | `step must not be zero` | `step == 0` |
-| `empty range` | 半开区间为空 |
-| `choice requires table or string` | 总体类型不对 |
-| `choice requires non-empty table/string` | 空总体 |
+| `empty range` | 半开区间为空（`start`/`stop`/`step` 组不出任何整数） |
+| `choice requires table or string` | 第一参既不是表也不是 string |
+| `choice requires non-empty table` | 空表 |
+| `choice requires non-empty string` | 空串 |
 | `shuffle requires non-empty table` | 不是非空表 |
-| `sample requires non-empty table/string` | 空总体 |
 | `sample requires table or string` | 总体类型不对 |
-| `sample larger than population` | `k` 大于总体 |
-| `choices requires …` | 与 sample 类似 |
+| `sample requires non-empty table` | 空表 |
+| `sample requires non-empty string` | 空串 |
+| `sample larger than population` | `k` 大于总体长度 |
+| `choices requires table or string` | 总体类型不对 |
+| `choices requires non-empty table` | 空表 |
+| `choices requires non-empty string` | 空串 |
 | `invalid k` | `k < 0` 或超出整数上限 |
-| `invalid weights` | 权重表不合格 |
+| `invalid weights` | 权重表长度/数值不合格 |
 
 需要区分抛错时用 `pcall`。
 
@@ -450,3 +456,4 @@ local v, err = random.sample({ 1, 2 }, 5)  -- nil, sample larger than population
 | --- | --- | --- |
 | 1.0.0 | 2026-09-04 | 首版 |
 | 1.0.1 | 2026-09-04 | 修正跨目录文档链接，demo 路径改为 examples/ |
+| 1.1.0 | 2026-09-05 | 补全错误与返回约定：全部 `err` 文本与可能原因 |

@@ -1,6 +1,6 @@
 # cron
 
-**文档版本** `1.0.1`
+**文档版本** `1.1.0`
 
 按 **墙上时钟** 对齐触发的纯函数调度模块。没有对象、没有 `open`。登记 cron 表达式，到点后在 Lua 调度循环里调回调。
 
@@ -573,26 +573,27 @@ end)
 
 ## 9. 错误与返回约定
 
-`require("cron")` 失败会 **抛错**，典型摘要：
+`require("cron")` 失败会 **抛错**（见下表）。业务接口除 `validate_expr` 缺参外 **不抛**，走返回值。缺参、类型错走 Lua 标准 `bad argument #n`。没有数字业务码。兜底文案 `unknown` 仅在内部未带出原因时出现。
 
-| 摘要 | 何时 |
+**`require` 抛错摘要**
+
+| 摘要 | 可能原因 |
 | --- | --- |
-| `cron not initialized` | 后端未就绪 |
+| `cron owner invalid` | 当前虚拟机无法绑定（快捷回调 VM 等） |
 | `cron ctx exhausted` | 主 VM 槽用尽（当前产品基本单 VM，正常遇不到） |
-| `cron owner invalid` | 当前虚拟机无法绑定 |
+| `cron not initialized` | 调度后端未就绪 |
 
-业务接口 **不抛** 上述这类失败（`validate_expr` 缺参除外），走返回值。
+**`create_trigger`（失败是 `0, err`，不是 `nil`）**
 
-**`create_trigger`（注意失败是 `0` 不是 `nil`）**
-
-| 情况 | 返回 |
+| `err` | 可能原因 |
 | --- | --- |
-| 成功 | `id, ""` |
-| 非字符串 / 空串 | `0, "invalid cron expr"` |
-| 满 30 条，或表达式底层创建失败 | `0, "cron create_trigger failed"` |
-| 登记事件失败 | `0, "cron register failed"` |
-| 锁失败 | `0, "cron lock failed"` |
-| 后端未绑定 | `0, "cron not initialized"` 等 |
+| `invalid cron expr` | 第一参不是非空字符串 |
+| `cron create_trigger failed` | 已满 30 条，或表达式底层创建失败 |
+| `cron register failed` | 到期事件登记失败 |
+| `cron lock failed` | 内部锁失败 |
+| `cron not initialized` / `cron owner invalid` | 后端未绑定或虚拟机无效 |
+
+成功：`id, ""`。
 
 **`validate_expr`**
 
@@ -600,26 +601,28 @@ end)
 | --- | --- |
 | 缺参 / 非字符串 | **抛** Lua 类型错 |
 | 合法 | `true` |
-| 非法 | `false` |
+| 非法 | `false`（无第二返回值） |
 
 **其余接口（`bind` / `start` / `stop` / `pause` / `resume` / 单条控制 / `replace` / `remove` / `clear`）**
 
-成功 `true, nil`；失败 `nil, err_msg`。
+成功 `true, nil`；失败 `nil, err`。
 
-| 文案 | 典型原因 |
+| `err` | 可能原因 |
 | --- | --- |
-| `invalid cron id` | id 不是整数也不是纯十进制串，或越界 |
-| `invalid callback` | 第二参不是 function |
+| `invalid cron id` | id 不是整数也不是纯十进制串，或越界（1～30） |
+| `invalid callback` | `bind` 第二参不是 function |
 | `invalid cron expr` | `replace` 时表达式空 / 非字符串 |
-| `cron trigger not exists` | bind 时这条还没 create，或已 remove |
-| `cron bind_trigger failed` | 绑定失败 |
-| `cron start failed` | 启动调度失败 |
+| `cron trigger not exists` | bind 时还没 `create`，或已 `remove` |
+| `cron bind_trigger failed` | 把回调绑到该 id 失败 |
+| `cron start failed` | 启动整表调度失败 |
 | `cron not initialized` | 后端未就绪；**或** `pause`/`resume` 时还没 `start` |
 | `cron lock failed` | 内部锁失败 |
 | `cron register failed` | 到期事件登记失败 |
-| `cron remove_trigger failed` | id 不存在 |
-| `cron pause_trigger failed` / `cron resume_trigger failed` | id 不存在 |
+| `cron remove_trigger failed` | id 不存在或删除失败 |
+| `cron pause_trigger failed` | 该 id 不存在或暂停失败 |
+| `cron resume_trigger failed` | 该 id 不存在或恢复失败 |
 | `cron replace_trigger failed` | id 不存在或新表达式非法 |
+| `cron owner invalid` | 当前虚拟机无法使用本模块 |
 
 `start` / `stop` 设计为幂等，正常重复调用应成功。
 
@@ -731,3 +734,4 @@ assert(cron.remove_trigger(id))
 | --- | --- | --- |
 | 1.0.0 | 2026-09-04 | 首版 |
 | 1.0.1 | 2026-09-04 | 修正跨目录文档链接，demo 路径改为 examples/ |
+| 1.1.0 | 2026-09-05 | 补全错误与返回约定：全部 `err` 文本、抛错摘要与可能原因 |

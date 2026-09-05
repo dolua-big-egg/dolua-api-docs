@@ -1,6 +1,6 @@
 # log
 
-**文档版本** `1.0.1`
+**文档版本** `1.1.0`
 
 带级别、带调用点的调试输出模块。三个函数用法相同，仅级别不同；单参原样打印，多参按 `string.format` 组包。
 
@@ -325,19 +325,30 @@ log.info("v=%s", nil)                   -- v=nil
 
 ## 8. 错误与返回约定
 
+三个接口都**无返回值、不抛业务错**。失败只体现在串口打出的正文。
+
 | 接口 | 成功 | 失败风格 |
 | --- | --- | --- |
-| `log.info` | 无返回值 | `format` 失败：打出 `format error: ...`，不抛错 |
-| `log.warn` | 无返回值 | 同上 |
-| `log.error` | 无返回值 | 同上 |
+| `log.info` / `log.warn` / `log.error` | 无返回值 | 打出错误说明，不抛、不回退拼接 |
 
-超长超限：本条正文不输出，改打一条 `ERROR` 提示，正文形如：
+**超限提示原文**（本条业务正文丢弃，改打这一行 `ERROR`）：
 
 ```
-log output exceeds 8192 limit (need <实际需要的字节数>)
+[Lua][ERROR][lua_log][?:-1] log output exceeds 8192 limit (need N)
 ```
 
-参数个数、类型都合法即可调用；没有“参数错误抛 `bad argument`”的必填检查（无参也允许，只是正文为空）。
+`N` 是估算需要的字节数（含级别头）。可能原因：单条 `fmt` 展开后超过 8192，或堆缓冲分配失败时仍按这个上限提示。
+
+**`format` 失败时打到日志里的正文**
+
+| 正文 | 可能原因 |
+| --- | --- |
+| `format error: string.format unavailable` | 运行时没有 `string.format`（极少） |
+| `format error: unknown` | `string.format` 失败且没有字符串错误信息 |
+| `format error: <下层原文>` | `string.format` 抛错，`<下层原文>` 为其错误串（占位符与参数个数/类型不配等） |
+| `format error: non-string result` | `string.format` 没返回字符串 |
+
+无参也允许，正文为空。没有必填检查，不会因缺参抛 `bad argument`。
 
 ---
 
@@ -447,3 +458,4 @@ end
 | --- | --- | --- |
 | 1.0.0 | 2026-09-04 | 首版 |
 | 1.0.1 | 2026-09-04 | 修正跨目录文档链接，demo 路径改为 examples/ |
+| 1.1.0 | 2026-09-05 | 补全错误与返回约定：超限提示原文、format 失败正文与可能原因 |

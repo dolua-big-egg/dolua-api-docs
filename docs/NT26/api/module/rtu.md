@@ -1,6 +1,6 @@
 # rtu
 
-**文档版本** `1.0.1`
+**文档版本** `1.1.0`
 
 纯函数模块。用来和模组上 **传统 RTU / DTU 业务** 打交道：AT 或 `rtu_config.cfg` 配好的透传通道、串口上下行路由、挂起恢复、以及在这些通道上直接发 TCP/UDP/MQTT。
 
@@ -532,24 +532,45 @@ end
 | `write` / `update_write` / `down_write` | `true` | **抛** |
 | `is_connect` / `state` | boolean | id 非法 **抛** |
 | `control` / `socket_*` / `mqtt_*` | 整数（`0` 或 `>=0` 视接口） | 负整数；缺参 **抛** |
-| `wait_connect` | `true` | 超时 `false`；不在协程 **抛** |
+| `wait_connect` | `true` | 超时 `false`；不在协程 **抛**（与 `rt.delay` 同类） |
 | `reg_chcb` | `true` | **抛** |
-| `unreg_chcb` | `true` | `false` |
+| `unreg_chcb` | `true` | `false`（无 `err`：未登记或已取消） |
 
-常见整数码（对外数字，不挂在模块表上）：
+`socket_sync` 成功时返回的是 **发出字节数**（可能大于 0），不要只用 `== 0` 判断。缺参、类型错走 Lua 标准 `bad argument #n`。
 
-| 值 | 常见含义 |
+**抛错摘要**
+
+| 摘要 | 可能原因 |
 | --- | --- |
-| `0` | 成功（`option` 写、`control`、MQTT） |
-| `-1` | 一般失败 |
-| `-2` | 参数 |
-| `-3` | 配置 / 未启用（`control`）；MQTT 侧另有 KV 等含义 |
-| `-5` | 未启用 |
-| `-6` | 状态不对（未连接、类型不是 socket 等） |
-| `-7` | 协议栈未初始化 |
-| `-8` | 内存 |
+| `rtu.option: usage rtu.option(key) or rtu.option(key, bool)` | 参数个数不是 1 或 2 |
+| `rtu.option: unsupported key` | 键不是 `pass_up` / `pass_down` / `pass_up_cfg` / `pass_down_cfg` / `uart2_en_cfg` / `uart3_en_cfg` |
+| `bool expected` | `option` 写值不是 boolean（数字 `0` 在这里**不能**当 false） |
+| `rtu.write: invalid route_str` | 路由串解析失败（格式/通道号不对） |
+| `rtu reg_chcb init fail` | 通道回调子系统初始化失败 |
+| `rt vm context missing` | 不在脚本主虚拟机 / 快捷回调里登记 |
+| `rtu reg_chcb full` | 全机登记槽满（16） |
+| `channel_id must be in [1..4]` | 通道 id 不是 1～4 |
+| `id must be in [1..4]` | 同上（`is_connect` / `socket_*` / `mqtt_*` / `wait_connect`） |
+| `uart_id must be in [1..3]` | `update_write` 串口号不是 1～3 |
+| `data len must be > 0` | 写出数据长度为 0 |
+| `cmd must be 0(suspend) or 1(resume)` | `control` 第二参不是 0/1 |
+| `qos must be in [0..2]` | MQTT QoS 越界 |
+| `retain must be 0/1` | MQTT retain 不是 0/1 |
 
-`socket_sync` 成功时返回的是 **发出字节数**（可能大于 0），不要只用 `== 0` 判断。
+**返回的整数码**（不挂在模块表上，不要写成 `rtu.ERR_xxx`）
+
+| 值 | 可能原因 |
+| --- | --- |
+| `0` | `option` 写 / `control` / MQTT 成功 |
+| `-1` | 一般失败（读配置、通道操作被拒） |
+| `-2` | 参数不合法 |
+| `-3` | 配置缺失 / 未启用（`control`）；MQTT 侧也可能表示 KV 等问题 |
+| `-5` | 功能未启用 |
+| `-6` | 状态不对：未连接、通道类型不是 socket 等 |
+| `-7` | 协议栈未初始化 |
+| `-8` | 内存不足 |
+
+`option` 读失败是 `nil, 整数码`（上表）。诊断：先看有没有抛；通道类再看负数；`wait_connect` 只看 `true`/`false`。
 
 ---
 
@@ -622,3 +643,4 @@ end
 | --- | --- | --- |
 | 1.0.0 | 2026-09-04 | 首版 |
 | 1.0.1 | 2026-09-04 | 修正跨目录文档链接，demo 路径改为 examples/ |
+| 1.1.0 | 2026-09-05 | 补全错误与返回约定：全部抛错摘要、整数码与可能原因 |

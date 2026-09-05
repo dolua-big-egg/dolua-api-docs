@@ -1,6 +1,6 @@
 # tls
 
-**文档版本** `1.0.1`
+**文档版本** `1.1.0`
 
 纯函数密码学工具：摘要、HMAC、Base64、CRC、对称加解密，以及 OneNET MQTT 口令。**没有对象、没有 TLS 握手、不建加密套接字。** MQTT/HTTPS 的传输层加密不在本模块。
 
@@ -479,13 +479,52 @@ CBC IV 长度不对：`cbc iv length mismatch`。ECB 却传了 IV：`ecb mode do
 | `crc8` / `crc16` / `crc32` | integer | 缺参 **抛** |
 | 其余 | string | `nil, err`；类型错 **抛** |
 
-常见 `err`：
+类型检查失败（缺 string、缺参）走标准 Lua 参数错，需要 `pcall` 才能收。业务失败固定文案：
 
-- `hash algorithm not supported or not enabled`
-- `padding must be 'pkcs7' or 'none'`
-- `invalid pkcs7 padding`
-- `base64_decode failed (ret=…)`
-- `onenet password generation failed`
+| `err` | 可能原因 |
+| --- | --- |
+| `hash algorithm not enabled in mbedtls` | `md5`/`sha1`/`sha256`/`sha512` 在本固件未编进对应算法 |
+| `hash algorithm not supported or not enabled` | `hash(alg, …)` 的算法名不被识别，或该算法未编进固件 |
+| `hmac algorithm not supported or not enabled` | HMAC 用的摘要算法未编进，或名字不对 |
+| `invalid hash output size` | 摘要算法返回了非法输出长度（固件/算法表异常） |
+| `invalid hmac output size` | HMAC 输出长度非法（同上） |
+| `base64 is not enabled in mbedtls` | 本固件未编进 Base64；`onenet` / `base64_encode` / `base64_decode` 都会报这句 |
+| `onenet password generation failed` | 产品名或 key 为空、key 不是合法 Base64、产品名过长、系统时间不可用导致拼 token 失败、或签名/编码失败 |
+| `arg #3 key must be string` | `encrypt`/`decrypt` 第 3 参不是 string（常把上一调用的 `nil, err` 直接传进来） |
+| `arg #4 data must be string (check previous call result)` | 第 4 参不是 string；先看上一次加解密是否已经失败 |
+| `unsupported algorithm/mode/key length` | 算法/模式组合不支持，或 AES 密钥不是 16/24/32 字节 |
+| `padding must be 'pkcs7' or 'none'` | `padding` 写了别的字符串 |
+| `rc4 key length must be 1..256 bytes` | RC4 密钥长度越界 |
+| `rc4 does not use iv` | RC4 传了 IV |
+| `stream cipher only supports padding='none'` | RC4 用了 `pkcs7` |
+| `rc4 is not enabled in mbedtls` | 本固件未编进 RC4 |
+| `cbc iv length mismatch` | CBC 的 IV 长度不等于块长（AES 要 16 字节） |
+| `ecb mode does not use iv` | ECB 传了 IV |
+| `data length must align to block size` | `padding='none'` 时明文/密文长度不是块长整数倍 |
+| `aes is not enabled in mbedtls` | 本固件未编进 AES |
+| `cipher type not enabled in mbedtls` | 所选算法/模式在本固件未编进 |
+| `cipher is not enabled in mbedtls` | 对称加密整套能力未编进 |
+| `invalid pkcs7 padded data` | 解密后长度不是块长整数倍，密文被截断或不是该模式产出 |
+| `invalid pkcs7 padding` | 填充字节不合法：密钥/IV 错、密文损坏、或用错模式 |
+| `tls error` | 失败但没有更细文案（正常路径少见） |
+
+带返回码的格式串（`op failed (ret=N)`，`N` 为底层负数）：
+
+| `err` 形态 | 可能原因 |
+| --- | --- |
+| `mbedtls_md failed (ret=N)` | 摘要计算失败 |
+| `mbedtls_md_hmac failed (ret=N)` | HMAC 计算失败 |
+| `base64_encode failed (ret=N)` | 输入无法按 Base64 规则编码 |
+| `base64_decode failed (ret=N)` | 输入不是合法 Base64（缺填充、非法字符） |
+| `aes_setkey failed (ret=N)` | AES 设密钥失败（长度或固件配置） |
+| `aes_crypt_cbc failed (ret=N)` | AES-CBC 加解密失败 |
+| `aes_crypt_ecb failed (ret=N)` | AES-ECB 加解密失败 |
+| `cipher_setup failed (ret=N)` | 通用密码套件初始化失败 |
+| `cipher_setkey failed (ret=N)` | 通用套件设密钥失败 |
+| `cipher_crypt failed (ret=N)` | 通用套件加解密失败 |
+| `mbedtls failed (ret=N)` | 未带具体操作名的底层失败 |
+
+诊断：先 `tls.features()` 看本固件开了哪些算法；`arg #4 data must be string` 先打印上一次的 `err`；`invalid pkcs7 padding` 核对 key/IV/mode；`base64_decode failed` 查输入是否缺 `=` 填充。
 
 ---
 
@@ -551,3 +590,4 @@ end
 | --- | --- | --- |
 | 1.0.0 | 2026-09-04 | 首版 |
 | 1.0.1 | 2026-09-04 | 修正跨目录文档链接，demo 路径改为 examples/ |
+| 1.1.0 | 2026-09-05 | 补全错误文案/错误码与可能原因 |

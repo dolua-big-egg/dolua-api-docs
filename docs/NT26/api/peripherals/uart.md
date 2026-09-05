@@ -1,6 +1,6 @@
 # uart
 
-**文档版本** `1.0.1`
+**文档版本** `1.1.0`
 
 纯函数串口模块。对外业务口是 UART1～UART3：热改线参数、写数据、登记收包回调、或阻塞等一整包。没有对象、没有 `open`。UART0 留给内部调试，**不对外使用**。
 
@@ -404,35 +404,46 @@ max_packets=4
 | 接口 | 成功 | 失败 |
 | --- | --- | --- |
 | `config` | `true, "ok"` | `false, err`；id/`cfg` 类型不对则 **抛** |
-| `get_config` | table | 读不到：单独 `nil`；id 非法 **抛** |
-| `write` | `true` | 只 `false`；id 非法 **抛** |
+| `get_config` | table | 读不到：单独 `nil`（无错误串）；id 非法 **抛** |
+| `write` | `true` | 只 `false`（空数据、类型不对、或发送未接受）；id 非法 **抛** |
 | `reg` | `true` | 槽满/无 rt：**抛** |
-| `unreg` | `true` | `false` |
+| `unreg` | `true` | 只 `false`（id 越界、无调度上下文、或该口未 `reg`） |
 | `block` | `true, data` | `false, "timeout"` / `"busy"`；无 rt / id 非法 **抛** |
 
 `id` 必须是整数。传入字符串、布尔等会先抛类型错，到不了下面的文案。
 
 抛错摘要：
 
-| 摘要 | 何时 |
+| 摘要 | 可能原因 |
 | --- | --- |
-| `invalid uart id` | `id` 是整数但不在 0～3（`unreg` 越界只返回 `false`）。`0` 不抛，但不对外 |
+| `invalid uart id` | `id` 是整数但不在 0～3。`unreg` 越界只返回 `false` 不抛。`0` 不抛，但不对外收包 |
 | `cfg table required` | `config` 第二参不是表 |
-| `uart reg init fail` | 内部锁创建失败 |
-| `rt vm context missing` | `reg` 时没有调度上下文 |
-| `uart reg full` | 整机 16 个回调槽用尽 |
-| `rt context not found` | `block` 时没有调度上下文 |
+| `uart reg init fail` | `reg` 时系统互斥量创建失败 |
+| `rt vm context missing` | `reg` 时没有 `rt` 调度上下文（不在脚本 VM 里调） |
+| `uart reg full` | 整机 16 个回调槽用尽（按「虚拟机 + 口」各一条） |
+| `rt context not found` | `block` 时没有 `rt` 调度上下文 |
 
-`config` 失败文案：
+`config` 失败文案（`false, err`）：
 
-| 文案 | 何时 |
+| `err` | 可能原因 |
 | --- | --- |
-| `baudrate out of range [1200,3000000]` | |
-| `data_bits out of range [7,8]` | |
-| `stop_bits out of range [1,2]` | |
-| `parity out of range [0,2]` | |
-| `flow_control out of range [0,1]` | |
-| `reconfig fail` | 硬件没吃下这次重配 |
+| `cfg is null` | 配置指针无效（正常脚本路径不应出现） |
+| `baudrate out of range [1200,3000000]` | `baudrate` 小于 1200 或大于 3000000 |
+| `data_bits out of range [7,8]` | `data_bits` 不是 7 或 8 |
+| `stop_bits out of range [1,2]` | `stop_bits` 不是 1 或 2 |
+| `parity out of range [0,2]` | `parity` 不是 0/1/2 |
+| `flow_control out of range [0,1]` | `flow_control` 不是 0 或 1 |
+| `reconfig fail` | 硬件没吃下这次重配（口未打开、驱动拒绝该组合） |
+| `ok` | 成功时的第二返回值，不是错误 |
+
+`block` 失败文案：
+
+| `err` | 可能原因 |
+| --- | --- |
+| `timeout` | 在 `timeout_ms` 内没收到完整一包（对端没回、分包超时、或口接错） |
+| `busy` | 同一脚本里已有一次 `block` 还在等，同时只能有 1 个 |
+
+诊断：`uart reg full` 先 `unreg` 不用的口；`reconfig fail` 确认该口已在配置文件里启用；`busy` 不要并行两个 `block`；`write` 失败没有文案，先查数据是否空、是否传了既非 string 也非 byte 表。
 
 ---
 
@@ -529,3 +540,4 @@ end
 | --- | --- | --- |
 | 1.0.0 | 2026-09-04 | 首版 |
 | 1.0.1 | 2026-09-04 | 修正跨目录文档链接，demo 路径改为 examples/ |
+| 1.1.0 | 2026-09-05 | 补全错误文案/错误码与可能原因 |

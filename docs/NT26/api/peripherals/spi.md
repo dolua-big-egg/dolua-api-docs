@@ -1,6 +1,6 @@
 # spi
 
-**文档版本** `1.0.1`
+**文档版本** `1.1.0`
 
 对象化 SPI 主机。`spi.new` 打开一路控制器，之后在对象上发、收、全双工对传。每路控制器同一时刻只允许一个实例。
 
@@ -478,17 +478,42 @@ SPI 硬件 SSn 复用脚（SPI0 上常是 GPIO8 那根）若改成 GPIO 片选�
 | `recv` / `transfer` / `get_status` / `get_bus_hz` | 值 | `nil, err` |
 | `id` | integer | — |
 
-硬件失败文案带码：
+缺对象、`tx` 不是 string、`len` 不是整数等会 **抛**标准 Lua 参数错，需要 `pcall` 才能收。业务失败用返回值，请判断 `if not dev then`。
 
-| 码 | 摘要 |
+硬件失败文案形如 `"send failed: timeout (-3)"`，括号里的整数：
+
+| 码 | 文案片段 | 可能原因 |
+| --- | --- | --- |
+| `-1` | `invalid parameter` | 控制器编号、缓冲区、长度或配置非法 |
+| `-2` | `invalid state` | 控制器未初始化、已 `deinit`、或当前状态不允许这次传输 |
+| `-3` | `timeout` | 传输在 `timeout_ms` 内没完成：从设备没拉时钟、接线、或超时太短 |
+| `-4` | `driver error` | 控制器硬件/驱动报错（脚冲突、时钟切不过、总线故障） |
+| `-5` | `unsupported spi controller` | 该编号的控制器本机没有或未启用 |
+| 其它 | `unknown error` | 未单独翻译的码 |
+
+固定 `err` 文本：
+
+| `err` | 可能原因 |
 | --- | --- |
-| `-1` | `invalid parameter` |
-| `-2` | `invalid state` |
-| `-3` | `timeout` |
-| `-4` | `driver error` |
-| `-5` | `unsupported spi controller` |
+| `invalid spi_id N, expect spi.SPI0(0) or spi.SPI1(1)` | `new` 的第一参不是 `0`/`1`（`N` 是你传入的整数） |
+| `mutex init failed` | `new`/`deinit` 时系统互斥量失败 |
+| `spi0 already in use` / `spi1 already in use` | 该路已有实例未 `deinit`（非法 id 时可能看到 `spi? already in use`） |
+| `bus_hz must be > 0` | 配置表把 `bus_hz` 写成了 0，或没写且解析结果为 0 |
+| `spi0 init failed: … (N)` / `spi1 init failed: … (N)` | 控制器初始化失败；`…` 与 `N` 见上表 |
+| `deinit failed: … (N)` | 关控制器失败 |
+| `spi not initialized or empty tx data` | 对象已 `deinit`，或 `send`/`transfer` 的 `tx` 是空串 |
+| `spi not initialized or invalid length` | 对象已 `deinit`，或 `recv` 的长度为 0 |
+| `spi not initialized` | `set_cs` / `get_status` / `get_bus_hz` 时对象已关 |
+| `recv not allowed in TX_ONLY mode` | `work_mode` 是只发，却调了 `recv` |
+| `transfer not allowed in TX_ONLY mode` | 只发模式却调了 `transfer` |
+| `send failed: … (N)` | 发送失败 |
+| `recv failed: … (N)` | 接收失败 |
+| `transfer failed: … (N)` | 全双工对传失败 |
+| `set_cs failed: … (N)` | 软件片选失败（没配 `cs_gpio`、脚已被占用、或控制器未就绪） |
+| `get_status failed: … (N)` | 读控制器状态失败 |
+| `get_bus_hz failed: … (N)` | 读实际分频时钟失败 |
 
-缺对象、`tx` 不是 string 等会 **抛**。业务失败用返回值，请判断 `if not dev then`。
+诊断：`already in use` 先 `deinit` 或不要对同一路 `new` 两次；`TX_ONLY` 只用 `send`；`timeout (-3)` 查从设备与 `timeout_ms`；`bus_hz must be > 0` 写明确的正整数 Hz。
 
 ---
 
@@ -566,3 +591,4 @@ end
 | --- | --- | --- |
 | 1.0.0 | 2026-09-04 | 首版 |
 | 1.0.1 | 2026-09-04 | 修正跨目录文档链接，demo 路径改为 examples/ |
+| 1.1.0 | 2026-09-05 | 补全错误文案/错误码与可能原因 |

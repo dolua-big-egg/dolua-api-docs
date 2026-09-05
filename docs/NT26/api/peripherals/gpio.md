@@ -1,6 +1,6 @@
 # gpio
 
-**文档版本** `1.0.0`
+**文档版本** `1.1.0`
 
 GPIO 对象化驱动模块。按编号打开引脚对象后，可配置方向、读写电平、同步时序播放、异步波形任务，以及边沿回调。
 
@@ -849,6 +849,30 @@ end)
 
 参数类型错误（该 table 给了 number、该 function 给了 nil）走 Lua 标准 `bad argument` 报错。
 
+**全部抛错摘要**（`config`/`set` 失败只回 `false`，`get`/`tog` 失败只回 `nil`，没有第二返回值）：
+
+| 摘要 | 可能原因 |
+| --- | --- |
+| `gpio init failed` | 底层 GPIO 没起来（极少，整机初始化） |
+| `invalid pin` | 编号对不上本模组的 GPIO/PIN 映射 |
+| `gpio open failed` | 打开失败：脚已被占用或映射无效 |
+| `gpio seq failed` | `seq` 图案非法、粒度不对、或执行中失败 |
+| `gpio seq final toggle failed` | 收尾翻转没做成 |
+| `wave_id expect 1..N` | 波形 id 超出 1～8（N 为当时上限） |
+| `wave bind failed` | 该脚绑不到波形通道（通道满 8 路，或脚不能做波形） |
+| `invalid wave payload (ms must be >=N and multiple of N)` | 保持时间不是 100ms 粒度（N 现为 100） |
+| `wave_reg failed` | 登记图案失败（段数超 16 等） |
+| `wave_set failed` | 切换已登记波形失败（id 未 reg） |
+| `wave_insert needs pattern table` | `wave_insert` 第二参不是 table |
+| `wave_insert failed` | 插入失败（通道未绑定或图案非法） |
+| `hold_level expect -1/0/1` | `wave_stop` 的保持电平 |
+| `wave_stop failed` | 停止失败 |
+| `rt vm context missing` | `reg` 时不在脚本 VM |
+| `gpio reg full` | 整机边沿回调槽满（80） |
+| `gpio reg failed: N` | 底层登记失败，N 为内部返回值 |
+
+`unreg` 本来就没有回调时返回 `false`，不是错误。诊断：`invalid pin`/`open failed` 对原理图；`reg full` 先 `unreg` 不用的脚；波形类先查 100ms 粒度和通道数。
+
 ---
 
 ## 12. 资源上限与生命周期
@@ -1032,3 +1056,4 @@ end
 | 版本 | 日期 | 说明 |
 | --- | --- | --- |
 | 1.0.0 | 2026-09-04 | 首版 |
+| 1.1.0 | 2026-09-05 | 补全全部抛错摘要与可能原因 |

@@ -1,6 +1,6 @@
 # lcd
 
-**文档版本** `1.0.2`
+**文档版本** `1.1.0`
 
 对象化 SPI 彩屏。`lcd.new(cfg)` 打开一路总线并初始化面板，之后在对象上填色、打点、刷一块 RGB565。
 
@@ -650,7 +650,21 @@ lcd.new({
 | `-4` | `driver error` | 总线或面板硬件初始化/传输失败 |
 | 其它 | `unknown error` | 未单独翻译的码 |
 
-类型检查失败（缺对象、颜色不是整数等）走 Lua 参数错，需要 `pcall` 才能收。
+固定 `err` 文本（没有括号码）：
+
+| `err` | 可能原因 |
+| --- | --- |
+| `mutex init failed` | `new` 时系统互斥量失败 |
+| `invalid lcd config` | cfg 缺关键项或 driver/bus 无法识别 |
+| `lcd already in use` | 已有一块屏未 `deinit` |
+| `lcd init failed: … (N)` | 面板初始化，N 见上表 |
+| `lcd not initialized` | 对象已 deinit 或从未 new 成功 |
+| `lcd bound to lvgl` | 已经 `lvgl.create`，改用 lvgl 画，或先 `ui:deinit` |
+| `fill buf length must be w*h*2` | RGB565 缓冲长度不对 |
+| `flush buf length must be w*h*2` | 同上 |
+| `fill(color) or fill(x,y,w,h,color\|buf)` | `fill` 参数组合对不上两种形态 |
+
+类型检查失败（缺对象、颜色不是整数等）走 Lua 参数错，需要 `pcall` 才能收。诊断：`already in use` 先 deinit；`bound to lvgl` 不要混用两套画法；`invalid parameter (-1)` 查 DC/矩形/驱动名。
 
 ---
 
@@ -743,3 +757,4 @@ log.info("driver=%s bus=%s", inf.driver, inf.bus)
 | 1.0.0 | 2026-09-04 | 首版 |
 | 1.0.1 | 2026-09-04 | 修正跨目录文档链接，demo 路径改为 examples/ |
 | 1.0.2 | 2026-09-05 | 选型对照补上 lvgl 文档链接 |
+| 1.1.0 | 2026-09-05 | 补全固定 err 文本与可能原因 |
