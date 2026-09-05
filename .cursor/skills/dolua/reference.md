@@ -22,6 +22,7 @@ https://raw.githubusercontent.com/dolua-big-egg/dolua-api-docs/main/
 | --- | --- | --- |
 | API 索引 | `docs/NT26/api/README.md` | `.../docs/NT26/api/README.md` |
 | 硬件脚位 | `docs/NT26/hardware/README.md` | `.../docs/NT26/hardware/README.md` |
+| AT 指令 | `docs/NT26/at/README.md`（先 convention，再分类篇） | `.../docs/NT26/at/README.md` |
 | 示例索引 | `examples/NT26/README.md` | `.../examples/NT26/README.md` |
 | 型号入口 | `docs/NT26/README.md` | `.../docs/NT26/README.md` |
 

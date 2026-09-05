@@ -28,7 +28,7 @@ description: >-
 
 ### 抓取顺序
 
-1. 本地：`docs/NT26/api/README.md`、`docs/NT26/hardware/README.md`、`examples/NT26/README.md`
+1. 本地：`docs/NT26/api/README.md`、`docs/NT26/hardware/README.md`、`docs/NT26/at/README.md`、`examples/NT26/README.md`
 2. Gitee raw（优先）：
    - `https://gitee.com/dolua/dolua-api-docs/raw/main/docs/NT26/api/README.md`
    - `https://gitee.com/dolua/dolua-api-docs/raw/main/examples/NT26/README.md`
@@ -37,7 +37,7 @@ description: >-
    - `https://raw.githubusercontent.com/dolua-big-egg/dolua-api-docs/main/docs/NT26/api/README.md`
    - 单篇：`https://raw.githubusercontent.com/dolua-big-egg/dolua-api-docs/main/docs/NT26/api/<dir>/<module>.md`
 
-`<dir>` 只能是 `module` / `network` / `peripherals` / `rtu_config`。模块 → 路径对照见 [reference.md](reference.md)。`rtu_config.cfg` 不是 `require` 模块，语法与全部 key 在 `docs/NT26/api/rtu_config/rtu_config.md`。模块 PIN / 复用不是 API 页，在 `docs/NT26/hardware/`（NT26-PRO 为 `hardware/pro.md`）。
+`<dir>` 只能是 `module` / `network` / `peripherals` / `rtu_config`。模块 → 路径对照见 [reference.md](reference.md)。`rtu_config.cfg` 不是 `require` 模块，语法与全部 key 在 `docs/NT26/api/rtu_config/rtu_config.md`。模块 PIN / 复用不是 API 页，在 `docs/NT26/hardware/`（NT26-PRO 为 `hardware/pro.md`）。应用 AT 在 `docs/NT26/at/`：先读 `at/README.md` 与 `at/convention.md`，再进分类篇（`sock.md` / `mqtt.md` / `http.md` …）。产测与解析自测不收录。演示代码块必须标 `lua`。
 
 查完 API 后，**对照同页给出的示例目录**打开 `main.lua`，按可烧录工程抄写法。不要从零手写第一份脚本去试接口。
 
@@ -172,6 +172,8 @@ end)
 
 文首 **文档版本** 只表示该篇 markdown 的修订，不是模组固件版本。
 
+写或改 `docs/NT26/at/` 的 AT 手册时：所有演示代码块（命令、模组应答、联调片段）必须用 `lua` 语言标签，禁止不填语言的裸围栏。内容仍是 AT 文本，只是标签固定为 lua。
+
 ## 和别的东西不是同一套
 
 | 容易当成的 | 实际 |
@@ -188,6 +190,7 @@ end)
 - 不要在回调、`rt.tmr_*` 回调、MQTT `pre_connect`/`message` 里 `rt.delay` 或同步阻塞 API。
 - 不要把 LuatOS / `sys.wait` / `sys.publish` / `cc.xxx` 等其它生态 API 写进本工程。
 - 不要发明未在当前模块文档出现的函数、枚举名、返回值形状。
+- 写 `docs/NT26/at/` 时，演示代码块必须标 `lua`，不要用不填语言的裸围栏。
 - 能用 `info` / `sys` / `dns` / `lp` 等 Lua API 办到的事，不要走 `virat`。
 - `virat.exec` = 度云未来已注册 AT。`virat.ril_exec` = **原厂 EC 通道**：仅书面指导的特殊补充；乱发不予保修，模块会记录调用。不要拿同一条命令两边都试。调用前必须先读 virat 文档第 7 节。
 - `ufs` 存可序列化 Lua 值（配置表）；`ublob` 只存 string、可 append/view。二者与**脚本区共用配额**（NT26 PRO 合计 220 KB，其它型号以文档第「共享配额」节为准）。不要当 POSIX 文件系统用。`http.save` 不能直接写 ufs。

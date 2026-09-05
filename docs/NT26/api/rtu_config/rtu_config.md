@@ -1,10 +1,10 @@
 # rtu_config
 
-**文档版本** `1.0.1`
+**文档版本** `1.0.3`
 
 这不是 `require("…")` 模块。它是模组开机时解析的 **声明式配置文件** `rtu_config.cfg`：只改文件里写到的段和 key，没写到的字段保持机内当前值。Lua 的 [`rtu`](../module/rtu.md)、[`uart`](../peripherals/uart.md)、[`sms`](../module/sms.md)、[`lbs`](../network/lbs.md) 等运行时模块 **读的是这份文件落盘后的业务配置**，不是另起一套通道。
 
-文件落在内置文件系统根路径 **`/rtu_config.cfg`**。工程里把它放进 luaproj 的 **config** 分区（`configs` / `selectedConfig`）。
+文件落在内置文件系统根路径 **`/rtu_config.cfg`**。工程里把它放进 luaproj 的 **config** 分区（`configs` / `selectedConfig`）。同一套业务也可用应用 AT 读写，分类索引见 [at/README.md](../../at/README.md)。
 
 ---
 
@@ -323,7 +323,7 @@ IO：`[io.N]` 的 N 是 GPIO 编号 **1～39**，对应内部脚 0～38。`[io.1
 
 ## 9. `[sock.N]` / `[socket.N]`
 
-N = 1..4。读出该通道当前配置，只改出现的 key，写回。
+N = 1..4。读出该通道当前配置，只改出现的 key，写回。同一套通道也可用应用 AT 读写，见 [AT Socket](../../at/sock.md)。
 
 `protocol` **独立**决定实际用 TCP 还是 UDP 那一套参数。另一套参数仍会入库，只是这条通道连上时不用。
 
@@ -1066,3 +1066,5 @@ log_route=1
 | --- | --- | --- |
 | 1.0.0 | 2026-09-05 | 首版：`rtu_config.cfg` 语法、全部已接入段与 key、总覆盖权、联合/独立影响、错误码与未接入段 |
 | 1.0.1 | 2026-09-05 | `[uart.N] pin_map` 改为指向硬件落盘表（UART2 出厂组 2） |
+| 1.0.2 | 2026-09-05 | `[sock.N]` 链到应用 AT Socket 手册 |
+| 1.0.3 | 2026-09-05 | 文首链到应用 AT 分类索引 |
