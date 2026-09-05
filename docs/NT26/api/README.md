@@ -1,6 +1,6 @@
 # NT26 API
 
-一篇文档对应一个 `require("…")` 模块。交叉引用已按当前目录写好相对路径。示例在 [examples/NT26](../../../examples/NT26/README.md)，分类与这里不完全相同。
+一篇文档对应一个 `require("…")` 模块。交叉引用已按当前目录写好相对路径。示例在 [examples/NT26](../../../examples/NT26/README.md)，分类与这里不完全相同。模块 PIN、默认功能和复用见 [硬件脚位](../hardware/README.md)，不在本目录。
 
 ## 外设 `peripherals/`
 

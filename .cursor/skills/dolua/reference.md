@@ -14,13 +14,14 @@ https://gitee.com/dolua/dolua-api-docs/raw/main/
 https://raw.githubusercontent.com/dolua-big-egg/dolua-api-docs/main/
 ```
 
-拼路径：`docs/NT26/api/<dir>/<file>.md` 或 `examples/NT26/<category>/...`。
+拼路径：`docs/NT26/api/<dir>/<file>.md`、`docs/NT26/hardware/<file>.md` 或 `examples/NT26/<category>/...`。
 
 索引：
 
 | | 本地 | Gitee raw |
 | --- | --- | --- |
 | API 索引 | `docs/NT26/api/README.md` | `.../docs/NT26/api/README.md` |
+| 硬件脚位 | `docs/NT26/hardware/README.md` | `.../docs/NT26/hardware/README.md` |
 | 示例索引 | `examples/NT26/README.md` | `.../examples/NT26/README.md` |
 | 型号入口 | `docs/NT26/README.md` | `.../docs/NT26/README.md` |
 

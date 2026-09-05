@@ -28,7 +28,7 @@ description: >-
 
 ### 抓取顺序
 
-1. 本地：`docs/NT26/api/README.md`、`examples/NT26/README.md`
+1. 本地：`docs/NT26/api/README.md`、`docs/NT26/hardware/README.md`、`examples/NT26/README.md`
 2. Gitee raw（优先）：
    - `https://gitee.com/dolua/dolua-api-docs/raw/main/docs/NT26/api/README.md`
    - `https://gitee.com/dolua/dolua-api-docs/raw/main/examples/NT26/README.md`
@@ -37,7 +37,7 @@ description: >-
    - `https://raw.githubusercontent.com/dolua-big-egg/dolua-api-docs/main/docs/NT26/api/README.md`
    - 单篇：`https://raw.githubusercontent.com/dolua-big-egg/dolua-api-docs/main/docs/NT26/api/<dir>/<module>.md`
 
-`<dir>` 只能是 `module` / `network` / `peripherals` / `rtu_config`。模块 → 路径对照见 [reference.md](reference.md)。`rtu_config.cfg` 不是 `require` 模块，语法与全部 key 在 `docs/NT26/api/rtu_config/rtu_config.md`。
+`<dir>` 只能是 `module` / `network` / `peripherals` / `rtu_config`。模块 → 路径对照见 [reference.md](reference.md)。`rtu_config.cfg` 不是 `require` 模块，语法与全部 key 在 `docs/NT26/api/rtu_config/rtu_config.md`。模块 PIN / 复用不是 API 页，在 `docs/NT26/hardware/`（NT26-PRO 为 `hardware/pro.md`）。
 
 查完 API 后，**对照同页给出的示例目录**打开 `main.lua`，按可烧录工程抄写法。不要从零手写第一份脚本去试接口。
 

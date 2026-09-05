@@ -9,13 +9,15 @@
 ## 仓库结构
 
 ```
-docs/NT26/api/     模块 API（一篇文档对应一个 require）
-examples/NT26/     可直接导入烧录的示例工程
+docs/NT26/api/        模块 API（一篇文档对应一个 require）
+docs/NT26/hardware/   全 IO / 封装脚位（按映射表分篇，不是 require）
+examples/NT26/        可直接导入烧录的示例工程
 ```
 
 | 你想… | 去这里 |
 | --- | --- |
 | 按模块查参数、返回值、失败约定 | [API 索引](docs/NT26/api/README.md) |
+| 对原理图、查 PIN / 复用 | [NT26 硬件脚位](docs/NT26/hardware/README.md) |
 | 找一份能跑的工程 | [示例索引](examples/NT26/README.md) |
 | 本型号总入口 | [NT26 文档](docs/NT26/README.md) |
 
