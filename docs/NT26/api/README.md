@@ -19,7 +19,7 @@
 
 | 模块 | 文档 | 示例 |
 | --- | --- | --- |
-| tcp | [tcp.md](network/tcp.md) | [tcp_api](../../../examples/NT26/network/tcp/tcp_api)、[tcp_cmd](../../../examples/NT26/network/tcp/tcp_cmd) |
+| tcp | [tcp.md](network/tcp.md) | [tcp_api](../../../examples/NT26/network/tcp/tcp_api)、[tcp_cmd](../../../examples/NT26/network/tcp/tcp_cmd)、[tcp_uart_frame](../../../examples/NT26/apps/protocol_pack/tcp_uart_frame) |
 | http | [http.md](network/http.md) | [http_request](../../../examples/NT26/network/http/http_request)、[https](../../../examples/NT26/network/http/https)、[http_file_ublob](../../../examples/NT26/network/http/http_file_ublob)、[http_file_lfs](../../../examples/NT26/network/http/http_file_lfs) |
 | mqtt | [mqtt.md](network/mqtt.md) | [mqtt_client](../../../examples/NT26/network/mqtt/mqtt_client)、[mqtt_cmd](../../../examples/NT26/network/mqtt/mqtt_cmd) |
 | dns | [dns.md](network/dns.md) | [dns_api](../../../examples/NT26/network/dns/dns_api) |
@@ -65,6 +65,6 @@
 | dream | [dream.md](module/dream.md) | [dream_api](../../../examples/NT26/module/dream/dream_api) |
 | framekit | [framekit.md](module/framekit.md) | [framekit_cmd](../../../examples/NT26/module/framekit/framekit_cmd) |
 | modbus | [modbus.md](module/modbus.md) | [modbus_api](../../../examples/NT26/module/modbus/modbus_api)、[modbus_rs485](../../../examples/NT26/module/modbus/modbus_rs485) |
-| rtu | [rtu.md](module/rtu.md) | [rtu_api](../../../examples/NT26/module/rtu/rtu_api)、[rtu_cmd](../../../examples/NT26/module/rtu/rtu_cmd) |
+| rtu | [rtu.md](module/rtu.md) | [rtu_api](../../../examples/NT26/module/rtu/rtu_api)、[rtu_cmd](../../../examples/NT26/module/rtu/rtu_cmd)、[rtu_ch1_uart_frame](../../../examples/NT26/apps/protocol_pack/rtu_ch1_uart_frame) |
 | virat | [virat.md](module/virat.md) | [virt_api](../../../examples/NT26/module/virt/virt_api) |
 | sms | [sms.md](module/sms.md) | [sms_api](../../../examples/NT26/network/sms/sms_api)、[sms_cmd](../../../examples/NT26/network/sms/sms_cmd) |

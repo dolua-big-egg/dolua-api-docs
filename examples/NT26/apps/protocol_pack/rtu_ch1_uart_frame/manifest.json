@@ -1,0 +1,39 @@
+{
+  "id": "rtu_ch1_uart_frame",
+  "name": "RTU 通道1下行组帧出串口",
+  "version": "1.0.0",
+  "category": "apps",
+  "hw": "中",
+  "tags": [
+    "rtu",
+    "uart",
+    "frame"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "hex",
+      "log",
+      "rt",
+      "rtu",
+      "uart"
+    ],
+    "pins": [],
+    "peripherals": [
+      "SIM"
+    ],
+    "controllers": [
+      "UART1"
+    ],
+    "extras": [],
+    "network": true
+  },
+  "readme": "",
+  "description": "关掉本次上下行透传，登记 RTU 网络通道 1 的回调。下行 payload 加上帧头 7E5A、大端长度和尾部 XOR 后从 UART1 发出。\n\n通道来自 rtu_config.cfg 的 [task.1]+[sock.1]，不是 tcp.create。回调只 mbox_send，组帧在工作协程。串口助手开 HEX。\n"
+}

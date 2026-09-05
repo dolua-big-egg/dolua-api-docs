@@ -1,6 +1,6 @@
 # rtu
 
-**文档版本** `1.1.1`
+**文档版本** `1.1.2`
 
 纯函数模块。用来和模组上 **传统 RTU / DTU 业务** 打交道：AT 或 [`rtu_config.cfg`](../rtu_config/rtu_config.md) 配好的透传通道、串口上下行路由、挂起恢复、以及在这些通道上直接发 TCP/UDP/MQTT。
 
@@ -603,6 +603,7 @@ end
 | 脚本自己拉 TCP/MQTT | [`tcp`](../network/tcp.md) / [`mqtt`](../network/mqtt.md)，不要用本模块的通道 id |
 | 查询 / 等连接 / 回调（不发数） | [examples/NT26/module/rtu/rtu_api](../../../../examples/NT26/module/rtu/rtu_api) |
 | UART 指令驱动全部 API | [examples/NT26/module/rtu/rtu_cmd](../../../../examples/NT26/module/rtu/rtu_cmd) |
+| 通道 1 下行组帧出 UART1 | [examples/NT26/apps/protocol_pack/rtu_ch1_uart_frame](../../../../examples/NT26/apps/protocol_pack/rtu_ch1_uart_frame) |
 
 ---
 
@@ -645,3 +646,4 @@ end
 | 1.0.1 | 2026-09-04 | 修正跨目录文档链接，demo 路径改为 examples/ |
 | 1.1.0 | 2026-09-05 | 补全错误与返回约定：全部抛错摘要、整数码与可能原因 |
 | 1.1.1 | 2026-09-05 | 定位段链到 `rtu_config.cfg` 语法文档 |
+| 1.1.2 | 2026-09-05 | 选型增加通道下行组帧出串口的应用例程 |

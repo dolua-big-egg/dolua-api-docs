@@ -154,6 +154,8 @@ HTTP 落内部盘走 `ublob`（或外挂 `lfs`），不要 `http.save` 进 `ufs`
 
 ## 5. 入门例程
 
+多模块场景工程在 `examples/NT26/apps/<分类>/`（协议打包、透传、云上报等）。分类索引：`examples/NT26/apps/README.md`。查单个 `require` 的接口仍用下面的 `started` / 各模块 `*_api`。
+
 `examples/NT26/started/`：
 
 | 工程 | 先看什么 |

@@ -1,0 +1,41 @@
+{
+  "id": "tcp_uart_frame",
+  "name": "TCP 下行组帧出串口",
+  "version": "1.0.0",
+  "category": "apps",
+  "hw": "中",
+  "tags": [
+    "tcp",
+    "uart",
+    "frame"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "hex",
+      "log",
+      "lp",
+      "rt",
+      "rtu",
+      "tcp",
+      "uart"
+    ],
+    "pins": [],
+    "peripherals": [
+      "SIM"
+    ],
+    "controllers": [
+      "UART1"
+    ],
+    "extras": [],
+    "network": true
+  },
+  "readme": "",
+  "description": "用 tcp 模块直连服务器。回调里的下行 payload 加上帧头 7E5A、大端长度和尾部 XOR 后从 UART1 发出。\n\n关掉本次 RTU 透传，避免和 DTU 抢串口。对象必须长期持有。串口助手开 HEX。HOST/PORT 在 main.lua 里改。\n"
+}

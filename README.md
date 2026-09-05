@@ -19,7 +19,7 @@ examples/NT26/     可直接导入烧录的示例工程
 | 找一份能跑的工程 | [示例索引](examples/NT26/README.md) |
 | 本型号总入口 | [NT26 文档](docs/NT26/README.md) |
 
-API 按主题放在 `peripherals` / `network` / `module`；示例按工程用途放在 `started` / `os` / `peripherals` / `network` / `storage` / `module`。两边分类不完全相同，用上面的索引跳转即可。
+API 按主题放在 `peripherals` / `network` / `module`；示例按工程用途放在 `started` / `os` / `peripherals` / `network` / `storage` / `module` / `apps`。两边分类不完全相同，用上面的索引跳转即可。
 
 ## 建议阅读顺序
 

@@ -2,7 +2,7 @@
 
 每个子目录是一份可直接打开的 Lua 工程（`main.lua`、`manifest.json`、`.luaproj`）。用配套工具导入该目录即可烧录。API 说明在 [docs/NT26/api](../../docs/NT26/api/README.md)。
 
-先从 `started/` 跑通：打印、日志、任务。再按外设 / 网络 / 存储选工程。
+先从 `started/` 跑通：打印、日志、任务。再按外设 / 网络 / 存储选工程。多模块场景工程放 [apps](apps/README.md)。
 
 ## started — 入门
 
@@ -75,3 +75,23 @@
 | [virt](module/virt) | [virat](../../docs/NT26/api/module/virat.md) |
 | [charge](module/charge) | [charge](../../docs/NT26/api/peripherals/charge.md) |
 | [lvgl](module/lvgl) | [lvgl](../../docs/NT26/api/module/lvgl.md) |
+
+## apps — 应用场景
+
+多模块拼起来的场景，不扫单个接口。目录名英文，标题中文。分类说明见 [apps/README.md](apps/README.md)。
+
+| 分类 | 中文 |
+| --- | --- |
+| [protocol_pack](apps/protocol_pack) | 协议打包：[rtu_ch1_uart_frame](apps/protocol_pack/rtu_ch1_uart_frame)、[tcp_uart_frame](apps/protocol_pack/tcp_uart_frame) |
+| [passthrough](apps/passthrough) | 透传网关 |
+| [cloud_report](apps/cloud_report) | 云上报 |
+| [uart_collect](apps/uart_collect) | 串口采集 |
+| [modbus_gateway](apps/modbus_gateway) | Modbus 网关 |
+| [io_control](apps/io_control) | IO 采集与控制 |
+| [env_sensor](apps/env_sensor) | 环境传感 |
+| [lbs_track](apps/lbs_track) | 定位追踪 |
+| [sms_alert](apps/sms_alert) | 短信告警 |
+| [lowpower](apps/lowpower) | 低功耗 |
+| [data_logger](apps/data_logger) | 本地记录 |
+| [ota_update](apps/ota_update) | 远程升级 |
+| [display_hmi](apps/display_hmi) | 屏显界面 |
