@@ -1,6 +1,6 @@
 # AT GPIO 与 ADC
 
-**文档版本** `1.0.0`
+**文档版本** `1.0.1`
 
 脚号、方向、电平、模板上报、脉冲、波形，以及五路 ADC。AT 的 GPIO id 是 **0～38**。配置文件 `[io.N]` 是 **1-based**：`[io.1]` = 本篇 id `0`。能 `gpio.open` 的脚不是 0～38 全集，见 [硬件 GPIO 落盘](../hardware/pro.md#41-gpio) 与 [gpio API](../api/peripherals/gpio.md)。
 
@@ -122,6 +122,8 @@ AT+IOTMPLH=1,"6[1]","AABB"
 AT+IOTMPLH=1?
 ```
 
+第二参是 [路由串](route.md)，决定模板上报打到哪。非法 → **109**。
+
 `IOLR`：`<id>[,<秒>[,<tmpl>]]` 电平保持上报。`IOCR`：`<id>[,<0|1>[,<tmpl>]]` 变化上报。查询 `=<id>?`。
 
 与 `[io.N]` / `[io.template.N]` 同一套。
@@ -198,3 +200,4 @@ OK
 | 版本 | 日期 | 说明 |
 | --- | --- | --- |
 | 1.0.0 | 2026-09-05 | 首版：IO 配置/运行时、模板、脉冲、波形、ADC |
+| 1.0.1 | 2026-09-07 | `IOTMPLH` 第二参链到 [route.md](route.md) |

@@ -2,7 +2,7 @@
 
 应用侧 AT 引擎（UART / USB 上的 `AT+…`），**不是** `require("…")`。和 Lua API、[`rtu_config.cfg`](../api/rtu_config/rtu_config.md) 操作的是同一套业务配置，换入口不换通道编号。
 
-先读 [convention.md](convention.md)（行格式、测试/查询/设置、两种失败风格、CME 码）。各专题按同一体例：约定差异 → 指令一览 → 逐条测试/查询/设置/参数/应答/错误 → 联调。演示代码块一律标 `lua`。
+先读 [convention.md](convention.md)（行格式、测试/查询/设置、两种失败风格、CME 码）。指令参数里的 `1|6[1]` 一类出口写法见 [route.md](route.md)，那不是一条指令。各专题按同一体例：约定差异 → 指令一览 → 逐条测试/查询/设置/参数/应答/错误 → 联调。演示代码块一律标 `lua`。
 
 产测指令、解析自测指令不写。
 
@@ -11,6 +11,7 @@
 | 篇章 | 指令 | 说明 |
 | --- | --- | --- |
 | [convention.md](convention.md) | — | 通用约定与自定义 `+CME ERROR` |
+| [route.md](route.md) | — | 路由串语法（不是指令）：通道 1～7 与子通道指向 |
 | [info.md](info.md) | `AT` `ATI` `VERSION` `CGMR` `IMEI` `ICCID` `IMSI` `SIMINFO` `CHIPID` `CMEERR` `ATMODE` | 握手、版本、标识 |
 | [netstat.md](netstat.md) | `CSQ` `MCC` `MNC` `CEREG` `CGACT` `CGI` `ISLINK` `UTC` `TIMEZONE` `TIME` `NTS` `RESET` `CFUN` | 驻网状态、时间、复位、射频开关 |
 | [link.md](link.md) | `APN` `APNAUTH` `LP` `SIMCFG` `SIMSLOT` `DOSIMSLOT` `RILAT` `RNDIS` `RNDISSAVE` | APN、低功耗、切卡、原厂通道、USB 网卡 |

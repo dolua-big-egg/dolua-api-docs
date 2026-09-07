@@ -1,6 +1,6 @@
 # rtu_config
 
-**文档版本** `1.0.3`
+**文档版本** `1.0.4`
 
 这不是 `require("…")` 模块。它是模组开机时解析的 **声明式配置文件** `rtu_config.cfg`：只改文件里写到的段和 key，没写到的字段保持机内当前值。Lua 的 [`rtu`](../module/rtu.md)、[`uart`](../peripherals/uart.md)、[`sms`](../module/sms.md)、[`lbs`](../network/lbs.md) 等运行时模块 **读的是这份文件落盘后的业务配置**，不是另起一套通道。
 
@@ -290,6 +290,8 @@ SSL 组是第三套：`[ssl.1]`～`[ssl.3]`，被 MQTT / HTTP 的 `ssl_id` 引�
 UART：`[uart.1]`～`[uart.3]` 对应硬件 UART1～3。`[uart.0]` **禁止**，套用失败。
 
 IO：`[io.N]` 的 N 是 GPIO 编号 **1～39**，对应内部脚 0～38。`[io.1]` = GPIO0。写文档和 AT 时按 1-based 脚号。
+
+路由串（`1|6[1]`）的一级数字是 **1～7 出口号**，不是上表的 N。`5[1]` 才是 HTTP 1，`6[1]` 才是 UART1。完整语法见 AT [route.md](../../at/route.md)。
 
 ---
 
@@ -797,7 +799,7 @@ key 可带或不带 `mrst.` 前缀（`u_ndata` ≡ `mrst.u_ndata`）。
 | `tmr_period_s` | 整数 | **≥1** | 周期秒；写 0 失败 |
 | `tmr_rpt_type` | 整数 | 0=只采集，1=AT URC，2=自定义文本 | 定时结果怎么出 |
 | `tmr_rpt_data` | 二进制 | `hex:`，最长 256 | 类型 2 的载荷，可含占位符 |
-| `tmr_rpt_route` | 字符串 | 最长 127，须是合法路由串或空 | 例如 `6[1]`；空=默认路径。非法路由失败 |
+| `tmr_rpt_route` | 字符串 | 最长 127，须是合法 [路由串](../../at/route.md) 或空 | 例如 `6[1]`；空=默认路径。非法路由失败 |
 | `reset` | 整数 | **必须是 1** | **总覆盖**：整份 LBS 回到出厂，然后继续本段后面的 key |
 
 `tmr_rpt_type=2` 且要占位符：`map.all=1` 且 `map.lbs_timer=1`。Lua `require("lbs")` 的一次性请求用自己的参数，默认值来自这里。
@@ -1068,3 +1070,4 @@ log_route=1
 | 1.0.1 | 2026-09-05 | `[uart.N] pin_map` 改为指向硬件落盘表（UART2 出厂组 2） |
 | 1.0.2 | 2026-09-05 | `[sock.N]` 链到应用 AT Socket 手册 |
 | 1.0.3 | 2026-09-05 | 文首链到应用 AT 分类索引 |
+| 1.0.4 | 2026-09-07 | 第 7 节与 `tmr_rpt_route` 链到 AT [route.md](../../at/route.md) |

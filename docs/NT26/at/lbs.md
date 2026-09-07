@@ -1,6 +1,6 @@
 # AT 定位（LBS / Wi-Fi）
 
-**文档版本** `1.0.0`
+**文档版本** `1.0.1`
 
 基站定位、LBS 持久化配置、同步 Wi-Fi 扫描、Wi-Fi 云端定位。行格式见 [convention.md](convention.md)。失败走 `+CME ERROR`（`LBSCFG` 用短 reason）。
 
@@ -234,7 +234,7 @@ AT+LBSCFG="<key>",<value>
 | `tmr_period_s` | 整数 | **≥1** | 周期秒；写 0 失败 |
 | `tmr_rpt_type` | 整数 | 0 / 1 / 2 | 0=只采集；1=AT URC；2=自定义文本 |
 | `tmr_rpt_data` | TAILRAW | 最长 **256** 字节 | 类型 2 的载荷，可含占位符 |
-| `tmr_rpt_route` | 文本 | 最长 127；空或合法路由串 | 例如 `6[1]`。非空且路由非法则失败 |
+| `tmr_rpt_route` | 文本 | 最长 127；空或合法 [路由串](route.md) | 例如 `6[1]`。非空且路由非法则失败 |
 | `reset` | 整数 | **必须是 1** | 整份回到出厂并落盘 |
 
 `tmr_rpt_type=2` 且要展开占位符：还要 [`map.all`](sys.md#11-atdevicecfg) 与 `map.lbs_timer` 为 1。
@@ -471,3 +471,4 @@ OK
 | 版本 | 日期 | 说明 |
 | --- | --- | --- |
 | 1.0.0 | 2026-09-05 | 首版：LBS / LBSCFG / WIFISCAN / WIFILOC，链 Lua lbs / wifiscan 与 `[lbs]` |
+| 1.0.1 | 2026-09-07 | `tmr_rpt_route` 链到 [route.md](route.md) |

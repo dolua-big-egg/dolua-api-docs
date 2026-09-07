@@ -1,6 +1,6 @@
 # AT 短信（SMS）
 
-**文档版本** `1.0.0`
+**文档版本** `1.0.1`
 
 配 10 路短信通道号码、读写删除 **SIM 卡存储**、按通道或按号码发短信，以及收信转发到 RTU。与 [`rtu_config.cfg` 的 `[sms]` / `[sms.N]`](../api/rtu_config/rtu_config.md#27-sms--smsn) 读写**同一份持久化**。行格式见 [convention.md](convention.md)。
 
@@ -706,7 +706,7 @@ AT+SMSCFG="<key>",<value>
 | key | value 形态 | 合法范围 | 说明 |
 | --- | --- | --- | --- |
 | `forward_en` | 十进制文本 | 只认 `0` / `1`（可带空白） | 收到短信是否转到 RTU 输出 |
-| `forward_route` | **必须带双引号** 的路由串 | 与 [rtu 路由](../api/module/rtu.md#8-路由字符串) 相同；`""` 清空 | 例如 `,"1\|2"` 或 `,"6[1]"`。无引号 → **105**。非法串 → **109** |
+| `forward_route` | **必须带双引号** 的路由串 | 与 [路由串](route.md) 相同；`""` 清空 | 例如 `,"1\|2"` 或 `,"6[1]"`。无引号 → **105**。非法串 → **109** |
 | `forward_msg_mode` | 十进制文本 | **1～3**（写 0 失败） | `1` JSON；`2` AT 行；`3` 模板 + 占位符 |
 
 `forward_route` 的 TAILRAW 整体须是 `"…"`：第一个字符和最后一个字符都是 `"`，中间才交给路由解析。不要写成不带引号的 `6[1]`。
@@ -812,3 +812,4 @@ SIM 维护：`AT+SMSL=2` 看未读 → `AT+SMSR=<index>` → `AT+SMSD=<index>`�
 | 版本 | 日期 | 说明 |
 | --- | --- | --- |
 | 1.0.0 | 2026-09-05 | 首版：SMS/SMSR/SMSL/SMSD/SMSWRITE/SMSSYNC/SMSASYNC/SMSTMPH/SMSCFG；通道 1～10 与 99；SIM index 0/1～255；发送码与 CME/reason |
+| 1.0.1 | 2026-09-07 | `forward_route` 改链到 [route.md](route.md) |

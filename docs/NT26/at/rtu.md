@@ -1,10 +1,10 @@
 # AT 透传任务（RTU / DTU）
 
-**文档版本** `1.0.0`
+**文档版本** `1.1.0`
 
 四路透传任务选 SOCK 还是 MQTT、心跳/注册包、上下行路由、往通道写裸数据、暂停恢复、AT 口密码锁、云配置拉取策略。与 [`[task.N]`](../api/rtu_config/rtu_config.md#17-task--taskn--tasknheart--tasknreg)、[`[netio.N]`](../api/rtu_config/rtu_config.md#21-netion)、`[loader]` 同一套。
 
-通道 1～4 与 Socket/MQTT **同一路 N**。通用约定见 [convention.md](convention.md)。失败短 reason。
+通道 1～4 与 Socket/MQTT **同一路 N**。通用约定见 [convention.md](convention.md)。`DTUPSUP` / `DTUPSDN` / `RTUWRITE` 的路由串见 [route.md](route.md)（`DTUHEART` / `DTUREG` 最后一段不是这套语法）。失败短 reason。
 
 ---
 
@@ -32,7 +32,7 @@
 | `AT+DTUTASK` | `<id>,<en>,"SOCK"\|"MQTT"` |
 | `AT+DTUSTATE` | 查该路任务是否在跑 |
 | `AT+NETIO` | 通道在线指示 IO |
-| `AT+DTUHEART` / `DTUREG` | 心跳 / 注册包（hex + 路由） |
+| `AT+DTUHEART` / `DTUREG` | 心跳 / 注册包（hex + 本路发布槽列表） |
 | `AT+DTUPSUP` / `DTUPSDN` | 串口上行总闸 / 通道下行路由 |
 | `AT+RTUWRITE` | 按路由写裸数据，成功回 `OK` |
 | `AT+RTUWRITEQ` | 同 WRITE，**成功不回 OK** |
@@ -103,7 +103,7 @@ AT+DTUHEART=<id>,<en>,<interval>,"<hex包>","<路由>"
 AT+DTUREG=<id>,<en>,"<hex包>","<路由>"
 ```
 
-心跳 interval 1～65535（秒或毫秒以帮助/配置文件为准，配置文件 `[task.N.heart]`）。hex 包是**十六进制文本**。路由须是合法路由串（例如 `6[1]`），非法 `"error"` 类 reason 见测试命令。
+心跳 interval 1～65535（秒或毫秒以帮助/配置文件为准，配置文件 `[task.N.heart]`）。hex 包是**十六进制文本**。最后一段是 `channel_str`：只用 `|` 并选**本路** MQTT 发布槽 1～8（例如 `"1|2"`），**不是** [路由串](route.md)。写 `6[1]` 不会出 UART。该路是 SOCK 时这段不改变发送目标。非法 `"error channel_str"`。
 
 ---
 
@@ -114,7 +114,7 @@ AT+DTUPSUP=<uart1-3>,"<路由>"
 AT+DTUPSDN=<id1-4>,"<路由>"
 ```
 
-上行：哪路 UART 的数据转到哪些通道。下行：通道数据转到哪些口。查询 `=<id>?`。
+上行：哪路 UART 的数据转到哪些出口。下行：通道数据转到哪些口。路由串见 [route.md](route.md)，例如 `"1|2"`、`"6[1]"`、`"1[1:2]|6[1]"`。查询 `=<id>?`。
 
 ---
 
@@ -124,7 +124,7 @@ AT+DTUPSDN=<id1-4>,"<路由>"
 AT+RTUWRITE="<路由>",<TAILRAW>
 ```
 
-第一个逗号之后是**原始字节**（不是 hex 解码）。成功 `OK`。`RTUWRITEQ` 成功**完全静默**（方便透传）。路由非法 / 发送失败短 reason。
+第一个逗号之后是**原始字节**（不是 hex 解码）。成功 `OK`。`RTUWRITEQ` 成功**完全静默**（方便透传）。路由串见 [route.md](route.md)。路由非法 / 发送失败短 reason。
 
 ---
 
@@ -165,3 +165,4 @@ AT+DTUSTATE=1
 | 版本 | 日期 | 说明 |
 | --- | --- | --- |
 | 1.0.0 | 2026-09-05 | 首版：任务、路由、写通道、密码锁、云配置策略 |
+| 1.1.0 | 2026-09-07 | 上下行/写出链到 [route.md](route.md)；纠正 HEART/REG 最后一段是发布槽列表，不是路由串 |

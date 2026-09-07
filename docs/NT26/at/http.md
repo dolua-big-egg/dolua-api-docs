@@ -1,6 +1,6 @@
 # AT HTTP
 
-**文档版本** `1.0.0`
+**文档版本** `1.0.1`
 
 配置并执行模组上的 **5 路 HTTP 通道**，以及一条**不占通道**的自由请求。指令走应用 AT 口，与 [`rtu_config.cfg` 的 `[http.N]`](../api/rtu_config/rtu_config.md#12-httpn) 读写**同一份持久化配置**（自由请求除外）。通道号一律 **1～5**，与 `[http.1]`～`[http.5]` 对应。
 
@@ -108,7 +108,7 @@ HTTP 的 N **不是** Socket / MQTT 的 N，也不是 SSL 证书组号。`ssl_id
 | `url_encode` | 0（仅配置文件，AT 改不了） |
 | `resp_status_line` / `resp_header` / `resp_content` | 1 / 1 / 1 |
 | `resp_at_mode` | 0（结果行都回） |
-| 输出路由 | `6[1]`（UART1），见 [rtu 路由串](../api/module/rtu.md#8-路由字符串) |
+| 输出路由 | `6[1]`（UART1），见 [路由串](route.md) |
 
 `method`：`0` NONE，`1` GET，`2` POST，`3` PUT，`4` DELETE，`5` HEAD。
 
@@ -627,3 +627,4 @@ OK
 | 版本 | 日期 | 说明 |
 | --- | --- | --- |
 | 1.0.0 | 2026-09-05 | 首版：HTTPURL / HTTPCFG / HTTPREQ / HTTPFREE 的测试、查询、设置、`resp_at_mode` 静默、请求错误码与示例 |
+| 1.0.1 | 2026-09-07 | `route` 改链到 [route.md](route.md) |
