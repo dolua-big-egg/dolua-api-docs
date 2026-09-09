@@ -20,7 +20,7 @@ M.CYAN    = 0x07FF
 M.MAGENTA = 0xF81F
 
 local function out_pin(n, level)
-    local io = gpio.open(gpio.INPUT_GPIO, n)
+    local io = gpio.open(gpio.BY_GPIO, n) -- 按 GPIO 编号；旧名 gpio.INPUT_GPIO
     if not io:config(true, level, gpio.PULL_UP) then
         return nil
     end

@@ -1,6 +1,6 @@
 # flashdb
 
-**文档版本** `1.1.0`
+**文档版本** `1.1.1`
 
 对象化的 **FlashDB**：在已经 `sfud.bind` 好的外挂 NOR 上开 **KV 库** 或 **时序库（TS）**。值按 MessagePack 存，Lua 侧直接收发 string / number / bool / table。
 
@@ -668,7 +668,7 @@ local spi_dev = spi.new(spi.SPI0, {
     frame_format = spi.CPOL0_CPHA0,
     work_mode = spi.WORK_MODE_FULL_DUPLEX,
 })
-local cs = gpio.open(gpio.INPUT_GPIO, 8)
+local cs = gpio.open(gpio.BY_GPIO, 8)
 assert(cs:config(true, true, gpio.PULL_UP))
 
 local flash, fe = sfud.bind(spi_dev, "flash0", cs, { cs_active_low = true })
@@ -726,3 +726,4 @@ end
 | 1.0.0 | 2026-09-04 | 首版 |
 | 1.0.1 | 2026-09-04 | 修正跨目录文档链接，demo 路径改为 examples/ |
 | 1.1.0 | 2026-09-05 | 补全错误文案/错误码与可能原因 |
+| 1.1.1 | 2026-09-09 | 示例片选改为 `gpio.BY_GPIO` |

@@ -1,6 +1,6 @@
 # spi
 
-**文档版本** `1.1.1`
+**文档版本** `1.1.2`
 
 对象化 SPI 主机。`spi.new` 打开一路控制器，之后在对象上发、收、全双工对传。每路控制器同一时刻只允许一个实例。
 
@@ -434,7 +434,7 @@ obj:deinit()
 | `active_low` | `true` | 须 boolean |
 | `pull_mode` | `spi.PULL_UP` | `PULL_*` |
 
-`gpio` 与 [`gpio.open(gpio.INPUT_GPIO, n)`](gpio.md) 的编号同一套。demo 用 `gpio = 8`，不要和 `pin_no = 66` 混填两套。
+`gpio` 与 [`gpio.open(gpio.BY_GPIO, n)`](gpio.md) 的编号同一套。demo 用 `gpio = 8`，不要和 `pin_no = 66` 混填两套。
 
 ---
 
@@ -593,3 +593,4 @@ end
 | 1.0.1 | 2026-09-04 | 修正跨目录文档链接，demo 路径改为 examples/ |
 | 1.1.0 | 2026-09-05 | 补全错误文案/错误码与可能原因 |
 | 1.1.1 | 2026-09-05 | SPI0 脚改为 PIN+PDDR，并链到硬件落盘表 |
+| 1.1.2 | 2026-09-09 | 片选 GPIO 编号对照改为 `gpio.BY_GPIO` |

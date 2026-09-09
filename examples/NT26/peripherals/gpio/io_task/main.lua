@@ -20,7 +20,8 @@ local W_SLOW = 3   -- 1s 亮 / 1s 灭
 local W_FAST = 4   -- 200ms 闪
 local W_BEAT = 5   -- 两短一长，像心跳
 
-local led = gpio.open(gpio.INPUT_GPIO, LED_GPIO)
+-- 按 GPIO 编号打开（旧名 gpio.INPUT_GPIO 同值，仍可用）
+local led = gpio.open(gpio.BY_GPIO, LED_GPIO)
 led:config(true, false, gpio.PULL_AUTO)
 
 led:wave_reg(W_OFF, 0)

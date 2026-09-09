@@ -17,9 +17,9 @@ local gpio = require("gpio")
 local OUT_GPIO = 9 -- 板载指示灯
 local IN_GPIO = 1  -- 输入脚
 
--- 打开：按 GPIO 编号拿到对象
-local led = gpio.open(gpio.INPUT_GPIO, OUT_GPIO)
-local din = gpio.open(gpio.INPUT_GPIO, IN_GPIO)
+-- 打开：按 GPIO 编号拿到对象（旧名 gpio.INPUT_GPIO 同值，仍可用）
+local led = gpio.open(gpio.BY_GPIO, OUT_GPIO)
+local din = gpio.open(gpio.BY_GPIO, IN_GPIO)
 
 -- 输出：初始灭；输入：内部上拉，避免悬空乱跳
 local ok_led = led:config(true, false, gpio.PULL_AUTO)
@@ -60,8 +60,10 @@ end
   ----------------------------------------------------------------------------
   gpio.open(type, id) -> obj
   ----------------------------------------------------------------------------
-    type  gpio.INPUT_GPIO   按 GPIO 编号（本 demo 用这个）
-          gpio.INPUT_PINNO  按模块引脚序号
+    type  gpio.BY_GPIO      使用 GPIO 编号（本 demo 用这个）
+          gpio.BY_PINNO     使用模块对外引脚序号
+          旧名 gpio.INPUT_GPIO / gpio.INPUT_PINNO 数值相同，仍可用
+          （INPUT_* 不表示输入模式，方向由 config 决定）
     id    对应的编号
     返回  GPIO 对象；编号非法或打开失败会抛错
 
@@ -97,7 +99,7 @@ end
     一次返回四个数，查看这个对象实际绑到哪：
       gpio     内部 GPIO 编号
       pin_no   模块引脚序号
-      type     打开时用的类型（INPUT_GPIO / INPUT_PINNO）
+      type     打开时用的类型（BY_GPIO / BY_PINNO，旧名 INPUT_GPIO / INPUT_PINNO）
       id       打开时传入的 id
     打开失败不会走到这里；四个值都是 number。
 

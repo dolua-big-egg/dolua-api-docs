@@ -1,6 +1,6 @@
 # soft_i2c
 
-**文档版本** `1.1.0`
+**文档版本** `1.1.1`
 
 对象化软件 I2C 主机。用两根普通 GPIO 模拟 SCL/SDA，不占用硬件 I2C 控制器。可同时开多路（脚不要冲突）。
 
@@ -394,7 +394,7 @@ obj:deinit()
 | 确认接线 | `test_hardware` + `scan` |
 | 100 kHz 以上稳定 | 优先硬件 `i2c` |
 
-和 gpio 编号一致：`INPUT_GPIO` 的 8/9 就是 `gpio.open(gpio.INPUT_GPIO, 8)` 那套编号。
+和 gpio 编号一致：`INPUT_GPIO` 的 8/9 就是 `gpio.open(gpio.BY_GPIO, 8)` 那套编号（`gpio.BY_GPIO` 旧名 `gpio.INPUT_GPIO`）。
 
 ---
 
@@ -430,3 +430,4 @@ local raw = bus:read(ADDR, 7)
 | 1.0.0 | 2026-09-04 | 首版 |
 | 1.0.1 | 2026-09-04 | 修正跨目录文档链接，demo 路径改为 examples/ |
 | 1.1.0 | 2026-09-05 | 补全错误文案/错误码与可能原因 |
+| 1.1.1 | 2026-09-09 | 与 gpio 编号对照改为 `gpio.BY_GPIO` |

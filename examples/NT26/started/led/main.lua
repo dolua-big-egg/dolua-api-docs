@@ -14,7 +14,8 @@ local gpio = require("gpio")
 
 local NET_LED = 9 -- 开发板指示灯
 
-local led = gpio.open(gpio.INPUT_GPIO, NET_LED)
+-- 按 GPIO 编号打开（旧名 gpio.INPUT_GPIO 同值，仍可用）
+local led = gpio.open(gpio.BY_GPIO, NET_LED)
 led:config(true, false, gpio.PULL_AUTO)
 
 while true do
@@ -27,7 +28,8 @@ end
 --[=[
   led demo — 闪 开发板指示灯（GPIO 9）
 
-  gpio.open(gpio.INPUT_GPIO, n)   按 GPIO 编号打开
+  gpio.open(gpio.BY_GPIO, n)      使用 GPIO 编号打开（旧名 gpio.INPUT_GPIO）
+  gpio.open(gpio.BY_PINNO, n)     使用模块 PIN 序号打开（旧名 gpio.INPUT_PINNO）
   io:config(is_output, init, pull) 配成输出
   io:set(true/false)               高/低电平
 

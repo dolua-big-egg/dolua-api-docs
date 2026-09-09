@@ -105,7 +105,8 @@ end
 
   前两个参数按 cfg.input 解释：
     省略 / INPUT_PINNO  模块引脚序号（默认，兼容旧用法）
-    INPUT_GPIO          内部 GPIO 编号，和 gpio.open(gpio.INPUT_GPIO, n) 同一套
+    INPUT_GPIO          内部 GPIO 编号，和 gpio.open(gpio.BY_GPIO, n) 同一套
+                        （gpio.BY_GPIO 旧名 gpio.INPUT_GPIO）
 
   本 demo 用 IO8 / IO9：SDA=GPIO8，SCL=GPIO9（对应 pin66 / pin67）。
 

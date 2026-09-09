@@ -1,6 +1,6 @@
 # lcd
 
-**文档版本** `1.1.0`
+**文档版本** `1.1.1`
 
 对象化 SPI 彩屏。`lcd.new(cfg)` 打开一路总线并初始化面板，之后在对象上填色、打点、刷一块 RGB565。
 
@@ -585,7 +585,7 @@ dc = 10          -- GPIO10
 dc = { gpio = 10 }
 ```
 
-**表：`pin` 键，按模块对外 pin 序号**（与 `gpio.open(gpio.INPUT_PINNO, n)` 同一套编号）
+**表：`pin` 键，按模块对外 pin 序号**（与 `gpio.open(gpio.BY_PINNO, n)` 同一套编号）
 
 ```lua
 dc = { pin = 23 }
@@ -758,3 +758,4 @@ log.info("driver=%s bus=%s", inf.driver, inf.bus)
 | 1.0.1 | 2026-09-04 | 修正跨目录文档链接，demo 路径改为 examples/ |
 | 1.0.2 | 2026-09-05 | 选型对照补上 lvgl 文档链接 |
 | 1.1.0 | 2026-09-05 | 补全固定 err 文本与可能原因 |
+| 1.1.1 | 2026-09-09 | 管脚 `pin` 编号对照改为 `gpio.BY_PINNO` |

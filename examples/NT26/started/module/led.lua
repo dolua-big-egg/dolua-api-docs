@@ -13,7 +13,8 @@ local M = {
 local io = nil
 
 function M.init()
-    io = gpio.open(gpio.INPUT_GPIO, M.PIN)
+    -- 按 GPIO 编号打开（旧名 gpio.INPUT_GPIO 同值，仍可用）
+    io = gpio.open(gpio.BY_GPIO, M.PIN)
     io:config(true, false, gpio.PULL_AUTO)
     M.off()
 end

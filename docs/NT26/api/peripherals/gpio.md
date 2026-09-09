@@ -1,6 +1,6 @@
 # gpio
 
-**文档版本** `1.2.3`
+**文档版本** `1.3.0`
 
 GPIO 对象化驱动模块。按编号打开引脚对象后，可配置方向、读写电平、同步时序播放、异步波形任务，以及边沿回调。
 
@@ -56,18 +56,20 @@ c
 2. `obj:config` 设定输入 / 输出、初始电平、上下拉。
 3. 之后在该对象上读写、播时序、挂波形或注册边沿回调。
 
-同一条脚可以用两种编号打开：
+同一条脚可以用两种编号打开（只表示 **编号怎么填**，不是输入/输出方向）：
 
 | 打开方式 | 含义 |
 | --- | --- |
-| `gpio.INPUT_GPIO` | 按芯片 GPIO 编号（GPIOX） |
-| `gpio.INPUT_PINNO` | 按模块对外引脚序号 |
+| `gpio.BY_GPIO` | 使用芯片 GPIO 编号（GPIOX） |
+| `gpio.BY_PINNO` | 使用模块对外引脚序号 |
+| `gpio.INPUT_GPIO` | 旧别名，与 `BY_GPIO` 同值 |
+| `gpio.INPUT_PINNO` | 旧别名，与 `BY_PINNO` 同值 |
 
 打开时完成编号解析。之后 `set` / `get` / `tog` / `seq` 走对象上的快速句柄，不再反复查表。两种编号必须落在**本机型固定映射表**里，对不上就 `open` 抛 `invalid pin`。
 
 ### 1.1 GPIO 与模块脚绑定
 
-框架为每条可用脚维护一对固定关系：**芯片 GPIO 编号 ↔ 模块对外 PIN 序号**。`gpio.open(gpio.INPUT_GPIO, n)` 与 `gpio.open(gpio.INPUT_PINNO, pin)` 打开的是同一条物理脚时，`obj:pins()` 会给出互相对应的两个编号。
+框架为每条可用脚维护一对固定关系：**芯片 GPIO 编号 ↔ 模块对外 PIN 序号**。`gpio.open(gpio.BY_GPIO, n)` 与 `gpio.open(gpio.BY_PINNO, pin)` 打开的是同一条物理脚时，`obj:pins()` 会给出互相对应的两个编号。
 
 **NT26-PRO** 使用 **F6E0** 与 **F6D0** 两种封装。F6D0 固件不另开一张表，GPIO↔PIN **与 F6E0 完全相同**，做板与脚本都按 [1.2](#12-nt26-pro-map) 对脚。丝印脚名、默认外设和全部复用见 [NT26-PRO 全 IO 表](../../hardware/pro.md)。固件落地的 GPIO / PIN / PDDR 见同篇 [4.1](../../hardware/pro.md#41-gpio)。F6B0 是另一封装，PIN 不同，见 [1.3](#13-nt26-f6b0-映射表)。
 
@@ -87,7 +89,7 @@ c
 
 ### 1.2 NT26-PRO 映射表（F6E0 / F6D0） {#12-nt26-pro-map}
 
-**NT26-PRO** 的 F6E0、F6D0 共用下表。F6D0 未单独标出条目，编号与 F6E0 一一对应，不要另找一张 D0 表。`INPUT_GPIO` 填「GPIO」列，`INPUT_PINNO` 填「模块 PIN」列。
+**NT26-PRO** 的 F6E0、F6D0 共用下表。F6D0 未单独标出条目，编号与 F6E0 一一对应，不要另找一张 D0 表。`BY_GPIO` 填「GPIO」列，`BY_PINNO` 填「模块 PIN」列。
 
 | GPIO | 模块 PIN | 常电域 | 备注 |
 | --- | ---: | --- | --- |
@@ -127,8 +129,8 @@ c
 等价写法示例（NT26-PRO，F6E0 / F6D0 相同）：
 
 ```lua
-local a = gpio.open(gpio.INPUT_GPIO, 9)     -- GPIO9
-local b = gpio.open(gpio.INPUT_PINNO, 67)   -- 同一条脚，模块 PIN 67
+local a = gpio.open(gpio.BY_GPIO, 9)     -- GPIO9；旧名 gpio.INPUT_GPIO
+local b = gpio.open(gpio.BY_PINNO, 67)   -- 同一条脚，模块 PIN 67；旧名 gpio.INPUT_PINNO
 ```
 
 ### 1.3 NT26-F6B0 映射表
@@ -228,7 +230,7 @@ local b = gpio.open(gpio.INPUT_PINNO, 67)   -- 同一条脚，模块 PIN 67
 
 要点：
 
-- **Lua 回调不在硬件中断里执行。** 中断路径只负责捕获和投递；滤波确认电平稳定后，才进入运行时队列；真正调用脚本函数发生在 Lua 调度循环。
+- **Lua 回调不在硬件中断里执行。** 硬件始终双边沿捕获；滤波确认电平稳定后，再按 `irq_mode` 决定是否进运行时队列；真正调用脚本函数发生在 Lua 调度循环。
 - **所有 Lua 边沿回调都带消抖。** 没有“零滤波、边沿立刻进 Lua”的模式。短毛刺会被丢掉。
 - **`seq` 与 `wave` 都按“起始电平 + 各段保持 + 结束动作”描述波形**，但执行位置不同：`seq` 在 Lua 调用栈上同步翻转；`wave` 把描述交给 IO 任务循环播放。
 - 虚拟机退出时，本 VM 登记过的边沿回调和波形通道会被框架收回，避免脚本结束后仍占着硬件资源。
@@ -238,7 +240,7 @@ local b = gpio.open(gpio.INPUT_PINNO, 67)   -- 同一条脚，模块 PIN 67
 ## 3. 对象模型
 
 ```lua
-local led = gpio.open(gpio.INPUT_GPIO, 9)
+local led = gpio.open(gpio.BY_GPIO, 9)
 ```
 
 `open` 返回带元表的 userdata。方法必须通过该对象调用。
@@ -286,7 +288,7 @@ led:seq(gpio.TIME_MS, {1, 200, 200, 0})   -- 数组里用 0/1
 边沿回调和波形通道挂在对象及当前虚拟机上。对象被垃圾回收后，对应回调和波形会被拆除。
 
 ```lua
-local din = gpio.open(gpio.INPUT_GPIO, 1)
+local din = gpio.open(gpio.BY_GPIO, 1)
 din:config(false, false, gpio.PULL_UP)
 din:reg(gpio.IRQ_BOTH, 20, on_io)
 -- 必须一直持有 din；不要只 open 一次不保存
@@ -300,12 +302,16 @@ din:reg(gpio.IRQ_BOTH, 20, on_io)
 
 ### 4.1 打开类型 `io_type`
 
-用于 `gpio.open(type, id)` 的第一个参数。
+用于 `gpio.open(type, id)` 的第一个参数。**只表示第二参按哪套编号解释，不是输入/输出方向。** 方向由随后的 `obj:config(is_output, ...)` 决定。
 
 | 符号 | 值 | 含义 | `id` 填什么 |
 | --- | --- | --- | --- |
-| `gpio.INPUT_GPIO` | `0` | 按芯片 GPIO 编号打开 | GPIOX，例如 `9` 表示 GPIO9 |
-| `gpio.INPUT_PINNO` | `1` | 按模块引脚序号打开 | 模块对外 pin 号 |
+| `gpio.BY_GPIO` | `0` | 使用芯片 GPIO 编号打开 | GPIOX，例如 `9` 表示 GPIO9 |
+| `gpio.BY_PINNO` | `1` | 使用模块对外引脚序号打开 | 模块对外 pin 号 |
+| `gpio.INPUT_GPIO` | `0` | 旧别名，与 `BY_GPIO` 同值 | 同上 |
+| `gpio.INPUT_PINNO` | `1` | 旧别名，与 `BY_PINNO` 同值 | 同上 |
+
+`INPUT_GPIO` / `INPUT_PINNO` 名字容易被理解成「输入模式」，实际与方向无关。新代码请用 `BY_GPIO` / `BY_PINNO`；旧名仍导出，数值不变。
 
 两种写法打开的是同一条物理脚时，后续 `pins()` 会给出互相对应的 GPIO 编号和 pin 序号。编号必须落在 [1.2](#12-nt26-pro-map) / [1.3](#13-nt26-f6b0-映射表) 本机型表内，否则 `open` 抛错。当前不能改这对关系，见 [1.1](#11-gpio-与模块脚绑定)。
 
@@ -327,9 +333,11 @@ din:reg(gpio.IRQ_BOTH, 20, on_io)
 
 | 符号 | 值 | 含义 |
 | --- | --- | --- |
-| `gpio.IRQ_FALLING` | `3` | 下降沿（高→低，滤波确认后回调） |
-| `gpio.IRQ_RISING` | `4` | 上升沿（低→高，滤波确认后回调） |
-| `gpio.IRQ_BOTH` | `5` | 双边沿 |
+| `gpio.IRQ_FALLING` | `3` | 只把 **高→低** 的结算投进 Lua 回调 |
+| `gpio.IRQ_RISING` | `4` | 只把 **低→高** 的结算投进 Lua 回调 |
+| `gpio.IRQ_BOTH` | `5` | 两种结算都投进 Lua |
+
+硬件中断 **始终按双边沿捕获**。`irq_mode` 不是芯片触发方式，只过滤进脚本的那一次。单沿登记时，相反沿仍会进滤波状态机（更新内部电平），只是不调用 `cb`。否则只开下降沿时松开看不见，后续按下会被底层同电平过滤掉。
 
 底层另有禁用 / 低电平 / 高电平取值，但 **未挂到 `gpio` 模块**，传入这些值会注册失败并抛错。
 
@@ -370,7 +378,7 @@ din:reg(gpio.IRQ_BOTH, 20, on_io)
 | 名称 | 实际类型 | 取值 |
 | --- | --- | --- |
 | `GpioObj` | userdata | `gpio.open` 的返回值 |
-| `io_type` | integer | `INPUT_GPIO` / `INPUT_PINNO` |
+| `io_type` | integer | `BY_GPIO` / `BY_PINNO`（旧名 `INPUT_GPIO` / `INPUT_PINNO`） |
 | `id` | integer | 0–255 范围内的合法编号 |
 | `bool_level` | boolean（按真假） | `true` 高 / `false` 低 |
 | `bit_level` | integer | 仅 `0` 或 `1` |
@@ -401,7 +409,7 @@ gpio.open(type, id)
 
 | 参数 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `type` | `io_type` | 是 | `gpio.INPUT_GPIO` 或 `gpio.INPUT_PINNO` |
+| `type` | `io_type` | 是 | `gpio.BY_GPIO` 或 `gpio.BY_PINNO`（旧名 `INPUT_GPIO` / `INPUT_PINNO` 同值） |
 | `id` | integer | 是 | 对应类型下的编号 |
 
 **返回**
@@ -411,7 +419,7 @@ gpio.open(type, id)
 
 | 失败原因 | 错误信息（摘要） |
 | --- | --- |
-| `type` 不是两种打开类型之一 | `invalid io_type, expect INPUT_GPIO/INPUT_PINNO` |
+| `type` 不是两种打开类型之一 | `invalid io_type, expect BY_GPIO/BY_PINNO` |
 | IO 框架初始化失败 | `gpio init failed` |
 | 编号无法解析到合法脚 | `invalid pin` |
 | 打开失败 | `gpio open failed` |
@@ -419,9 +427,9 @@ gpio.open(type, id)
 **示例**
 
 ```lua
-local led  = gpio.open(gpio.INPUT_GPIO, 9)   -- GPIO9
-local din  = gpio.open(gpio.INPUT_GPIO, 1)
-local by_pin = gpio.open(gpio.INPUT_PINNO, 23)  -- 按模块 pin 23
+local led  = gpio.open(gpio.BY_GPIO, 9)   -- GPIO9；旧名 gpio.INPUT_GPIO
+local din  = gpio.open(gpio.BY_GPIO, 1)
+local by_pin = gpio.open(gpio.BY_PINNO, 23)  -- 按模块 pin 23；旧名 gpio.INPUT_PINNO
 ```
 
 打开不等于配置。未 `config` 前不要假设方向和电平。
@@ -577,7 +585,7 @@ local gpio_id, pin_no, type, id = obj:pins()
 
 ```lua
 local g, pin, typ, id = led:pins()
--- typ == gpio.INPUT_GPIO 或 gpio.INPUT_PINNO
+-- typ == gpio.BY_GPIO 或 gpio.BY_PINNO（旧名 INPUT_GPIO / INPUT_PINNO）
 ```
 
 ---
@@ -732,7 +740,7 @@ obj:reg(irq_mode, debounce_ms, cb)
 
 | 参数 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `irq_mode` | `irq_mode` | 是 | `IRQ_FALLING` / `IRQ_RISING` / `IRQ_BOTH` |
+| `irq_mode` | `irq_mode` | 是 | `IRQ_FALLING` / `IRQ_RISING` / `IRQ_BOTH`。只过滤进 Lua 的结算；硬件始终双边沿 |
 | `debounce_ms` | integer | 是 | 稳定窗口，毫秒。小于 10 会被抬到 10 |
 | `cb` | function | 是 | 见第 10 节，必须是函数 |
 
@@ -891,16 +899,17 @@ led:wave_insert({1})                          -- 非法
 ### 10.1 不是实时中断业务
 
 ```
-硬件边沿
+硬件：始终双边沿
   → 中断路径只投递（不做 Lua、不做业务）
-  → 滤波状态机：候选电平必须在 debounce_ms 窗口内保持稳定
+  → 滤波状态机：候选电平必须在 debounce_ms 窗口内保持稳定（升、降都结算）
   → 窗口走满且电平仍稳定，才算一次结算
-  → 结算结果进入运行时事件队列
+  → 若 irq_mode 匹配这次电平，才进入运行时事件队列
   → Lua 调度循环取出后调用 cb
 ```
 
 因此：
 
+- `IRQ_FALLING` / `IRQ_RISING` 只过滤 **进 Lua 的回调**，不关掉相反沿的硬件捕获。
 - 回调里看到的是 **结算后的稳定电平**，不是每一次硬件毛刺。
 - 短于窗口的脉冲会被丢掉。
 - 时延是“滤波窗口 + 排队 + 调度”，量级在毫秒以上，不适合测脉宽、高速码流、微秒级捕获。
@@ -980,6 +989,7 @@ end)
 | 摘要 | 可能原因 |
 | --- | --- |
 | `gpio init failed` | 底层 GPIO 没起来（极少，整机初始化） |
+| `invalid io_type, expect BY_GPIO/BY_PINNO` | `open` 第一参不是 `BY_GPIO`/`BY_PINNO`。旧名 `INPUT_GPIO`/`INPUT_PINNO` 数值相同，仍合法 |
 | `invalid pin` | 编号不在本机型固定映射表里（见 [1.2](#12-nt26-pro-map) / [1.3](#13-nt26-f6b0-映射表)），或该脚未对脚本开放 |
 | `gpio open failed` | 打开失败：脚已被占用或映射无效 |
 | `gpio seq failed` | `seq` 图案非法、粒度不对、或执行中失败 |
@@ -1049,8 +1059,8 @@ local rt   = require("rt")
 local log  = require("log")
 local gpio = require("gpio")
 
-local led = gpio.open(gpio.INPUT_GPIO, 9)
-local din = gpio.open(gpio.INPUT_GPIO, 1)
+local led = gpio.open(gpio.BY_GPIO, 9)  -- 按 GPIO 编号；旧名 gpio.INPUT_GPIO
+local din = gpio.open(gpio.BY_GPIO, 1)
 
 led:config(true, false, gpio.PULL_AUTO)
 din:config(false, false, gpio.PULL_UP)
@@ -1089,7 +1099,7 @@ rt.task_start(function()
     end
 end)
 
-local din = gpio.open(gpio.INPUT_GPIO, 1)
+local din = gpio.open(gpio.BY_GPIO, 1)
 din:config(false, false, gpio.PULL_UP)
 din:reg(gpio.IRQ_BOTH, 20, function(gpio_id, pin_no, level, info)
     rt.mbox_send(TOPIC, {
@@ -1114,7 +1124,7 @@ local gpio = require("gpio")
 
 local W_OFF, W_ON, W_SLOW, W_FAST, W_BEAT = 1, 2, 3, 4, 5
 
-local led = gpio.open(gpio.INPUT_GPIO, 9)
+local led = gpio.open(gpio.BY_GPIO, 9)
 led:config(true, false, gpio.PULL_AUTO)
 
 led:wave_reg(W_OFF, 0)
@@ -1162,8 +1172,10 @@ end
 
 | 符号 | 值 |
 | --- | --- |
-| `gpio.INPUT_GPIO` | 0 |
-| `gpio.INPUT_PINNO` | 1 |
+| `gpio.BY_GPIO` | 0 |
+| `gpio.BY_PINNO` | 1 |
+| `gpio.INPUT_GPIO` | 0（旧别名，同 `BY_GPIO`） |
+| `gpio.INPUT_PINNO` | 1（旧别名，同 `BY_PINNO`） |
 | `gpio.PULL_AUTO` | 0 |
 | `gpio.PULL_UP` | 1 |
 | `gpio.PULL_DOWN` | 2 |
@@ -1187,3 +1199,5 @@ end
 | 1.2.1 | 2026-09-05 | 标明 NT26-PRO 使用 F6E0 与 F6D0；F6D0 与 F6E0 共用同一张映射表 |
 | 1.2.2 | 2026-09-05 | 脚本 GPIO 表链到 hardware 全 IO 文档 |
 | 1.2.3 | 2026-09-05 | 链到硬件落盘区 GPIO（含 PDDR） |
+| 1.2.4 | 2026-09-07 | `reg` 的 irq_mode 只过滤 Lua 回调；硬件中断始终双边沿 |
+| 1.3.0 | 2026-09-09 | 打开类型推荐 `BY_GPIO` / `BY_PINNO`（使用 GPIO 编号 / 使用模块 PIN）；`INPUT_GPIO` / `INPUT_PINNO` 仍为同值旧别名 |

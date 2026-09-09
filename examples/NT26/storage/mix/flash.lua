@@ -36,7 +36,7 @@ local cfg = {
     bus_hz = 24 * 1000000,
     spi_id = nil,       -- 默认 spi.SPI0
     cs_gpio = 8,
-    cs_gpio_type = nil, -- 默认 gpio.INPUT_GPIO
+    cs_gpio_type = nil, -- 默认 gpio.BY_GPIO（旧名 gpio.INPUT_GPIO 仍可用）
     sfud_name = "flash0",
     timeout_ms = 5000,
     fs = {
@@ -147,7 +147,7 @@ end
 
 local function bind_bus()
     local spi_id = cfg.spi_id or spi.SPI0
-    local cs_type = cfg.cs_gpio_type or gpio.INPUT_GPIO
+    local cs_type = cfg.cs_gpio_type or gpio.BY_GPIO
 
     local spi_dev = spi.new(spi_id, {
         bus_hz = cfg.bus_hz,

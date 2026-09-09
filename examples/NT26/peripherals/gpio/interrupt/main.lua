@@ -32,7 +32,8 @@ end
 -- 先把接收任务挂上：task_start 会跑到第一次 mbox_recv 再让出
 rt.task_start(gpio_worker)
 
-local din = gpio.open(gpio.INPUT_GPIO, IN_GPIO)
+-- 按 GPIO 编号打开（旧名 gpio.INPUT_GPIO 同值，仍可用）
+local din = gpio.open(gpio.BY_GPIO, IN_GPIO)
 din:config(false, false, gpio.PULL_UP)
 
 -- 回调必须短：只投递，立刻返回

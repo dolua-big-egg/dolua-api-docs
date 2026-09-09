@@ -1,6 +1,6 @@
 # sfud
 
-**文档版本** `1.1.0`
+**文档版本** `1.1.1`
 
 对象化的 **SPI NOR Flash** 驱动。用已初始化的 SPI 对象 + GPIO 片选认片，得到 Flash 对象后读、写、擦。FlashDB、LittleFS 都挂在这个对象上，不直接碰 SPI。
 
@@ -442,7 +442,7 @@ local spi_dev = spi.new(spi.SPI0, {
     work_mode = spi.WORK_MODE_FULL_DUPLEX,
 })
 
-local cs = gpio.open(gpio.INPUT_GPIO, 8)
+local cs = gpio.open(gpio.BY_GPIO, 8)
 assert(cs:config(true, true, gpio.PULL_UP))
 
 local flash, err = sfud.bind(spi_dev, "flash0", cs, {
@@ -480,3 +480,4 @@ local kv, ke = flashdb.kv(flash, {
 | 1.0.0 | 2026-09-04 | 首版 |
 | 1.0.1 | 2026-09-04 | 修正跨目录文档链接，demo 路径改为 examples/ |
 | 1.1.0 | 2026-09-05 | 补全错误与返回约定：全部 `err` 文本、数字码与可能原因 |
+| 1.1.1 | 2026-09-09 | 示例片选改为 `gpio.BY_GPIO` |

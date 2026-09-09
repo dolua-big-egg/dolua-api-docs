@@ -1,12 +1,12 @@
 # NT26-PRO 全 IO 表（F6E0 / F6D0）
 
-**文档版本** `1.2.0`
+**文档版本** `1.2.1`
 
 **NT26-PRO** 使用 **F6E0** 与 **F6D0**。两款封装共用下表：模块 PIN、PDDR、默认功能、复用名称一致。F6D0 多几颗脚，表中标 **仅 F6D0**；F6E0 不要按这些脚布线。
 
 [第 3 节](#3-全脚表) 是芯片**能力总表**：焊盘上曾经出现过的功能名。它**不是**当前 SDK / 固件已经落地的外设清单。做板、写脚本要看 [第 4 节](#4-当前固件外设落盘)：GPIO / UART / I2C / SPI 在固件里实际占用的 PIN 与 PDDR。UART / I2C / SPI 多数不走 `gpio` 模块，只按 **PDDR + 模块 PIN** 对脚。
 
-脚本侧 GPIO↔PIN 是总表的**子集**，且当前**不能改绑**。能 `gpio.open` 的编号以 [`gpio.md` 1.2](../api/peripherals/gpio.md#12-nt26-pro-map) 为准。不要用芯片焊盘名里的 `GPIO16` 去对 `gpio.open(gpio.INPUT_GPIO, 16)`——调试口焊盘也叫 GPIO16，和脚本 GPIO16（PIN 103）不是同一条脚。
+脚本侧 GPIO↔PIN 是总表的**子集**，且当前**不能改绑**。能 `gpio.open` 的编号以 [`gpio.md` 1.2](../api/peripherals/gpio.md#12-nt26-pro-map) 为准。不要用芯片焊盘名里的 `GPIO16` 去对 `gpio.open(gpio.BY_GPIO, 16)`——调试口焊盘也叫 GPIO16，和脚本 GPIO16（PIN 103）不是同一条脚。
 
 ---
 
@@ -30,11 +30,11 @@
 | 列 | 含义 |
 | --- | --- |
 | 模块脚名 | 原理图 / 丝印常用名 |
-| PIN | 模块对外脚序号。脚本 `gpio.INPUT_PINNO` / `pwm.INPUT_PINNO` 用这一列（仅当该模块认这颗脚时） |
+| PIN | 模块对外脚序号。脚本 `gpio.BY_PINNO` / `pwm.INPUT_PINNO` 用这一列（仅当该模块认这颗脚时） |
 | PDDR | 芯片焊盘序号。硬件外设（UART / I2C / SPI 等）按这一列落地；`pwm.INPUT_PDDR` 也是它。没有焊盘号的专用脚写 `—` |
 | 默认功能 | 芯片表上的第一功能，**不等于**当前固件一定占用 |
 | 第二功能 | 表内写明的指令复用或自动复用 |
-| 脚本 GPIO | 当前固件允许 `gpio.open(gpio.INPUT_GPIO, n)` 的 `n`。`—` 表示脚本打不开 |
+| 脚本 GPIO | 当前固件允许 `gpio.open(gpio.BY_GPIO, n)` 的 `n`。`—` 表示脚本打不开 |
 | 电气 | `I&PU` 输入上拉，`I&PD` 输入下拉，`NI&NP` 无输入使能、无上下拉 |
 | 其它复用 | 焊盘能力，供对照原理图；**不是**脚本可自由切换的清单 |
 | 备注 | 封装差异、与脚本编号撞名 |
@@ -126,7 +126,7 @@ GPIO 当前**不能改绑**。Lua `uart.config` **改不了** `pin_map`，只能
 
 ### 4.1 GPIO {#41-gpio}
 
-固件 GPIO 绑定表。`gpio.open(gpio.INPUT_GPIO, n)` 用「GPIO」列，`gpio.open(gpio.INPUT_PINNO, pin)` 用「PIN」列。表外编号 `open` 失败。F6D0 硬件上的 GPIO28（PIN 74）**不在本表**，脚本同样打不开。
+固件 GPIO 绑定表。`gpio.open(gpio.BY_GPIO, n)` 用「GPIO」列，`gpio.open(gpio.BY_PINNO, pin)` 用「PIN」列。表外编号 `open` 失败。F6D0 硬件上的 GPIO28（PIN 74）**不在本表**，脚本同样打不开。
 
 | GPIO | PIN | PDDR | 常电域 | 丝印 | 说明 |
 | ---: | ---: | ---: | --- | --- | --- |
@@ -235,3 +235,4 @@ SPI0 的 SCLK / MISO 就是 UART2 **出厂组**（`pin_map=2`）的 TX / RX。�
 | 1.0.0 | 2026-09-05 | 首版。整理 NT26-PRO（F6E0 / F6D0）全 IO；标明仅 D 系列脚与脚本 GPIO 子集 |
 | 1.1.0 | 2026-09-05 | 区分能力总表与 SDK 落盘；总表加 PDDR；写入 UART 全部 pin_map 及 I2C / SPI 实际 PIN、PDDR |
 | 1.2.0 | 2026-09-05 | 落盘区补固件 GPIO 绑定（GPIO / PIN / PDDR） |
+| 1.2.1 | 2026-09-09 | `gpio.open` 编号类型改为推荐名 `BY_GPIO` / `BY_PINNO`（旧名 `INPUT_GPIO` / `INPUT_PINNO` 仍可用） |

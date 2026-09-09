@@ -1,6 +1,6 @@
 # pwm
 
-**文档版本** `1.1.0`
+**文档版本** `1.1.1`
 
 对象化硬件 PWM。按模块管脚号或芯片 PAD 打开一路，再 `start` 出波。波形由 TIMER 或常电 APWM 产生，不是 GPIO 翻转。
 
@@ -132,7 +132,7 @@ ch.start(ch, opt)     -- 等价
 | `pwm.INPUT_PDDR` | `0` | 芯片 PAD 地址 | `open` 的 `type`；`comp.type` |
 | `pwm.INPUT_PINNO` | `1` | 模块对外管脚号 | 同上 |
 
-编号与 [`gpio`](gpio.md) 的 `INPUT_PINNO` 是同一套模块脚号，但 PWM **不按 GPIO 号打开**。PAD 与脚的对应以 `pwm.pins()` 为准。
+编号与 [`gpio`](gpio.md) 的 `BY_PINNO` 是同一套模块脚号，但 PWM **不按 GPIO 号打开**。PAD 与脚的对应以 `pwm.pins()` 为准。
 
 ### 4.2 出波模式（`opt.mode`）
 
@@ -635,3 +635,4 @@ ch:start({
 | 1.0.0 | 2026-09-04 | 首版 |
 | 1.0.1 | 2026-09-04 | 修正跨目录文档链接，demo 路径改为 examples/ |
 | 1.1.0 | 2026-09-05 | 补全错误文案/错误码与可能原因 |
+| 1.1.1 | 2026-09-09 | 脚号对照改为 `gpio.BY_PINNO` |
