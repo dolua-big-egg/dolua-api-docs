@@ -1,6 +1,6 @@
 # uart
 
-**文档版本** `1.1.1`
+**文档版本** `1.2.0`
 
 纯函数串口模块。对外业务口是 UART1～UART3：热改线参数、写数据、登记收包回调、或阻塞等一整包。没有对象、没有 `open`。UART0 留给内部调试，**不对外使用**。
 
@@ -58,7 +58,7 @@ UART0 不给脚本当业务口：脚不对外、`rtu_config.cfg` 里的 `[uart.0
 
 引脚组 `pin_map`、分包 `max_packet_size` / `max_wait_ms` / `max_packets` **不能** 用本模块改。改 `rtu_config.cfg` 后重新加载配置。
 
-`print` / `log` 默认也走某路串口（常见 UART1，只能是 1/2/3，不能是 UART0）。业务口若和日志同口，输出会搅在一起。用 `sys.option("print_route")` / `"log_route"` 把日志挪开。外挂 SPI 时 UART2 默认脚常冲突，见 [`sfud`](../module/sfud.md)。
+`print` / `log` 默认也走某路出口（常见 `uart1`，还可以是 `uart2` / `uart3` / `usb_at`，不能是 UART0）。业务口若和日志同口，输出会搅在一起。用 `sys.option("print_route")` / `"log_route"` 把日志挪开。外挂 SPI 时 UART2 默认脚常冲突，见 [`sfud`](../module/sfud.md)。
 
 做 RS485 / 透传时，demo 会 `rtu.option("pass_up", false)` 和 `"pass_down", false`，避免这路被当成 AT 通道吃掉报文。
 
@@ -471,7 +471,7 @@ max_packets=4
 | `reg` 期间再 `block` | 可以。`block` 截走那一口的下一包，返回后回调继续收 |
 | 改波特率（本次运行） | `uart.config` |
 | 改脚、改分包 | `rtu_config.cfg`，不是本模块 |
-| 日志串口 | `sys.option("print_route")` / `"log_route"`，只能是 1/2/3，不能是 UART0 |
+| 日志出口 | `sys.option("print_route")` / `"log_route"`，`"uart1"` / `"uart2"` / `"uart3"` / `"usb_at"`，不能是 UART0 |
 | 想用 UART0 | 不要。内部口，脚本当业务口收不到包 |
 | 外挂 Flash 占 UART2 脚 | 换 `pin_map` 或换口 |
 
@@ -542,3 +542,4 @@ end
 | 1.0.1 | 2026-09-04 | 修正跨目录文档链接，demo 路径改为 examples/ |
 | 1.1.0 | 2026-09-05 | 补全错误文案/错误码与可能原因 |
 | 1.1.1 | 2026-09-05 | `pin_map` 链到硬件表列出的全部 UART 组 |
+| 1.2.0 | 2026-09-09 | `print` / `log` 路由改为 `"uart1"` / `"uart2"` / `"uart3"` / `"usb_at"` |

@@ -1,12 +1,12 @@
 # AT 路由串
 
-**文档版本** `1.0.0`
+**文档版本** `1.0.1`
 
 这不是一条 `AT+…` 指令。它是若干 AT 参数共用的**字符串语法**，用来写「这一包数据要送到哪些出口」。Lua `rtu.write`、配置文件里的同类字段，和本篇是**同一套写法、同一套编号**。
 
 行格式、失败风格见 [convention.md](convention.md)。各指令怎么把路由串嵌进参数（要不要引号、非法时回短 reason 还是 `+CME ERROR: 109`）以该篇为准。
 
-`[lua] print_route` / `[lua] log_route` / `[log] output` **不是**本篇语法，那些只是 UART 口号 `1` / `2` / `3`。
+`[lua] print_route` / `[lua] log_route` **不是**本篇语法，那些是 `uart1` / `uart2` / `uart3` / `usb_at`。[`[log] output`](../api/rtu_config/rtu_config.md#16-log) 仍是整数 `0`～`4`。
 
 ---
 
@@ -313,3 +313,4 @@ OK
 | 版本 | 日期 | 说明 |
 | --- | --- | --- |
 | 1.0.0 | 2026-09-07 | 首版：路由串语法；通道 1～7 与各子通道指向；默认/回显；与心跳 channel_str 的区别 |
+| 1.0.1 | 2026-09-09 | 标明 `[lua] print_route` / `log_route` 用 `uart1`/`uart2`/`uart3`/`usb_at`，与本篇路由串无关 |

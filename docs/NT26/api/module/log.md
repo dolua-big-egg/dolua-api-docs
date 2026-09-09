@@ -1,6 +1,6 @@
 # log
 
-**文档版本** `1.1.0`
+**文档版本** `1.2.0`
 
 带级别、带调用点的调试输出模块。三个函数用法相同，仅级别不同；单参原样打印，多参按 `string.format` 组包。
 
@@ -47,7 +47,7 @@ log.error("open fail")
 
 1. 自动带上调用点（函数名、源文件、行号）。
 2. 按级别打出 `INFO` / `WARN` / `ERROR`。
-3. 直出指定 UART，与内置 `print` 独立，也不跟 `AT+LOG` 输出口走。
+3. 直出指定 UART 或 USB AT，与内置 `print` 独立，也不跟 `AT+LOG` 输出口走。
 
 只做输出，无返回值，不参与业务状态机。
 
@@ -70,9 +70,9 @@ log.error("open fail")
                              │
                              ▼
 ┌─────────────────────────────────────────────────────────┐
-│  串口输出通道                                             │
+│  输出通道                                                 │
 │  · 固定行格式 [Lua][级别][函数][源:行] 正文 CRLF           │
-│  · 默认 UART1；可与 print 分别指定 UART1/2/3               │
+│  · 默认 uart1；可与 print 分别指定 uart1/2/3 或 usb_at     │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -366,34 +366,36 @@ log.info("v=%s", nil)                   -- v=nil
 
 ## 10. 输出路由
 
-`log` 直出指定 UART，**不受 `AT+LOG` 输出口切换影响**，也与内置 `print` 互相独立。
+`log` 直出指定路由，**不受 `AT+LOG` 输出口切换影响**，也与内置 `print` 互相独立。
 
 | 项 | 值 |
 | --- | --- |
-| 默认 | UART1（编号 `1`） |
-| 可选 | UART1 / UART2 / UART3（`1` / `2` / `3`） |
+| 默认 | `"uart1"` |
+| 可选 | `"uart1"` / `"uart2"` / `"uart3"` / `"usb_at"` |
 
 `log` 模块表上 **没有** 改路由的函数。改法在别的模块：
 
 **配置文件（启动时生效，持久）**
 
-`/rtu.config` 的 `[lua]` 段：
+`/rtu_config.cfg` 的 `[lua]` 段：
 
 ```ini
 [lua]
-print_route=1
-log_route=1
+print_route=uart1
+log_route=usb_at
 ```
+
+配置文件仍接受旧写法 `1` / `2` / `3`（当作 uart1/2/3）。`sys.option` 只认字符串名。
 
 **运行时（立即生效，重启后恢复为配置文件）**
 
 ```lua
 local sys = require("sys")
-sys.option("log_route", 2)
+sys.option("log_route", "uart2")
 local route = sys.option("log_route")
 ```
 
-`sys.option` 的完整契约见 `sys` 模块文档。非法编号会由 `sys` 抛错，不是 `log` 抛错。
+`sys.option` 的完整契约见 `sys` 模块文档。非法路由名会由 `sys` 抛错，不是 `log` 抛错。
 
 ---
 
@@ -459,3 +461,4 @@ end
 | 1.0.0 | 2026-09-04 | 首版 |
 | 1.0.1 | 2026-09-04 | 修正跨目录文档链接，demo 路径改为 examples/ |
 | 1.1.0 | 2026-09-05 | 补全错误与返回约定：超限提示原文、format 失败正文与可能原因 |
+| 1.2.0 | 2026-09-09 | 输出路由改为 `"uart1"` / `"uart2"` / `"uart3"` / `"usb_at"`，可打到 USB AT 口 |

@@ -75,8 +75,8 @@ end
 
   rtu_config.cfg：
     [uart.2] pin_map=1     把 UART2 从默认脚挪到另一组（map1：pad 21/22）
-    [lua] print_route=2    Lua print 改走 UART2（已经挪开的那组）
-          log_route=2      log 也走 UART2
+    [lua] print_route=uart2    Lua print 改走 UART2（已经挪开的那组）
+          log_route=uart2      log 也走 UART2
 
   日志请接 remap 之后的 UART2，不要再看原来的 UART2 默认脚。
 

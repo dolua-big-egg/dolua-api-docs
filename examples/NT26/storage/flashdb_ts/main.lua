@@ -12,7 +12,7 @@
     SPI0 目前固定在 pin66–pin29 这一组，和 UART2 默认脚重叠。
     必须在 rtu_config.cfg 里把 UART2 挪走，否则 SPI 和串口抢脚：
       [uart.2] pin_map=1
-    日志若仍走 UART2，再配 [lua] print_route=2  log_route=2。
+    日志若仍走 UART2，再配 [lua] print_route=uart2  log_route=uart2。
     杜邦线尽量短、新、绑紧；调不通就把 bus_hz 降下来，用示波器看 CLK/MOSI。
 
   ============================================================================

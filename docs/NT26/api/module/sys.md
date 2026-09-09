@@ -1,8 +1,8 @@
 # sys
 
-**文档版本** `1.1.0`
+**文档版本** `2.0.1`
 
-系统级工具模块：版本与复位原因、串口路由、授时、看门狗、复位/关机，以及 **不让出 Lua 协程** 的三类延时。日常等待请优先用 `rt.delay`。
+系统级工具模块：版本与复位原因、print/log 输出路由、授时、看门狗、复位/关机，以及 **不让出 Lua 协程** 的三类延时。日常等待请优先用 `rt.delay`。
 
 ```lua
 local sys = require("sys")
@@ -45,7 +45,7 @@ local sys = require("sys")
 
 `sys` 是纯函数模块，没有对象、没有 `open`。两类用途：
 
-1. **查询与控制整机**：版本、上次复位原因、`print`/`log` 串口路由、写本机时间、NITZ 授时回调、软件复位、关机、喂硬件看门狗。
+1. **查询与控制整机**：版本、上次复位原因、`print`/`log` 输出路由、写本机时间、NITZ 授时回调、软件复位、关机、喂硬件看门狗。
 2. **线程级 / 忙等延时**：`delay_ms`、`delay_until`、`delay_us`。它们 **不是** `rt.delay` 的换皮，调度模型完全不同，见 [第 3 节](#3-延时sys-与-rtdelay-的本质区别)。
 
 日常“等一会儿再干活”用 `rt.delay`。`sys` 的 delay 只留给：时序必须尽快返回、不能被其它 Lua 协程插队，或只要几十～几百微秒的脚线时序。
@@ -181,12 +181,12 @@ sys.delay_us(10 * 1000 * 1000)   -- 空转十秒
 | `ms` | integer | 毫秒；`< 0` 在 `delay_ms` 里当 `0`；`delay_until` 里 `<= 0` 立即返回 |
 | `us` | integer | 微秒；`< 0` 当 `0` |
 | `option_key` | string | 仅 `"print_route"` / `"log_route"` |
-| `uart_id` | integer | `1` / `2` / `3` |
+| `route_name` | string | `"uart1"` / `"uart2"` / `"uart3"` / `"usb_at"` |
 | `ts` | integer | UTC Unix 秒，必须 `> 0` |
 | `ts_ms` | integer | UTC Unix 毫秒，必须 `> 0` |
 | `rst` | integer | `RST_*` |
 
-`option` 写路由时第二参必须是 **integer**。`true` / `"2"` 会抛 `integer expected`。
+`option` 写路由时第二参必须是 **string**。`sys.option("print_route", 1)` 不合法，请写 `"uart1"`。配置文件里 `print_route=1` 仍等价 `uart1`，见 [`rtu_config` 第 15 节](../rtu_config/rtu_config.md#15-lua)。
 
 ---
 
@@ -300,7 +300,7 @@ sys.wdt_kick()
 
 ### 6.5 `sys.option(key [, value])` {#6-5-option}
 
-读或写 Lua 输出串口路由。`print` 与 `log` 互相独立。
+读或写 Lua 输出路由。`print` 与 `log` 互相独立。
 
 **调用模式**
 
@@ -315,21 +315,26 @@ sys.option(key, value)
 | 参数 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
 | `key` | string | 是 | `"print_route"` 或 `"log_route"` |
-| `value` | integer | 写时必填 | `1` / `2` / `3`（UART1/2/3） |
+| `value` | string | 写时必填 | `"uart1"` / `"uart2"` / `"uart3"` / `"usb_at"` |
 
 参数个数不是 1 或 2 时抛 `sys.option: usage sys.option(key) or sys.option(key, value)`。  
-写时第二参不是 integer 抛 `integer expected`。  
-`value` 不是 1/2/3 抛 `print_route must be 1, 2 or 3` 或 `log_route must be 1, 2 or 3`。  
+写时第二参缺省或无法转成字符串走 Lua 标准 `bad argument #2`。  
+`value` 不是上表四名之一抛 `print_route must be "uart1", "uart2", "uart3" or "usb_at"`（或 `log_route` 同句）。  
 未知 `key` 抛 `unsupported key`。
+
+名字大小写不敏感：`"USB_AT"` 与 `"usb_at"` 等价。读回永远是小写官方名。
+
+`sys.option` **不接受** 整数 `1` / `2` / `3`。配置文件里的旧写法另当别论：`rtu_config.cfg` 的 `[lua] print_route=1` 等价 `uart1`（`2`/`3` 同理），开机套用后再用本接口读，得到的是 `"uart1"` 这种字符串。完整对照见 [`rtu_config` 第 15 节](../rtu_config/rtu_config.md#15-lua)。
 
 **返回**
 
-当前（或刚写入的）路由编号，integer。
+当前（或刚写入的）路由名，string。
 
 ```lua
 local pr = sys.option("print_route")
 local lr = sys.option("log_route")
-sys.option("log_route", 2)
+sys.option("log_route", "uart2")
+sys.option("print_route", "usb_at")
 ```
 
 运行时改的值重启后回到配置文件 `[lua]` 段。详见 `log` 模块「输出路由」。
@@ -518,13 +523,13 @@ function cb(ts)
 | --- | --- | --- |
 | `delay_ms` / `delay_until` / `delay_us` | 无返回 | 缺参走 Lua 类型错 |
 | `wdt_kick` | 无返回 | — |
-| `option` 读/写 | integer 路由 | **抛** |
+| `option` 读/写 | string 路由名 | **抛** |
 | `version` / `reset_reason` | table | — |
 | `reset` / `poweroff` | 通常不再返回 | — |
 | `set_ts` / `set_ts_ms` | `true` | `false`（无 `err`：`<=0` 或写失败） |
 | `nitz_reg` | `true` | 回调里再登记：`false`（无 `err`）；否则 **抛** |
 
-缺参、类型错走 Lua 标准 `bad argument #n`。`option` 写值不是整数：`integer expected`。
+缺参、类型错走 Lua 标准 `bad argument #n`。`option` 写值必须是字符串名。
 
 **抛错摘要**
 
@@ -532,8 +537,9 @@ function cb(ts)
 | --- | --- |
 | `sys.option: usage sys.option(key) or sys.option(key, value)` | 参数个数不是 1 或 2 |
 | `sys.option: unsupported key` | 键不是 `"print_route"` / `"log_route"` |
-| `sys.option: print_route must be 1, 2 or 3` | 写 `print_route` 时 UART 编号不是 1/2/3 |
-| `sys.option: log_route must be 1, 2 or 3` | 写 `log_route` 时 UART 编号不是 1/2/3 |
+| `sys.option: print_route must be "uart1", "uart2", "uart3" or "usb_at"` | 写 `print_route` 时名字不是这四个 |
+| `sys.option: log_route must be "uart1", "uart2", "uart3" or "usb_at"` | 写 `log_route` 时名字不是这四个 |
+| `sys.option: print_route invalid` / `log_route invalid` | 当前路由内部值损坏（读回对不上官方名） |
 | `nitz_reg not allowed in quick callback` | 在快捷回调上下文里登记 NITZ |
 | `main vm not found` | 当前没有主脚本虚拟机 |
 | `register rt topic failed` | 内部事件 topic 登记失败（资源或调度未就绪） |
@@ -550,7 +556,7 @@ function cb(ts)
 | NITZ 回调 | 每 VM 一条，重复 `nitz_reg` 覆盖 |
 | `delay_us` 上限 | **无软件截断**，长了会复位，靠调用方自制 |
 | `reset` / `poweroff` 前等待 | 约 1000 ms |
-| 路由 | `1..3` |
+| 路由 | `"uart1"` / `"uart2"` / `"uart3"` / `"usb_at"` |
 
 无对象、无 `__gc`。NITZ 回调挂在当前虚拟机上。
 
@@ -566,7 +572,7 @@ function cb(ts)
 | 几十～几百微秒脚线 | `sys.delay_us`（到 ms 禁止） |
 | 超长计算占着线程 | 分片 + `wdt_kick`，能让出就让出 |
 | 看版本 / 为何复位 | `version` / `reset_reason` |
-| 改 print/log 串口 | `option` |
+| 改 print/log 出口 | `option`（UART 或 USB AT） |
 | 写本机时间 | `set_ts` / `set_ts_ms` |
 | 等基站授时 | `nitz_reg` |
 | 重启 / 关机 | `reset` / `poweroff`（独立 task 里调） |
@@ -621,8 +627,8 @@ end
 | `sys.delay_until(ms)` | 1 个整数；`<=0` 立即回 | 无 |
 | `sys.delay_us(us)` | 1 个整数；只许很短 | 无 |
 | `sys.wdt_kick()` | 无 | 无 |
-| `sys.option(key)` | 读 | integer |
-| `sys.option(key, value)` | 写 1/2/3 | integer / 抛错 |
+| `sys.option(key)` | 读 | string |
+| `sys.option(key, value)` | 写 `"uart1"` / `"uart2"` / `"uart3"` / `"usb_at"` | string / 抛错 |
 | `sys.version()` | 无 | table |
 | `sys.reset_reason()` | 无 | table |
 | `sys.reset()` | 无 | 通常不返回 |
@@ -660,3 +666,5 @@ end
 | 1.0.0 | 2026-09-04 | 首版 |
 | 1.0.1 | 2026-09-04 | 修正跨目录文档链接，demo 路径改为 examples/ |
 | 1.1.0 | 2026-09-05 | 补全错误与返回约定：全部抛错摘要与可能原因 |
+| 2.0.0 | 2026-09-09 | `sys.option` 路由值改为字符串 `"uart1"` / `"uart2"` / `"uart3"` / `"usb_at"`；读写不再用整数 1/2/3 |
+| 2.0.1 | 2026-09-09 | 写明配置文件 `print_route=1` 等价 `uart1`；`sys.option` 仍只认字符串名 |

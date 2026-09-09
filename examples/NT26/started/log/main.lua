@@ -83,15 +83,16 @@ end
     写入 /rtu.config 的 [lua] 段，脚本启动前自动 apply：
 
       [lua]
-      print_route=1    -- Lua print() 输出串口，1/2/3
-      log_route=1      -- log 模块输出串口，1/2/3（与 print 独立）
+      print_route=uart1    -- Lua print()：uart1/uart2/uart3/usb_at
+      log_route=uart1      -- log 模块，与 print 独立
 
   【方式 2】Lua 运行时动态切换
     需 require("sys")，立即生效，重启后恢复为配置文件值：
 
       local sys = require("sys")
-      sys.option("log_route", 2)         -- 切到 UART2
-      local route = sys.option("log_route")  -- 读取当前路由
+      sys.option("log_route", "uart2")         -- 切到 UART2
+      sys.option("log_route", "usb_at")        -- 切到 USB AT
+      local route = sys.option("log_route")  -- 读取当前路由名
 
   ============================================================================
   与 print 的区别（简要）

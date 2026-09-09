@@ -1,6 +1,6 @@
 # rtu_config
 
-**文档版本** `1.0.4`
+**文档版本** `1.1.1`
 
 这不是 `require("…")` 模块。它是模组开机时解析的 **声明式配置文件** `rtu_config.cfg`：只改文件里写到的段和 key，没写到的字段保持机内当前值。Lua 的 [`rtu`](../module/rtu.md)、[`uart`](../peripherals/uart.md)、[`sms`](../module/sms.md)、[`lbs`](../network/lbs.md) 等运行时模块 **读的是这份文件落盘后的业务配置**，不是另起一套通道。
 
@@ -114,8 +114,8 @@
 
 ```ini
 [lua]
-print_route=1    -- Lua print 走 UART1
-log_route=1      # 与 print 独立
+print_route=uart1    -- Lua print 走 UART1
+log_route=usb_at     # 与 print 独立，可打到 USB AT
 ; 整行注释
 ```
 
@@ -508,7 +508,7 @@ N = 1..3。证书组，供 MQTT / HTTP 的 `ssl_id` 引用。
 | `max_wait_ms` | 整数 | 0～60000 | 空闲断包 ms |
 | `max_packets` | 整数 | 0～64 | 待处理包深度 |
 
-联合：`uart.config` 只改 RAM 线参数，改不了 `pin_map` 与分包三参数。`[lua] print_route` / `[log] output` 指向的口必须已使能，否则 print/日志看不到。
+联合：`uart.config` 只改 RAM 线参数，改不了 `pin_map` 与分包三参数。`[lua] print_route` 指 UART 时该口必须已使能；指 `usb_at` 则走 USB AT 口。`[log] output` 指向的系统日志口必须已使能，否则系统日志看不到。
 
 Lua `uart` 模块文档：[uart.md](../peripherals/uart.md)。
 
@@ -520,10 +520,19 @@ Lua `uart` 模块文档：[uart.md](../peripherals/uart.md)。
 
 | key | 类型 | 范围 | 独立作用 |
 | --- | --- | --- | --- |
-| `print_route` | 整数 | 1～3 | Lua `print()` 打到 UART1/2/3 |
-| `log_route` | 整数 | 1～3 | Lua `log` 模块打到哪路。**不是** `[log] output` |
+| `print_route` | 字符串 | 见下表 | Lua `print()` 打到哪路 |
+| `log_route` | 字符串 | 同上 | Lua `log` 模块打到哪路。**不是** `[log] output` |
 
-两 key 互相独立。脚本启动时会把这两项应用到运行时。`sys.option("print_route")` 可热改，不回写本文件。
+官方名是 `uart1` / `uart2` / `uart3` / `usb_at`（大小写不敏感）。旧整数写法只在本文件兼容：
+
+| 配置值 | 等价官方名 | 出口 |
+| --- | --- | --- |
+| `uart1` 或 `1` | `uart1` | UART1 |
+| `uart2` 或 `2` | `uart2` | UART2 |
+| `uart3` 或 `3` | `uart3` | UART3 |
+| `usb_at` | `usb_at` | USB AT 口（与 AT 应答同一条 VCOM） |
+
+`print_route=1` **就是** `print_route=uart1`。`2` / `3` 同理。没有 `4` 当 `usb_at` 的别名。两 key 互相独立。脚本启动时会把这两项应用到运行时。`sys.option("print_route", "usb_at")` 可热改，不回写本文件；**脚本侧不认整数**，必须写字符串名。读回永远是小写官方名。
 
 ---
 
@@ -974,8 +983,8 @@ mode=3 的占位符：`<#SENDER>`（号码）、`<#SMS_MSG>`（正文）。**没
 # 注释：#  ;  --
 
 [lua]
-print_route=1
-log_route=1
+print_route=uart1
+log_route=uart1
 
 [log]
 output=0
@@ -1056,8 +1065,8 @@ first_boot_get_config=0
 
 ```ini
 [lua]
-print_route=1
-log_route=1
+print_route=uart1
+log_route=uart1
 ```
 
 ---
@@ -1071,3 +1080,5 @@ log_route=1
 | 1.0.2 | 2026-09-05 | `[sock.N]` 链到应用 AT Socket 手册 |
 | 1.0.3 | 2026-09-05 | 文首链到应用 AT 分类索引 |
 | 1.0.4 | 2026-09-07 | 第 7 节与 `tmr_rpt_route` 链到 AT [route.md](../../at/route.md) |
+| 1.1.0 | 2026-09-09 | `[lua] print_route` / `log_route` 改为 `uart1` / `uart2` / `uart3` / `usb_at`；旧 `1`/`2`/`3` 仍可用 |
+| 1.1.1 | 2026-09-09 | 写明 `print_route=1` 等价 `uart1`（`2`/`3` 同理）；配置兼容整数，`sys.option` 只认字符串名 |

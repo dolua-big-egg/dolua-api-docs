@@ -44,8 +44,8 @@
 
     sys option <key>
     sys option <key> <value>
-        key = print_route / log_route，value = 1/2/3。
-        改路由后日志可能跑到另一路串口。
+        key = print_route / log_route，value = uart1/uart2/uart3/usb_at。
+        改路由后日志可能跑到另一路串口或 USB AT。
 
     sys delay_ms <毫秒>
         OS 线程休眠。Lua 协程全部停。
@@ -125,7 +125,7 @@ end
 
 local function cmd_option(key, val)
     if not key or key == "" then
-        reply(false, "option：用法 sys option <print_route|log_route> [1|2|3]")
+        reply(false, "option：用法 sys option <print_route|log_route> [uart1|uart2|uart3|usb_at]")
         return
     end
     if val == nil then
@@ -198,9 +198,9 @@ local function handle_line(line)
         reply(true, "poweroff")
         sys.poweroff()
     else
-        local key, val = lower:match("^sys%s+option%s+(%S+)%s+(%d+)$")
+        local key, val = lower:match("^sys%s+option%s+(%S+)%s+(%S+)$")
         if key then
-            cmd_option(key, tonumber(val))
+            cmd_option(key, val)
             return
         end
         key = lower:match("^sys%s+option%s+(%S+)$")
@@ -224,7 +224,7 @@ local function handle_line(line)
             return
         end
         reply(false, "未知指令: %s", cmd)
-        hint("可用: sys version | reset_reason | option <key> [1-3] | delay_ms <n> | delay_until <n> | delay_us <n> | wdt_kick | reset | poweroff")
+        hint("可用: sys version | reset_reason | option <key> [uart1|uart2|uart3|usb_at] | delay_ms <n> | delay_until <n> | delay_us <n> | wdt_kick | reset | poweroff")
     end
 end
 
@@ -246,8 +246,8 @@ local function print_help()
         "",
         "sys version",
         "sys reset_reason   上次 AP/CP 复位原因（码+名称）",
-        "sys option print_route [1-3]",
-        "sys option log_route [1-3]",
+        "sys option print_route [uart1|uart2|uart3|usb_at]",
+        "sys option log_route [uart1|uart2|uart3|usb_at]",
         "sys delay_ms <毫秒>",
         "sys delay_until <毫秒>  相对当前 tick 再睡",
         "sys delay_us <微秒>   忙等，demo 上限 9999us",
