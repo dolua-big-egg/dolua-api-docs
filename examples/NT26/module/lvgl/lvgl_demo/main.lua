@@ -25,6 +25,15 @@
   须用已编入 lua_lvgl 的 AP 固件。默认字体 Montserrat 14（ASCII + FontAwesome 子集）。
   顶栏在 statusbar.lua：HH:MM:SS + 信号 + 满电；rt.tmr_loop 每秒改 text。
   Lua 不要循环 ui:handler()。主循环 rt.delay(-1)。
+  图片：ui:img / ui:set_src，只认 JPEG 和 LVGL .bin。
+  源：RAM string、{ ublob = name }、{ lfs = fs, path = "..." }。
+  缩放：ui:set_scale(img, scale)，256 / lvgl.SCALE_NONE 为原尺寸；set_size 只改外框。
+  本例程不附带图片文件，需要时自行放进 ublob / lfs 再 set_src。
+  循环缩放见同目录 lvgl_img。
+  字库：ui:font / ui:set_font，只认 LVGL 点阵 .bin（压缩亦可）与 TTF（靠文件头）。
+  源同样是 RAM string、{ ublob = name }、{ lfs = fs, path = "..." }。
+  TTF 要带 size（省略为 14）；点阵 .bin 忽略 size。必须持有 font。
+  本例程不附带字库文件。
 
 ]=]
 
@@ -132,11 +141,11 @@ end
   lvgl.create(panel, opts) -> ui
   ----------------------------------------------------------------------------
     opts.mem_max    字节上限，走 cust 堆；默认 128*1024；0=不限制
-                    整屏双缓冲不够时 C 会自动抬升（+64KB 给控件）
+                    整屏缓冲不够时 C 会自动抬升（+64KB 给控件）
     opts.color      "rgb565"（屏 GRAM）或 "rgb888"
     opts.dpi        默认 130
     opts.refr_ms    刷屏 timer 周期；闲时 LVGL 会 pause，有脏区/动画再 resume
-    opts.double_buf 双缓冲，默认 true
+    opts.double_buf 可写，当前忽略；底层强制单缓冲 + 阻塞 DMA
     opts.full_buf   整屏缓冲 DIRECT，默认 true；false 则 PARTIAL
     opts.buf_mode   "partial" | "direct" | "full"（覆盖 full_buf）
     opts.buf_lines  仅 PARTIAL 条带行数，默认 20
@@ -168,6 +177,12 @@ end
   ui:refr_resume()            与 pause 配对；hold 降到 0 后下次 handler 画出完整树
                              中间有 rt.delay/wait 时用：pause → 建控件/改 style → resume
   ui:center(obj)
+  ui:img([parent,] [src])     图片；src 为字节 / { data= } / { ublob= } / { lfs=, path= }
+  ui:set_src(img, src|nil)    换源或清像素；只认 JPEG 与 LVGL .bin
+  ui:set_scale(img, scale)    缩放像素；256 / lvgl.SCALE_NONE 原尺寸
+  ui:get_scale(img)           读当前因子
+  ui:font(src [, size])       字库；点阵 .bin / TTF；源同上。TTF size 默认 14
+  ui:set_font(obj, font|nil)  挂字库；nil 回默认字。必须一直拿着 font
   ui:deinit()
 
   statusbar.create(ui, { parent, width [, bg] [, pad] })
@@ -179,6 +194,7 @@ end
                 border / border_width / border_color
                 outline_width / shadow_width / clip_corner
                 scrollable / clickable（仅 set_style，不是 lv_style 属性）
-  lvgl.OPA_TRANSP / lvgl.OPA_COVER
+                font（ui:font 的句柄）
+  lvgl.OPA_TRANSP / lvgl.OPA_COVER / lvgl.SCALE_NONE
 
 ]=]

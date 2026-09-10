@@ -1,0 +1,42 @@
+{
+  "id": "lvgl_img",
+  "name": "LVGL 图片缩放",
+  "version": "1.0.0",
+  "category": "module",
+  "hw": "高",
+  "tags": [
+    "lcd",
+    "st7789",
+    "lvgl",
+    "img",
+    "ublob"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "lcd",
+      "lvgl",
+      "ublob",
+      "log",
+      "rt"
+    ],
+    "pins": [],
+    "peripherals": [],
+    "controllers": [
+      "SPI0"
+    ],
+    "extras": [
+      "ST7789",
+      "LVGL"
+    ],
+    "network": false
+  },
+  "readme": "",
+  "description": "与 lvgl_demo 同一套 ST7789/SPI0 接线。从 ublob 读 photo.jpg（仓库不附带，自行放入内置文件系统并选 blob），ui:set_src 后 ui:set_scale 在 64～256 之间循环缩放。set_size 只改外框。须使用已导出 set_scale 的 AP 固件。UART2 必须 pin_map=1。\n"
+}

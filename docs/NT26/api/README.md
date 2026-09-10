@@ -57,7 +57,7 @@
 | flashdb | [flashdb.md](module/flashdb.md) | [flashdb_kv](../../../examples/NT26/storage/flashdb_kv)、[flashdb_ts](../../../examples/NT26/storage/flashdb_ts)、[mix](../../../examples/NT26/storage/mix) |
 | lfs | [lfs.md](module/lfs.md) | [littlefs](../../../examples/NT26/storage/littlefs)、[mix](../../../examples/NT26/storage/mix) |
 | lcd | [lcd.md](module/lcd.md) | [spi_lcd](../../../examples/NT26/peripherals/spi/spi_lcd)、[spi_st7789](../../../examples/NT26/peripherals/spi/spi_st7789) |
-| lvgl | [lvgl.md](module/lvgl.md) | [lvgl_demo](../../../examples/NT26/module/lvgl/lvgl_demo) |
+| lvgl | [lvgl.md](module/lvgl.md) | [lvgl_demo](../../../examples/NT26/module/lvgl/lvgl_demo)、[lvgl_img](../../../examples/NT26/module/lvgl/lvgl_img) |
 | json | [json.md](module/json.md) | [json_api](../../../examples/NT26/module/json/json_api) |
 | hex | [hex.md](module/hex.md) | [hex_api](../../../examples/NT26/module/hex/hex_api) |
 | tls | [tls.md](module/tls.md) | [tls_api](../../../examples/NT26/module/tls/tls_api) |
