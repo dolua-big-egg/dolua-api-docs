@@ -1,6 +1,6 @@
 {
-  "id": "lvgl_img",
-  "name": "LVGL 图片缩放",
+  "id": "lvgl_font",
+  "name": "LVGL 图片 + 点阵字体",
   "version": "1.0.0",
   "category": "module",
   "hw": "高",
@@ -8,6 +8,7 @@
     "lcd",
     "st7789",
     "lvgl",
+    "font",
     "img",
     "ublob"
   ],
@@ -38,5 +39,5 @@
     "network": false
   },
   "readme": "",
-  "description": "与 lvgl_demo 同一套 ST7789/SPI0 接线。从 ublob 读 photo.jpg（仓库已附带，内置文件系统选 blob 并勾选后下载），ui:set_src 后 ui:set_scale 在 64～256 之间循环缩放。set_size 只改外框。须使用已导出 set_scale 的 AP 固件。UART2 必须 pin_map=1。\n"
+  "description": "与 lvgl_demo 同一套 ST7789/SPI0 接线。屏幕正中显示 ublob 中的 dolua.jpg（120×60），下方用 fusion-pixel-10px-10.bin 点阵字体显示「一行脚本，万里互联」。仓库已附带 jpg 与 .bin，内置文件系统选 blob 并勾选后下载。ui:font / ui:set_font 后须持有 font 对象。不要循环 ui:handler()。须使用已编入 lua_lvgl 的 AP 固件。UART2 必须 pin_map=1。\n"
 }
