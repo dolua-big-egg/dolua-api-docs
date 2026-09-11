@@ -1,6 +1,5 @@
 {
   "version": 1,
-  "displayName": "lvgl_img",
   "projectInfo": {
     "softwareVersion": "1.0.0"
   },
@@ -10,11 +9,15 @@
     "rtu_config.cfg"
   ],
   "selectedConfig": "rtu_config.cfg",
-  "internal": [],
-  "checked": [
-    "main.lua"
+  "internal": [
+    "photo.jpg"
   ],
-  "othersOrder": [
-    "manifest.json"
-  ]
+  "internalStorage": {
+    "photo.jpg": "blob"
+  },
+  "checked": [
+    "main.lua",
+    "photo.jpg"
+  ],
+  "othersOrder": []
 }
