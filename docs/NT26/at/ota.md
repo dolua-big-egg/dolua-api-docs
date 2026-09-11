@@ -1,4 +1,4 @@
-# AT OTA / MCUOTA
+#  OTA / MCUOTA
 
 **文档版本** `1.0.0`
 
