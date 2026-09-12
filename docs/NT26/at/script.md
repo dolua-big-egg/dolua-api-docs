@@ -1,8 +1,8 @@
 #  Lua 脚本包
 
-**文档版本** `1.0.0`
+**文档版本** `1.0.1`
 
-脚本 **A/B** 双槽：部署、写文件、清单、试运行、确认、回滚。与 Lua [`script`](../api/module/script.md) 操作同一套包。通用约定见 [convention.md](convention.md)。失败短 reason。
+脚本 **A/B** 双槽：部署、写文件、清单、试运行、确认、回滚。与 Lua [`script`](../api/module/script.md) 操作同一套包。虚拟机如何跑这份包、配额见 [DoLua 核心](../core/README.md)。通用约定见 [convention.md](convention.md)。失败短 reason。
 
 `SCRIPTCB`（把 UART/SMS 回调脚本当文件读写）**部分镜像没有**。没有时发该指令会当未知命令。
 
@@ -157,3 +157,4 @@ DEPLOY → FILE stream 写入 main/module → MANIFEST rebuild 或 stream → SE
 | 版本 | 日期 | 说明 |
 | --- | --- | --- |
 | 1.0.0 | 2026-09-05 | 首版：AB 槽部署、试运行、确认回滚 |
+| 1.0.1 | 2026-09-12 | 文首链到 DoLua 核心（运行机制与配额） |
