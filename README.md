@@ -20,7 +20,7 @@ examples/nt26/           可直接导入烧录的示例工程
 | 你想… | 去这里 |
 | --- | --- |
 | 先建立整图：运行时、消息、配额 | [DoLua 核心](docs/nt26/core/README.md) |
-| 工程文件夹、侧边栏五区、LUAPK | [工程结构](docs/dolua-assisant/工程结构.md) |
+| 工程文件夹、侧边栏五区、LUAPK | [工程结构](docs/dolua-assisant/project-structure.md) |
 | 按模块查参数、返回值、失败约定 | [API 索引](docs/nt26/api/README.md) |
 | 对原理图、查 PIN / 复用 | [NT26 硬件脚位](docs/nt26/hardware/README.md) |
 | 查 `AT+` 指令 | [AT 索引](docs/nt26/at/README.md) |
@@ -32,7 +32,7 @@ API 按主题放在 `peripherals` / `network` / `module`；示例按工程用途
 ## 建议阅读顺序
 
 1. 读 [DoLua 核心](docs/nt26/core/README.md)：虚拟机、协作调度、RAM / Flash / 模块个数。
-2. 建工程或看侧边栏分区时，对照 [工程结构](docs/dolua-assisant/工程结构.md)。
+2. 建工程或看侧边栏分区时，对照 [工程结构](docs/dolua-assisant/project-structure.md)。
 3. 用配套工具导入 [examples/nt26/started/hello](examples/nt26/started/hello)，确认能烧录、能看日志。
 4. 再跑 `started/log`、`started/task`，熟悉日志和协作式任务。
 5. 需要哪块能力，打开 [API 索引](docs/nt26/api/README.md) 对应模块，并对照同页给出的示例目录。

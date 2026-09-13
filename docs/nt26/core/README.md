@@ -28,7 +28,7 @@
 5. [工程与脚本包](project.md) — 主文件 / 用户模块 / 配置 / 内置文件怎么进设备
 6. [存储怎么分](storage.md) — 内部共享配额 vs 外挂盘，存什么用哪一块
 
-侧边栏怎么认工程、五区、LUAPK，另见 [工程结构](../../dolua-assisant/工程结构.md)（开发助手分类）。
+侧边栏怎么认工程、五区、LUAPK，另见 [工程结构](../../dolua-assisant/project-structure.md)（开发助手分类）。
 
 入门工程仍建议：`started/hello` → `started/log` → `started/task`，见 [示例索引](../../../examples/nt26/README.md)。
 
@@ -44,7 +44,7 @@
 | [resources.md](resources.md) | 堆、栈、Flash、文件个数、调度槽位各多少 |
 | [project.md](project.md) | 工程分区、打包部署（双槽切换当前未启用） |
 | [storage.md](storage.md) | 内部文件、脚本区、外挂 Flash 各管什么 |
-| [工程结构](../../dolua-assisant/工程结构.md) | 侧边栏五区、`luaproj`、LUAPK（开发助手，不在本目录） |
+| [工程结构](../../dolua-assisant/project-structure.md) | 侧边栏五区、`luaproj`、LUAPK（开发助手，不在本目录） |
 
 硬件脚位不在本分类：[hardware/](../hardware/README.md)。应用 AT 不在本分类：[at/](../at/README.md)。
 
@@ -58,7 +58,7 @@
 | 对原理图、选脚 | [hardware/README.md](../hardware/README.md) |
 | 用 AT 部署/查询脚本包 | [at/script.md](../at/script.md) |
 | 抄一份能烧录的工程 | [examples/nt26](../../../examples/nt26/README.md) |
-| 看工程文件夹 / LUAPK | [工程结构](../../dolua-assisant/工程结构.md) |
+| 看工程文件夹 / LUAPK | [工程结构](../../dolua-assisant/project-structure.md) |
 
 ---
 

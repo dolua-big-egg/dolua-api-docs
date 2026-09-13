@@ -4,7 +4,7 @@
 
 DoLua 工程是 **一层文件夹**：里面有入口脚本、可选的用户模块、配置和资源。配套工具把它打成设备能识别的脚本包再烧进去。底层虽按 A/B 两槽设计，**当前版本未启用双槽切换**，见 [runtime.md 第 2 节](runtime.md#2-脚本副本a--b-两槽)。
 
-本篇讲设备侧分区和进设备的路径。侧边栏怎么认工程、五区怎么勾选、LUAPK 怎么生成，见 [工程结构](../../dolua-assisant/工程结构.md)。虚拟机如何跑这份包见 [runtime.md](runtime.md)；配额见 [resources.md](resources.md)。
+本篇讲设备侧分区和进设备的路径。侧边栏怎么认工程、五区怎么勾选、LUAPK 怎么生成，见 [工程结构](../../dolua-assisant/project-structure.md)。虚拟机如何跑这份包见 [runtime.md](runtime.md)；配额见 [resources.md](resources.md)。
 
 ---
 
@@ -138,7 +138,7 @@ function 灯.打开() ... end
 ## 8. 接下来读什么
 
 - [存储怎么分](storage.md)
-- 侧边栏五区 / LUAPK：[工程结构](../../dolua-assisant/工程结构.md)
+- 侧边栏五区 / LUAPK：[工程结构](../../dolua-assisant/project-structure.md)
 - 例程：[started/module](../../../examples/nt26/started/module)（用户模块怎么登记）
 - 部署 AT：[script.md](../at/script.md)
 
