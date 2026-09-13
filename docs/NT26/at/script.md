@@ -1,8 +1,8 @@
 #  Lua 脚本包
 
-**文档版本** `1.0.1`
+**文档版本** `1.1.0`
 
-脚本 **A/B** 双槽：部署、写文件、清单、试运行、确认、回滚。与 Lua [`script`](../api/module/script.md) 操作同一套包。虚拟机如何跑这份包、配额见 [DoLua 核心](../core/README.md)。通用约定见 [convention.md](convention.md)。失败短 reason。
+脚本底层按 **A/B** 双槽设计：部署、写文件、清单。与 Lua [`script`](../api/module/script.md) 操作同一套包。**当前产品配置未启用双槽切换**（本版本可用空间偏紧；日后 8+8 / CAT4 才可能打开），不要把选槽、试运行、回滚当成已交付业务。虚拟机如何跑这份包、配额见 [DoLua 核心](../core/README.md)。通用约定见 [convention.md](convention.md)。失败短 reason。
 
 `SCRIPTCB`（把 UART/SMS 回调脚本当文件读写）**部分镜像没有**。没有时发该指令会当未知命令。
 
@@ -28,7 +28,7 @@
 | --- | --- |
 | 槽名 | `A` / `B`（大小写不敏感）。省略 = **当前 active** |
 | `stream` | 回 `>` 后用 UARTQUE 再收一包（须 UART） |
-| trial | `SCRIPTSELECT` 第二参 `1`=试运行（未确认，可回滚），`0`=直接切 |
+| trial | `SCRIPTSELECT` 第二参 `1`=试运行（未确认，可回滚），`0`=直接切。**当前配置未启用切槽，不要当产品路径** |
 
 不要在回调里热更新自己正在跑的文件。
 
@@ -127,7 +127,9 @@ AT+SCRIPTCONFIRM?
 AT+SCRIPTROLLBACK?
 ```
 
-`trial=1`：下次启动试 B，不确认则按产品策略回滚。`CONFIRM` 把 trial 变成正式。`ROLLBACK` 回到已确认槽。
+`trial=1`：设计上是下次启动试 B，不确认则按产品策略回滚。`CONFIRM` 把 trial 变成正式。`ROLLBACK` 回到已确认槽。
+
+**当前版本未启用双槽切换**，这些指令不要当已开通的升级/回滚业务来联调。原因与后续版本见 [核心 · 运行第 2 节](../core/runtime.md#2-脚本副本a--b-两槽)。
 
 ---
 
@@ -148,7 +150,9 @@ AT+SCRIPTCB="uart","delete"
 
 ## 8. 联调顺序
 
-DEPLOY → FILE stream 写入 main/module → MANIFEST rebuild 或 stream → SELECT trial → 复位验证 → CONFIRM。失败回 ROLLBACK。
+当前版本：DEPLOY → FILE 写入 → MANIFEST rebuild 或 stream → 复位验证。不要走 SELECT trial / CONFIRM / ROLLBACK。
+
+（双槽切换若在日后 8+8 / CAT4 打开，设计顺序才是：DEPLOY → FILE → MANIFEST → SELECT trial → 复位 → CONFIRM；失败回 ROLLBACK。）
 
 ---
 
@@ -158,3 +162,4 @@ DEPLOY → FILE stream 写入 main/module → MANIFEST rebuild 或 stream → SE
 | --- | --- | --- |
 | 1.0.0 | 2026-09-05 | 首版：AB 槽部署、试运行、确认回滚 |
 | 1.0.1 | 2026-09-12 | 文首链到 DoLua 核心（运行机制与配额） |
+| 1.1.0 | 2026-09-12 | 标明双槽切换当前未启用；联调改为单份部署 |
