@@ -239,7 +239,7 @@ hex.hex2bytes("DEAD", 2)      -- "\xDE\xAD"（大小写均可）
 
 ## 11. 完整示例
 
-与 [examples/NT26/module/hex/hex_api](../../../../examples/NT26/module/hex/hex_api) 一致：
+与 [examples/nt26/module/hex/hex_api](../../../../examples/nt26/module/hex/hex_api) 一致：
 
 ```lua
 local hex = require("hex")

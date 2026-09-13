@@ -375,7 +375,7 @@ end
 
 ## 12. 完整示例
 
-与仓库 [examples/NT26/network/lbs/lbs_api](../../../../examples/NT26/network/lbs/lbs_api) 一致：先等网，读缓存，再依次打单基站、多基站、带地址。
+与仓库 [examples/nt26/network/lbs/lbs_api](../../../../examples/nt26/network/lbs/lbs_api) 一致：先等网，读缓存，再依次打单基站、多基站、带地址。
 
 ```lua
 local rt  = require("rt")

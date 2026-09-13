@@ -734,7 +734,7 @@ LFS 进度表 **没有** FlashDB 那种 `kind` / `addr` / `repaired`。
 
 ## 14. 完整示例
 
-先认片再挂整片。完整工程见 [examples/NT26/storage/littlefs](../../../../examples/NT26/storage/littlefs)。
+先认片再挂整片。完整工程见 [examples/nt26/storage/littlefs](../../../../examples/nt26/storage/littlefs)。
 
 ```lua
 local gpio = require("gpio")

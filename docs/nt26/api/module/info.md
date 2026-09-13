@@ -709,7 +709,7 @@ Lua 普通字符串里 `%` 没有特殊含义，`"%Y-%m-%d"` 可以直接传。�
 
 ## 12. 完整示例
 
-只读一遍身份、驻网、时间：[examples/NT26/module/info/info_api](../../../../examples/NT26/module/info/info_api)。
+只读一遍身份、驻网、时间：[examples/nt26/module/info/info_api](../../../../examples/nt26/module/info/info_api)。
 
 ```lua
 local info = require("info")

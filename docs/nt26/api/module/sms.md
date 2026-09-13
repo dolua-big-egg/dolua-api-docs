@@ -371,7 +371,7 @@ function cb(ev)
 
 ## 12. 完整示例
 
-与 [examples/NT26/network/sms/sms_api](../../../../examples/NT26/network/sms/sms_api) 一致。把 `DA` 换成你的手机号才发测试短信；空串只收不发。必须用手机卡。
+与 [examples/nt26/network/sms/sms_api](../../../../examples/nt26/network/sms/sms_api) 一致。把 `DA` 换成你的手机号才发测试短信；空串只收不发。必须用手机卡。
 
 ```lua
 local rt  = require("rt")

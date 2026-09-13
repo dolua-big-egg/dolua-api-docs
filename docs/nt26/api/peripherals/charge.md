@@ -276,7 +276,7 @@ Charge Pad **不是**测电压或电流。内部可开关约 10k 上拉，再读
 
 ## 12. 完整示例
 
-与仓库 [examples/NT26/module/charge/charge_api](../../../../examples/NT26/module/charge/charge_api) 一致：init 后每秒读一次。下面补上 `require("rt")`。
+与仓库 [examples/nt26/module/charge/charge_api](../../../../examples/nt26/module/charge/charge_api) 一致：init 后每秒读一次。下面补上 `require("rt")`。
 
 ```lua
 local charge = require("charge")

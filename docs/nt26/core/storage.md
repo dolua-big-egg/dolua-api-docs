@@ -136,7 +136,7 @@
 ## 7. 接下来读什么
 
 - 配额数字：[resources.md](resources.md)
-- 例程：[ufs_api](../../../examples/NT26/storage/ufs/ufs_api)、[ublob_api](../../../examples/NT26/storage/ublob/ublob_api)、[littlefs](../../../examples/NT26/storage/littlefs)、[mix](../../../examples/NT26/storage/mix)
+- 例程：[ufs_api](../../../examples/nt26/storage/ufs/ufs_api)、[ublob_api](../../../examples/nt26/storage/ublob/ublob_api)、[littlefs](../../../examples/nt26/storage/littlefs)、[mix](../../../examples/nt26/storage/mix)
 
 ---
 

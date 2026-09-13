@@ -400,7 +400,7 @@ obj:deinit()
 
 ## 12. 完整示例
 
-AHT20：[examples/NT26/peripherals/iic/soft_iic_aht20](../../../../examples/NT26/peripherals/iic/soft_iic_aht20)。
+AHT20：[examples/nt26/peripherals/iic/soft_iic_aht20](../../../../examples/nt26/peripherals/iic/soft_iic_aht20)。
 
 ```lua
 local rt = require("rt")

@@ -933,7 +933,7 @@ end
 
 ### 14.2 投票保活
 
-与 [examples/NT26/module/lp/lowpower_vote](../../../../examples/NT26/module/lp/lowpower_vote) 一致：干活 `acquire`，结束 `release`，入口 `delay(-1)`。
+与 [examples/nt26/module/lp/lowpower_vote](../../../../examples/nt26/module/lp/lowpower_vote) 一致：干活 `acquire`，结束 `release`，入口 `delay(-1)`。
 
 ```lua
 local rt = require("rt")

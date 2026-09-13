@@ -37,7 +37,7 @@ DoLua 工程是 **一层文件夹**：里面有入口脚本、可选的用户模
 
 新建必须先创建这一层工程文件夹，再往里面写文件。编辑器如果把仓库根当成工作区打开，相对路径上的 `main.lua` 会变成仓库根上的文件——那不是一份合法工程。
 
-官方可导入例程在文档仓的 `examples/NT26/`，每个子目录就是一份工程。
+官方可导入例程在文档仓的 `examples/nt26/`，每个子目录就是一份工程。
 
 ---
 
@@ -139,7 +139,7 @@ function 灯.打开() ... end
 
 - [存储怎么分](storage.md)
 - 侧边栏五区 / LUAPK：[工程结构](../../dolua-assisant/工程结构.md)
-- 例程：[started/module](../../../examples/NT26/started/module)（用户模块怎么登记）
+- 例程：[started/module](../../../examples/nt26/started/module)（用户模块怎么登记）
 - 部署 AT：[script.md](../at/script.md)
 
 ---

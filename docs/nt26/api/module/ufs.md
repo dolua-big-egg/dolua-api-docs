@@ -458,7 +458,7 @@ ufs/ublob 可写上限 limit = shared_limit − 脚本区落盘
 
 ## 13. 完整示例
 
-与 [examples/NT26/storage/ufs/ufs_api](../../../../examples/NT26/storage/ufs/ufs_api) 一致：
+与 [examples/nt26/storage/ufs/ufs_api](../../../../examples/nt26/storage/ufs/ufs_api) 一致：
 
 ```lua
 local rt  = require("rt")

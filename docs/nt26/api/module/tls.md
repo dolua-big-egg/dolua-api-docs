@@ -548,7 +548,7 @@ CRC `width` 固定为 8/16/32，不能自选宽度。
 | OneNET 连云 | [`mqtt`](../network/mqtt.md) `platform("onenet")` |
 | TLS 套接字 / 证书 | **没有**。MQTT/HTTP 的加密通道在对应模块 |
 
-demo：[examples/NT26/module/tls/tls_api](../../../../examples/NT26/module/tls/tls_api)。
+demo：[examples/nt26/module/tls/tls_api](../../../../examples/nt26/module/tls/tls_api)。
 
 ---
 

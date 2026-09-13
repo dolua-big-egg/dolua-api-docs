@@ -1352,8 +1352,8 @@ VM 退出会回收还活着的 `ui`。
 
 | 工程 | 演示 |
 | --- | --- |
-| [lvgl_demo](../../../examples/NT26/module/lvgl/lvgl_demo) | 标签、按钮、顶栏（`statusbar.lua`） |
-| [lvgl_img](../../../examples/NT26/module/lvgl/lvgl_img) | `ublob` JPEG → `ui:img` → `ui:set_scale` 循环缩小再放大 |
+| [lvgl_demo](../../../examples/nt26/module/lvgl/lvgl_demo) | 标签、按钮、顶栏（`statusbar.lua`） |
+| [lvgl_img](../../../examples/nt26/module/lvgl/lvgl_img) | `ublob` JPEG → `ui:img` → `ui:set_scale` 循环缩小再放大 |
 
 下面是 `lvgl_demo` 同路径的最小脚本。脚号按板子改；SPI0 与 UART2 默认脚重叠时需要配置里 `[uart.2] pin_map=1`。图片不要写进仓库，放到工程内置文件系统、存储选 blob 后再 `set_src`。
 
@@ -1434,7 +1434,7 @@ rt.delay(-1)
 
 `create` 之后再 `panel:full(lcd.RED)` 会得到 `false, "lcd bound to lvgl"`。
 
-图片缩放循环（完整工程见 [lvgl_img](../../../examples/NT26/module/lvgl/lvgl_img)）。`set_src` 成功后不要钉 `set_size`；每次改因子后 `center`，用 `rt.delay` 让出，不要循环 `ui:handler()`。
+图片缩放循环（完整工程见 [lvgl_img](../../../examples/nt26/module/lvgl/lvgl_img)）。`set_src` 成功后不要钉 `set_size`；每次改因子后 `center`，用 `rt.delay` 让出，不要循环 `ui:handler()`。
 
 ```lua
 local pic = ui:img()
@@ -1475,6 +1475,6 @@ end
 | 1.3.1 | 2026-09-07 | 阻塞发屏时放下锁；Lua 等锁超时返回 `lvgl busy`，避免卡死 GPIO |
 | 1.4.0 | 2026-09-09 | 增加 `ui:img` / `ui:set_src`：JPEG 与 LVGL `.bin`，源为 RAM / ublob / lfs；解码一次挂像素，隐藏仍占内存 |
 | 1.5.0 | 2026-09-09 | 增加 `ui:set_scale` / `ui:get_scale` 与 `lvgl.SCALE_NONE`（256 = 原尺寸）；`set_size` 只改外框不缩放像素 |
-| 1.5.1 | 2026-09-10 | 选型与完整示例补上 `set_scale` 循环；可烧录工程增加 [lvgl_img](../../../examples/NT26/module/lvgl/lvgl_img) |
+| 1.5.1 | 2026-09-10 | 选型与完整示例补上 `set_scale` 循环；可烧录工程增加 [lvgl_img](../../../examples/nt26/module/lvgl/lvgl_img) |
 | 1.6.0 | 2026-09-10 | 增加 `ui:font` / `ui:set_font`：LVGL 点阵 `.bin` 与 TTF；源为 RAM / ublob / lfs；样式表可写 `font` |
 | 1.6.1 | 2026-09-10 | 点阵 `.bin` 支持 Font Converter 压缩输出 |

@@ -269,7 +269,7 @@ ok, resp = virat.ril_exec(at_cmd, timeout_ms)
 
 ## 11. 完整示例
 
-与 [examples/NT26/module/virt/virt_api](../../../../examples/NT26/module/virt/virt_api) 一致。下面只演示 `exec` 只读查询；`ril_exec` 的可运行调用以该 demo 当时采用的指令为准，**不要改成别的原厂命令。**
+与 [examples/nt26/module/virt/virt_api](../../../../examples/nt26/module/virt/virt_api) 一致。下面只演示 `exec` 只读查询；`ril_exec` 的可运行调用以该 demo 当时采用的指令为准，**不要改成别的原厂命令。**
 
 ```lua
 local rt    = require("rt")

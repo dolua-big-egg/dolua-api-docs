@@ -581,7 +581,7 @@ function cb(ts)
 
 ## 11. 完整示例
 
-与 [examples/NT26/os/sys/sys_api](../../../../examples/NT26/os/sys/sys_api) 一致（不调用复位/关机）：
+与 [examples/nt26/os/sys/sys_api](../../../../examples/nt26/os/sys/sys_api) 一致（不调用复位/关机）：
 
 ```lua
 local rt  = require("rt")

@@ -397,7 +397,7 @@ end
 
 ## 10. 完整示例
 
-与仓库 [examples/NT26/network/dns/dns_api](../../../../examples/NT26/network/dns/dns_api) 一致：等网 → 读 CID → 读 PCO DNS 并解析 → 改成阿里 DNS、清缓存再解析。
+与仓库 [examples/nt26/network/dns/dns_api](../../../../examples/nt26/network/dns/dns_api) 一致：等网 → 读 CID → 读 PCO DNS 并解析 → 改成阿里 DNS、清缓存再解析。
 
 ```lua
 local rt  = require("rt")

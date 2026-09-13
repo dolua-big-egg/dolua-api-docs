@@ -224,7 +224,7 @@ MQTT 报文 ──┼──► 事件队列 ──► 调度循环 ──► 唤
     让出(较长一段时间)
 ```
 
-最小入门可以更短：入口自己循环打印再让出。见 [started/hello](../../../examples/NT26/started/hello)、[started/task](../../../examples/NT26/started/task)。
+最小入门可以更短：入口自己循环打印再让出。见 [started/hello](../../../examples/nt26/started/hello)、[started/task](../../../examples/nt26/started/task)。
 
 ---
 
@@ -246,7 +246,7 @@ MQTT 报文 ──┼──► 事件队列 ──► 调度循环 ──► 唤
 
 1. [可用资源](resources.md) — 槽位、队列深度、编码上限
 2. API：[rt](../api/module/rt.md)、[sys 延时对照](../api/module/sys.md)
-3. 例程：[task_delay](../../../examples/NT26/os/rt/task_delay)、[mbox_uart](../../../examples/NT26/os/rt/mbox_uart)、[mq_api](../../../examples/NT26/os/rt/mq_api)、[tmr_api](../../../examples/NT26/os/rt/tmr_api)
+3. 例程：[task_delay](../../../examples/nt26/os/rt/task_delay)、[mbox_uart](../../../examples/nt26/os/rt/mbox_uart)、[mq_api](../../../examples/nt26/os/rt/mq_api)、[tmr_api](../../../examples/nt26/os/rt/tmr_api)
 
 ---
 

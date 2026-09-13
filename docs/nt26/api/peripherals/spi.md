@@ -533,9 +533,9 @@ SPI 硬件 SSn 复用脚（SPI0 上常是 GPIO8 那根）若改成 GPIO 片选�
 
 | 需求 | 做法 |
 | --- | --- |
-| 摸总线、读 JEDEC | 本模块 `set_cs` + `transfer`，[examples/NT26/peripherals/spi/spi_api](../../../../examples/NT26/peripherals/spi/spi_api) |
+| 摸总线、读 JEDEC | 本模块 `set_cs` + `transfer`，[examples/nt26/peripherals/spi/spi_api](../../../../examples/nt26/peripherals/spi/spi_api) |
 | 外挂 NOR + 文件系统 | [`sfud.bind`](../module/sfud.md)，不要本模块发 03h/02h |
-| 彩屏 | [`lcd`](../module/lcd.md)；本仓库 [examples/NT26/peripherals/spi/spi_st7789](../../../../examples/NT26/peripherals/spi/spi_st7789) 是手搓屏命令的参考 |
+| 彩屏 | [`lcd`](../module/lcd.md)；本仓库 [examples/nt26/peripherals/spi/spi_st7789](../../../../examples/nt26/peripherals/spi/spi_st7789) 是手搓屏命令的参考 |
 | 只发不收（刷像素） | `WORK_MODE_TX_ONLY` + `send` |
 
 ---

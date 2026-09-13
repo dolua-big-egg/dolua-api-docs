@@ -280,7 +280,7 @@ end
 | 脚本自己延时、多任务 | [`rt`](rt.md)，与本模块无关 |
 | 用 Lua 切槽 / 回退 | **不要**。`switch` / `rollback` 未部署；双槽切换当前也未启用 |
 
-demo：[examples/NT26/os/script/script_api](../../../../examples/NT26/os/script/script_api)。
+demo：[examples/nt26/os/script/script_api](../../../../examples/nt26/os/script/script_api)。
 
 ---
 

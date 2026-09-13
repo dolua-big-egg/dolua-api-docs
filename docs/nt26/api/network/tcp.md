@@ -612,13 +612,13 @@ TCP 的 `ev.code` **不是** 一套稳定的 Lua 枚举，而是套接字层当�
 | 任务里组完再发 | 已连接时 `send` |
 | 必须同步等到连上 | `wait_connect`（少用） |
 | 销毁 | 一般不必；用 `close` 即可 |
-| 下行组帧出 UART1 | [examples/NT26/apps/protocol_pack/tcp_uart_frame](../../../../examples/NT26/apps/protocol_pack/tcp_uart_frame) |
+| 下行组帧出 UART1 | [examples/nt26/apps/protocol_pack/tcp_uart_frame](../../../../examples/nt26/apps/protocol_pack/tcp_uart_frame) |
 
 ---
 
 ## 14. 完整示例
 
-与 [examples/NT26/network/tcp/tcp_api](../../../../examples/NT26/network/tcp/tcp_api) 一致。把 `HOST` / `PORT` 换成你的服务器；测试站见 [tcp.doiot.cn](http://tcp.doiot.cn/)，网页刷新端口会变。
+与 [examples/nt26/network/tcp/tcp_api](../../../../examples/nt26/network/tcp/tcp_api) 一致。把 `HOST` / `PORT` 换成你的服务器；测试站见 [tcp.doiot.cn](http://tcp.doiot.cn/)，网页刷新端口会变。
 
 ```lua
 local rt  = require("rt")

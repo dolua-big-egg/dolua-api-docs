@@ -427,7 +427,7 @@ NOR Flash 不是 RAM：
 
 ## 12. 完整示例
 
-SPI0 + GPIO8 CS，认片后打印容量。完整外挂盘流程见 [examples/NT26/storage/flashdb_kv](../../../../examples/NT26/storage/flashdb_kv)（以及 [examples/NT26/storage/flashdb_ts](../../../../examples/NT26/storage/flashdb_ts)、[examples/NT26/storage/littlefs](../../../../examples/NT26/storage/littlefs)、[examples/NT26/storage/mix](../../../../examples/NT26/storage/mix)）。
+SPI0 + GPIO8 CS，认片后打印容量。完整外挂盘流程见 [examples/nt26/storage/flashdb_kv](../../../../examples/nt26/storage/flashdb_kv)（以及 [examples/nt26/storage/flashdb_ts](../../../../examples/nt26/storage/flashdb_ts)、[examples/nt26/storage/littlefs](../../../../examples/nt26/storage/littlefs)、[examples/nt26/storage/mix](../../../../examples/nt26/storage/mix)）。
 
 ```lua
 local gpio = require("gpio")

@@ -662,7 +662,7 @@ id 不跨次运行保证不变。`stop` 不删表；`remove` / `clear` 才删。
 
 ## 12. 完整示例
 
-先授时，再登记 5 分钟对齐。回调只投递，打印放在任务里。完整低功耗流程见 [examples/NT26/module/lp/lowpower_cron](../../../../examples/NT26/module/lp/lowpower_cron)。
+先授时，再登记 5 分钟对齐。回调只投递，打印放在任务里。完整低功耗流程见 [examples/nt26/module/lp/lowpower_cron](../../../../examples/nt26/module/lp/lowpower_cron)。
 
 ```lua
 local rt = require("rt")

@@ -226,7 +226,7 @@ require("led")
 ## 9. 接下来读什么
 
 1. [消息和调度](schedule.md)
-2. 对照例程：[started/task](../../../examples/NT26/started/task)、[os/script/script_api](../../../examples/NT26/os/script/script_api)
+2. 对照例程：[started/task](../../../examples/nt26/started/task)、[os/script/script_api](../../../examples/nt26/os/script/script_api)
 
 ---
 

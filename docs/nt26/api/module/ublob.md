@@ -565,7 +565,7 @@ HTTP 落到 ublob 也吃这块配额；超限时 HTTP 侧是保存失败码，�
 
 ## 15. 完整示例
 
-与 [examples/NT26/storage/ublob/ublob_api](../../../../examples/NT26/storage/ublob/ublob_api) 一致：
+与 [examples/nt26/storage/ublob/ublob_api](../../../../examples/nt26/storage/ublob/ublob_api) 一致：
 
 ```lua
 local rt    = require("rt")
@@ -613,7 +613,7 @@ end
 v:close()
 ```
 
-HTTP 落到 ublob 后同样 `open` 分块读，见 [examples/NT26/network/http/http_file_ublob](../../../../examples/NT26/network/http/http_file_ublob)。
+HTTP 落到 ublob 后同样 `open` 分块读，见 [examples/nt26/network/http/http_file_ublob](../../../../examples/nt26/network/http/http_file_ublob)。
 
 ---
 

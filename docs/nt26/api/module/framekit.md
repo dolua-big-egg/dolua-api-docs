@@ -723,7 +723,7 @@ function(ev)
 
 ## 14. 完整示例
 
-UART 回调只喂流；独立任务 `poll`；事件里拿干净 payload。完整工程见 [examples/NT26/module/framekit/framekit_cmd](../../../../examples/NT26/module/framekit/framekit_cmd)。
+UART 回调只喂流；独立任务 `poll`；事件里拿干净 payload。完整工程见 [examples/nt26/module/framekit/framekit_cmd](../../../../examples/nt26/module/framekit/framekit_cmd)。
 
 ```lua
 local rt = require("rt")

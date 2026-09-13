@@ -30,7 +30,7 @@
 
 侧边栏怎么认工程、五区、LUAPK，另见 [工程结构](../../dolua-assisant/工程结构.md)（开发助手分类）。
 
-入门工程仍建议：`started/hello` → `started/log` → `started/task`，见 [示例索引](../../../examples/NT26/README.md)。
+入门工程仍建议：`started/hello` → `started/log` → `started/task`，见 [示例索引](../../../examples/nt26/README.md)。
 
 ---
 
@@ -57,7 +57,7 @@
 | 查某个 `require("…")` | [api/README.md](../api/README.md) |
 | 对原理图、选脚 | [hardware/README.md](../hardware/README.md) |
 | 用 AT 部署/查询脚本包 | [at/script.md](../at/script.md) |
-| 抄一份能烧录的工程 | [examples/NT26](../../../examples/NT26/README.md) |
+| 抄一份能烧录的工程 | [examples/nt26](../../../examples/nt26/README.md) |
 | 看工程文件夹 / LUAPK | [工程结构](../../dolua-assisant/工程结构.md) |
 
 ---

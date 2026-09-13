@@ -603,9 +603,9 @@ end
 | 按配置路由转发（含 UART/HTTP/短信） | `write(route, data)` |
 | 注入「像串口上报 / 像通道下行」 | `update_write` / `down_write` |
 | 脚本自己拉 TCP/MQTT | [`tcp`](../network/tcp.md) / [`mqtt`](../network/mqtt.md)，不要用本模块的通道 id |
-| 查询 / 等连接 / 回调（不发数） | [examples/NT26/module/rtu/rtu_api](../../../../examples/NT26/module/rtu/rtu_api) |
-| UART 指令驱动全部 API | [examples/NT26/module/rtu/rtu_cmd](../../../../examples/NT26/module/rtu/rtu_cmd) |
-| 通道 1 下行组帧出 UART1 | [examples/NT26/apps/protocol_pack/rtu_ch1_uart_frame](../../../../examples/NT26/apps/protocol_pack/rtu_ch1_uart_frame) |
+| 查询 / 等连接 / 回调（不发数） | [examples/nt26/module/rtu/rtu_api](../../../../examples/nt26/module/rtu/rtu_api) |
+| UART 指令驱动全部 API | [examples/nt26/module/rtu/rtu_cmd](../../../../examples/nt26/module/rtu/rtu_cmd) |
+| 通道 1 下行组帧出 UART1 | [examples/nt26/apps/protocol_pack/rtu_ch1_uart_frame](../../../../examples/nt26/apps/protocol_pack/rtu_ch1_uart_frame) |
 
 ---
 
@@ -636,7 +636,7 @@ while true do
 end
 ```
 
-只查开关和连接、登记日志回调：见 [examples/NT26/module/rtu/rtu_api](../../../../examples/NT26/module/rtu/rtu_api)。
+只查开关和连接、登记日志回调：见 [examples/nt26/module/rtu/rtu_api](../../../../examples/nt26/module/rtu/rtu_api)。
 
 ---
 

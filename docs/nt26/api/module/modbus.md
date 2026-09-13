@@ -45,7 +45,7 @@ local modbus = require("modbus")
 
 不识别从站地址、功能码、异常应答。规则从第几个字节抠、抠几种类型，全部由脚本写死。接到仪表后先对照手册确认寄存器布局和 float 的字序，再写规则。
 
-模拟帧、不碰串口：[examples/NT26/module/modbus/modbus_api](../../../../examples/NT26/module/modbus/modbus_api)。UART 一问一答：`modbus_rs485`。
+模拟帧、不碰串口：[examples/nt26/module/modbus/modbus_api](../../../../examples/nt26/module/modbus/modbus_api)。UART 一问一答：`modbus_rs485`。
 
 ---
 
@@ -389,7 +389,7 @@ end
 | --- | --- |
 | 从应答里抠寄存器 / float | `analyze` |
 | 组请求、校验应答 CRC | `crc("gen")` / `crc("check")` |
-| 串口一问一答 | [`uart.write`](../peripherals/uart.md) + `uart.block`，见 [examples/NT26/module/modbus/modbus_rs485](../../../../examples/NT26/module/modbus/modbus_rs485) |
+| 串口一问一答 | [`uart.write`](../peripherals/uart.md) + `uart.block`，见 [examples/nt26/module/modbus/modbus_rs485](../../../../examples/nt26/module/modbus/modbus_rs485) |
 | 粘包 / 按 CRC 切帧 | [`framekit`](framekit.md)，算法用 `crc16_modbus` |
 | 当 hex 文本打印 | [`hex`](hex.md)，不要把 hex 文本直接喂给 `analyze` |
 | 完整 Modbus 主站（超时重试、多从站队列） | **没有。** 自己用 UART 轮询 |
@@ -398,7 +398,7 @@ end
 
 ## 14. 完整示例
 
-与 [examples/NT26/module/modbus/modbus_api](../../../../examples/NT26/module/modbus/modbus_api) 同一帧：
+与 [examples/nt26/module/modbus/modbus_api](../../../../examples/nt26/module/modbus/modbus_api) 同一帧：
 
 ```lua
 local modbus = require("modbus")

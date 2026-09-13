@@ -417,7 +417,7 @@ local route = sys.option("log_route")
 
 ## 12. 完整示例
 
-与 [examples/NT26/started/log](../../../../examples/NT26/started/log) 一致：
+与 [examples/nt26/started/log](../../../../examples/nt26/started/log) 一致：
 
 ```lua
 local rt  = require("rt")

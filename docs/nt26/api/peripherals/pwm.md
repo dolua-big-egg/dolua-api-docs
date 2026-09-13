@@ -463,7 +463,7 @@ end
 
 `freq` 必须小于 `clk`。默认 26 M 可做 1 kHz 呼吸灯，也可以 1 MHz（示波器才能看清）。占空比分辨率 ≈ 时钟 / 频率。
 
-示例见 [examples/NT26/peripherals/pwm/timer](../../../../examples/NT26/peripherals/pwm/timer)、`timer_mhz`。
+示例见 [examples/nt26/peripherals/pwm/timer](../../../../examples/nt26/peripherals/pwm/timer)、`timer_mhz`。
 
 ### 9.2 APWM
 
@@ -473,7 +473,7 @@ end
 
 不要拿 APWM 做蜂鸣器。`set_duty` 会把波形收成从 0% 高、到 `duty%` 低。
 
-示例见 [examples/NT26/peripherals/pwm/apwm](../../../../examples/NT26/peripherals/pwm/apwm)。
+示例见 [examples/nt26/peripherals/pwm/apwm](../../../../examples/nt26/peripherals/pwm/apwm)。
 
 ---
 
@@ -491,7 +491,7 @@ comp = { type = pwm.INPUT_PINNO, id = n_pin }
 
 `set_duty` 改的是这一对，两脚始终反相。
 
-示例见 [examples/NT26/peripherals/pwm/timer_comp](../../../../examples/NT26/peripherals/pwm/timer_comp)。单端 LED 不必配 `comp`。
+示例见 [examples/nt26/peripherals/pwm/timer_comp](../../../../examples/nt26/peripherals/pwm/timer_comp)。单端 LED 不必配 `comp`。
 
 ---
 
@@ -585,7 +585,7 @@ comp = { type = pwm.INPUT_PINNO, id = n_pin }
 
 ## 14. 完整示例
 
-脚号按板子改。下面与 [examples/NT26/peripherals/pwm/timer](../../../../examples/NT26/peripherals/pwm/timer) 同类：模块脚 16、TIMER 1 kHz。
+脚号按板子改。下面与 [examples/nt26/peripherals/pwm/timer](../../../../examples/nt26/peripherals/pwm/timer) 同类：模块脚 16、TIMER 1 kHz。
 
 ```lua
 local pwm = require("pwm")
@@ -624,7 +624,7 @@ ch:start({
 })
 ```
 
-先跑 [examples/NT26/peripherals/pwm/pins](../../../../examples/NT26/peripherals/pwm/pins) 对照自己的管脚表，再选 TIMER / APWM / 互补 demo。
+先跑 [examples/nt26/peripherals/pwm/pins](../../../../examples/nt26/peripherals/pwm/pins) 对照自己的管脚表，再选 TIMER / APWM / 互补 demo。
 
 ---
 

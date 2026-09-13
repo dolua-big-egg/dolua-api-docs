@@ -15,7 +15,7 @@ DoLua 是成都度云未来科技有限公司模组上的 **设备端 Lua 运行
         让出 一段时间
 ```
 
-真正怎么写、参数叫什么，见各模块 API 和 [入门示例](../../../examples/NT26/started)。
+真正怎么写、参数叫什么，见各模块 API 和 [入门示例](../../../examples/nt26/started)。
 
 ---
 
@@ -163,7 +163,7 @@ DoLua 是成都度云未来科技有限公司模组上的 **设备端 Lua 运行
 ## 8. 接下来读什么
 
 1. [DoLua 是怎么运行的](runtime.md)
-2. 想先动手：导入 [started/hello](../../../examples/NT26/started/hello)
+2. 想先动手：导入 [started/hello](../../../examples/nt26/started/hello)
 
 ---
 

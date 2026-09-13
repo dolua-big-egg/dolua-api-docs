@@ -422,7 +422,7 @@ random.choices(random.hexdigits, nil, 16)
 
 ## 11. 完整示例
 
-与 [examples/NT26/module/random/random_api](../../../../examples/NT26/module/random/random_api) 一致：
+与 [examples/nt26/module/random/random_api](../../../../examples/nt26/module/random/random_api) 一致：
 
 ```lua
 local random = require("random")

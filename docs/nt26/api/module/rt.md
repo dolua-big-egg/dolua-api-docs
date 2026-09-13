@@ -301,7 +301,7 @@ rt.mbox_reg(topic, callback)
 
 没有 `mbox_unreg`。虚拟机退出时一起拆掉。
 
-UART 收到后丢给工作协程：见 [examples/NT26/os/rt/mbox_uart](../../../../examples/NT26/os/rt/mbox_uart)。
+UART 收到后丢给工作协程：见 [examples/nt26/os/rt/mbox_uart](../../../../examples/nt26/os/rt/mbox_uart)。
 
 ---
 
@@ -662,7 +662,7 @@ topic 名字空间：mbox 的订阅槽和 mq 的队列槽是两套，各最多 1
 | 等一包串口 | [`uart.block`](../peripherals/uart.md) |
 | 精确忙等、不允许插队 | [`sys.delay_ms`](sys.md) / `delay_us`（慎用） |
 
-demo：[examples/NT26/os/rt/task_delay](../../../../examples/NT26/os/rt/task_delay)、[examples/NT26/os/rt/mbox_uart](../../../../examples/NT26/os/rt/mbox_uart)、[examples/NT26/os/rt/mq_api](../../../../examples/NT26/os/rt/mq_api)、[examples/NT26/os/rt/tmr_api](../../../../examples/NT26/os/rt/tmr_api)。
+demo：[examples/nt26/os/rt/task_delay](../../../../examples/nt26/os/rt/task_delay)、[examples/nt26/os/rt/mbox_uart](../../../../examples/nt26/os/rt/mbox_uart)、[examples/nt26/os/rt/mq_api](../../../../examples/nt26/os/rt/mq_api)、[examples/nt26/os/rt/tmr_api](../../../../examples/nt26/os/rt/tmr_api)。
 
 ---
 

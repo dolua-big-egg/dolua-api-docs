@@ -370,7 +370,7 @@ http.get(url, {
 
 单向/双向缺证书：失败，`err_msg` 为 `"tls configure failed"`。换站点通常要换根 CA，不能拿 A 站点的根去验 B 站点。
 
-示例见 [examples/NT26/network/http/https](../../../../examples/NT26/network/http/https)。
+示例见 [examples/nt26/network/http/https](../../../../examples/nt26/network/http/https)。
 
 ---
 
@@ -382,9 +382,9 @@ http.get(url, {
 
 | 路径 | demo |
 | --- | --- |
-| 内存字符串 | [examples/NT26/network/http/http_request](../../../../examples/NT26/network/http/http_request)、[examples/NT26/network/http/https](../../../../examples/NT26/network/http/https) |
-| 内部 ublob | [examples/NT26/network/http/http_file_ublob](../../../../examples/NT26/network/http/http_file_ublob) |
-| 外挂 LittleFS | [examples/NT26/network/http/http_file_lfs](../../../../examples/NT26/network/http/http_file_lfs) |
+| 内存字符串 | [examples/nt26/network/http/http_request](../../../../examples/nt26/network/http/http_request)、[examples/nt26/network/http/https](../../../../examples/nt26/network/http/https) |
+| 内部 ublob | [examples/nt26/network/http/http_file_ublob](../../../../examples/nt26/network/http/http_file_ublob) |
+| 外挂 LittleFS | [examples/nt26/network/http/http_file_lfs](../../../../examples/nt26/network/http/http_file_lfs) |
 
 ### 10.1 为什么要落盘
 

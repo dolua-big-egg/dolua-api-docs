@@ -327,7 +327,7 @@ YYYY-MM-DD HH:MM:SS -05
 
 ## 12. 完整示例
 
-与 [examples/NT26/network/ntp/ntp_api](../../../../examples/NT26/network/ntp/ntp_api) 一致。先等驻网，再问内置服务器和若干公网 NTP，最后一次写入本机钟。
+与 [examples/nt26/network/ntp/ntp_api](../../../../examples/nt26/network/ntp/ntp_api) 一致。先等驻网，再问内置服务器和若干公网 NTP，最后一次写入本机钟。
 
 ```lua
 local rt  = require("rt")

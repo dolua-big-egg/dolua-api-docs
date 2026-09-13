@@ -62,7 +62,7 @@ local flashdb = require("flashdb")
 1. SPI + CS GPIO → [`sfud.bind`](sfud.md)
 2. `flash:capacity()` / `erase_gran()` 算分区（按粒度向下对齐，每区 ≥ **8KB**）
 3. `flashdb.kv(flash, { offset, size, ... })` 和/或 `flashdb.ts(...)`
-4. 同一颗芯片也可再给 LittleFS 一块不重叠的分区（见 [examples/NT26/storage/mix](../../../../examples/NT26/storage/mix)）
+4. 同一颗芯片也可再给 LittleFS 一块不重叠的分区（见 [examples/nt26/storage/mix](../../../../examples/nt26/storage/mix)）
 
 未挂载成功不要读写。大分区第一次格式化可能数秒到几十秒：请走异步挂载（配 `on_event` 或 `mount_timeout_ms`），否则整条 Lua 引擎线程被占住，心跳可能喂不上。
 
@@ -647,7 +647,7 @@ KV 不是文件系统。TS 不是按墙钟自动对齐的 cron。
 
 ## 14. 完整示例
 
-先认片再挂 KV。完整工程（含脚位、`rtu_config.cfg`）见 [examples/NT26/storage/flashdb_kv](../../../../examples/NT26/storage/flashdb_kv)；TS 见 `flashdb_ts`。
+先认片再挂 KV。完整工程（含脚位、`rtu_config.cfg`）见 [examples/nt26/storage/flashdb_kv](../../../../examples/nt26/storage/flashdb_kv)；TS 见 `flashdb_ts`。
 
 ```lua
 local gpio = require("gpio")

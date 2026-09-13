@@ -405,7 +405,7 @@ json.option("num_dp", -1)      -- 回到默认精度模式
 
 ## 15. 完整示例
 
-与 [examples/NT26/module/json/json_api](../../../../examples/NT26/module/json/json_api) 一致：
+与 [examples/nt26/module/json/json_api](../../../../examples/nt26/module/json/json_api) 一致：
 
 ```lua
 local json = require("json")

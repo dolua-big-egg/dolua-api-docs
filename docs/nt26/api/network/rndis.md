@@ -324,7 +324,7 @@ local saved = rndis.saved()
 
 ## 12. 完整示例
 
-与仓库 [examples/NT26/network/rndis/rndis_api](../../../../examples/NT26/network/rndis/rndis_api) 一致：只 `set`，不 `save`，最后还原进入脚本前的本次开关。
+与仓库 [examples/nt26/network/rndis/rndis_api](../../../../examples/nt26/network/rndis/rndis_api) 一致：只 `set`，不 `save`，最后还原进入脚本前的本次开关。
 
 ```lua
 local rt    = require("rt")

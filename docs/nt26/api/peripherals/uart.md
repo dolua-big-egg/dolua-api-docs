@@ -481,7 +481,7 @@ max_packets=4
 
 ## 12. 完整示例
 
-回环：回调只投递，task 里写回。完整工程见 [examples/NT26/peripherals/uart/uart_normal](../../../../examples/NT26/peripherals/uart/uart_normal)。
+回环：回调只投递，task 里写回。完整工程见 [examples/nt26/peripherals/uart/uart_normal](../../../../examples/nt26/peripherals/uart/uart_normal)。
 
 ```lua
 local rt = require("rt")

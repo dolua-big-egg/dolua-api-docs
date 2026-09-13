@@ -948,7 +948,7 @@ c:open(host, port, device_name, product_id, access_key)
 
 ## 16. 完整示例
 
-与 [examples/NT26/network/mqtt/mqtt_client](../../../../examples/NT26/network/mqtt/mqtt_client) 一致。测试站见 [mqtts.doiot.cn](http://mqtts.doiot.cn/)，用户名 `doiot`、密码 `web`。`client_id` 用设备 IMEI；网页往 `/server/<IMEI>` 发，模组就能收到。
+与 [examples/nt26/network/mqtt/mqtt_client](../../../../examples/nt26/network/mqtt/mqtt_client) 一致。测试站见 [mqtts.doiot.cn](http://mqtts.doiot.cn/)，用户名 `doiot`、密码 `web`。`client_id` 用设备 IMEI；网页往 `/server/<IMEI>` 发，模组就能收到。
 
 ```lua
 local rt   = require("rt")

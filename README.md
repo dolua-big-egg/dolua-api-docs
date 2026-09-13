@@ -14,7 +14,7 @@ docs/nt26/api/           模块 API（一篇文档对应一个 require）
 docs/nt26/hardware/      全 IO / 封装脚位（按映射表分篇，不是 require）
 docs/nt26/at/            应用 AT 指令（一篇一类业务，不是 require）
 docs/dolua-assisant/     开发助手：工程文件夹、五区、LUAPK
-examples/NT26/           可直接导入烧录的示例工程
+examples/nt26/           可直接导入烧录的示例工程
 ```
 
 | 你想… | 去这里 |
@@ -24,7 +24,7 @@ examples/NT26/           可直接导入烧录的示例工程
 | 按模块查参数、返回值、失败约定 | [API 索引](docs/nt26/api/README.md) |
 | 对原理图、查 PIN / 复用 | [NT26 硬件脚位](docs/nt26/hardware/README.md) |
 | 查 `AT+` 指令 | [AT 索引](docs/nt26/at/README.md) |
-| 找一份能跑的工程 | [示例索引](examples/NT26/README.md) |
+| 找一份能跑的工程 | [示例索引](examples/nt26/README.md) |
 | 本型号总入口 | [NT26 文档](docs/nt26/README.md) |
 
 API 按主题放在 `peripherals` / `network` / `module`；示例按工程用途放在 `started` / `os` / `peripherals` / `network` / `storage` / `module` / `apps`。两边分类不完全相同，用上面的索引跳转即可。
@@ -33,7 +33,7 @@ API 按主题放在 `peripherals` / `network` / `module`；示例按工程用途
 
 1. 读 [DoLua 核心](docs/nt26/core/README.md)：虚拟机、协作调度、RAM / Flash / 模块个数。
 2. 建工程或看侧边栏分区时，对照 [工程结构](docs/dolua-assisant/工程结构.md)。
-3. 用配套工具导入 [examples/NT26/started/hello](examples/NT26/started/hello)，确认能烧录、能看日志。
+3. 用配套工具导入 [examples/nt26/started/hello](examples/nt26/started/hello)，确认能烧录、能看日志。
 4. 再跑 `started/log`、`started/task`，熟悉日志和协作式任务。
 5. 需要哪块能力，打开 [API 索引](docs/nt26/api/README.md) 对应模块，并对照同页给出的示例目录。
 
