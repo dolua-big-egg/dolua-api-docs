@@ -1,6 +1,6 @@
 # NT26 示例
 
-每个子目录是一份可直接打开的 Lua 工程（`main.lua`、`manifest.json`、`.luaproj`）。用配套工具导入该目录即可烧录。先建立运行时整图请读 [DoLua 核心](../../docs/NT26/core/README.md)；API 说明在 [docs/NT26/api](../../docs/NT26/api/README.md)。
+每个子目录是一份可直接打开的 Lua 工程（`main.lua`、`manifest.json`、`.luaproj`）。用配套工具导入该目录即可烧录。先建立运行时整图请读 [DoLua 核心](../../docs/NT26/core/README.md)；工程文件夹和 LUAPK 见 [工程结构](../../docs/dolua-assisant/工程结构.md)；API 说明在 [docs/NT26/api](../../docs/NT26/api/README.md)。
 
 先从 `started/` 跑通：打印、日志、任务。再按外设 / 网络 / 存储选工程。多模块场景工程放 [apps](apps/README.md)。
 

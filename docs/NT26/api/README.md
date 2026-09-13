@@ -1,6 +1,6 @@
 # NT26 API
 
-一篇文档对应一个 `require("…")` 模块。交叉引用已按当前目录写好相对路径。运行机制、消息调度、RAM / Flash / 模块个数见 [DoLua 核心](../core/README.md)，不要只靠本页拼整图。示例在 [examples/NT26](../../../examples/NT26/README.md)，分类与这里不完全相同。模块 PIN、默认功能和复用见 [硬件脚位](../hardware/README.md)。应用 AT（按业务分类：标识、驻网、Socket、MQTT、HTTP、IO、短信、脚本…）见 [at/](../at/README.md)，不在本目录。产测指令不收录。
+一篇文档对应一个 `require("…")` 模块。交叉引用已按当前目录写好相对路径。运行机制、消息调度、RAM / Flash / 模块个数见 [DoLua 核心](../core/README.md)，不要只靠本页拼整图。工程文件夹、五区、LUAPK 见 [工程结构](../../dolua-assisant/工程结构.md)。示例在 [examples/NT26](../../../examples/NT26/README.md)，分类与这里不完全相同。模块 PIN、默认功能和复用见 [硬件脚位](../hardware/README.md)。应用 AT（按业务分类：标识、驻网、Socket、MQTT、HTTP、IO、短信、脚本…）见 [at/](../at/README.md)，不在本目录。产测指令不收录。
 
 ## 外设 `peripherals/`
 

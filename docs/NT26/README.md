@@ -5,6 +5,7 @@
 | | 路径 |
 | --- | --- |
 | **DoLua 核心**（运行机制、调度、资源） | [core/README.md](core/README.md) |
+| 工程文件夹 / 五区 / LUAPK | [../dolua-assisant/工程结构.md](../dolua-assisant/工程结构.md) |
 | 模块 API 索引 | [api/README.md](api/README.md) |
 | 全 IO / 封装脚位 | [hardware/README.md](hardware/README.md) |
 | 应用 AT 指令 | [at/README.md](at/README.md) |
@@ -13,4 +14,4 @@
 | 入门工程 | [../../examples/NT26/started](../../examples/NT26/started) |
 | 应用场景分类 | [../../examples/NT26/apps](../../examples/NT26/apps) |
 
-阅读顺序： [核心分类](core/README.md) → `started/hello` → `started/log` → `started/task` → 再进对应模块的 API。
+阅读顺序： [核心分类](core/README.md) → [工程结构](../dolua-assisant/工程结构.md) → `started/hello` → `started/log` → `started/task` → 再进对应模块的 API。
