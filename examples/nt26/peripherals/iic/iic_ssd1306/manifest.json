@@ -1,0 +1,40 @@
+{
+  "id": "iic_ssd1306",
+  "name": "硬件 I2C 纯 Lua 驱 SSD1306",
+  "version": "1.0.0",
+  "category": "peripherals",
+  "hw": "中",
+  "tags": [
+    "i2c",
+    "oled",
+    "ssd1306"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "i2c",
+      "log",
+      "rt",
+      "info",
+      "lp",
+      "lbs"
+    ],
+    "pins": [],
+    "peripherals": [],
+    "controllers": [
+      "I2C0"
+    ],
+    "extras": [
+      "SSD1306"
+    ],
+    "network": true
+  },
+  "readme": "",
+  "description": "128x64 OLED 三页循环：doLua 门户、IMEI/ICCID/CSQ 进度条、时间与 LBS 坐标。读不到显示 loading..。纯 Lua ssd1306 驱动，不用 C lcd 库。需要外接 SSD1306（默认地址 0x3C）。\n"
+}

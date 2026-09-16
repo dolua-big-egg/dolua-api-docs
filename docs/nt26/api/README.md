@@ -9,7 +9,7 @@
 | gpio | [gpio.md](peripherals/gpio.md) | [gpio/normal](../../../examples/nt26/peripherals/gpio/normal)、[interrupt](../../../examples/nt26/peripherals/gpio/interrupt)、[io_task](../../../examples/nt26/peripherals/gpio/io_task) |
 | uart | [uart.md](peripherals/uart.md) | [uart_normal](../../../examples/nt26/peripherals/uart/uart_normal)、[uart_block](../../../examples/nt26/peripherals/uart/uart_block) |
 | spi | [spi.md](peripherals/spi.md) | [spi_api](../../../examples/nt26/peripherals/spi/spi_api)、[spi_lcd](../../../examples/nt26/peripherals/spi/spi_lcd)、[spi_st7789](../../../examples/nt26/peripherals/spi/spi_st7789) |
-| i2c | [i2c.md](peripherals/i2c.md) | [iic_aht20](../../../examples/nt26/peripherals/iic/iic_aht20) |
+| i2c | [i2c.md](peripherals/i2c.md) | [iic_aht20](../../../examples/nt26/peripherals/iic/iic_aht20)、[iic_ssd1306](../../../examples/nt26/peripherals/iic/iic_ssd1306) |
 | soft_i2c | [soft_i2c.md](peripherals/soft_i2c.md) | [soft_iic_aht20](../../../examples/nt26/peripherals/iic/soft_iic_aht20) |
 | pwm | [pwm.md](peripherals/pwm.md) | [pins](../../../examples/nt26/peripherals/pwm/pins)、[timer](../../../examples/nt26/peripherals/pwm/timer)、[apwm](../../../examples/nt26/peripherals/pwm/apwm)、[timer_mhz](../../../examples/nt26/peripherals/pwm/timer_mhz)、[timer_comp](../../../examples/nt26/peripherals/pwm/timer_comp) |
 | adc | [adc.md](peripherals/adc.md) | 无单独工程，见文档内示例 |

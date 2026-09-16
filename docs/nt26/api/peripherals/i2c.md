@@ -1,6 +1,6 @@
 # i2c
 
-**文档版本** `1.1.1`
+**文档版本** `1.1.2`
 
 对象化硬件 I2C 主机。按控制器编号打开一路，再 `write` / `read` / 寄存器读写。每路同时只能有一个实例。
 
@@ -386,6 +386,8 @@ obj:deinit()
 
 AHT20：[examples/nt26/peripherals/iic/iic_aht20](../../../../examples/nt26/peripherals/iic/iic_aht20)。
 
+SSD1306 OLED（自定义模块 `ssd1306.lua`，只用 `i2c`，不 `require("lcd")`）：[examples/nt26/peripherals/iic/iic_ssd1306](../../../../examples/nt26/peripherals/iic/iic_ssd1306)。
+
 ```lua
 local rt = require("rt")
 local i2c = require("i2c")
@@ -415,3 +417,4 @@ local raw = bus:read(ADDR, 7)
 | 1.0.1 | 2026-09-04 | 修正跨目录文档链接，demo 路径改为 examples/ |
 | 1.1.0 | 2026-09-05 | 补全错误文案/错误码与可能原因 |
 | 1.1.1 | 2026-09-05 | 脚位改为 PIN+PDDR，并链到硬件落盘表 |
+| 1.1.2 | 2026-09-16 | 增加纯 Lua SSD1306 例程链接 |

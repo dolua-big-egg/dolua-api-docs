@@ -31,6 +31,7 @@
 | [uart/uart_normal](peripherals/uart/uart_normal)、[uart_block](peripherals/uart/uart_block) | [uart](../../docs/nt26/api/peripherals/uart.md) |
 | [spi/spi_api](peripherals/spi/spi_api)、[spi_lcd](peripherals/spi/spi_lcd)、[spi_st7789](peripherals/spi/spi_st7789) | [spi](../../docs/nt26/api/peripherals/spi.md)、[lcd](../../docs/nt26/api/module/lcd.md) |
 | [iic/iic_aht20](peripherals/iic/iic_aht20) | [i2c](../../docs/nt26/api/peripherals/i2c.md) |
+| [iic/iic_ssd1306](peripherals/iic/iic_ssd1306) | [i2c](../../docs/nt26/api/peripherals/i2c.md)（纯 Lua SSD1306，不用 lcd） |
 | [iic/soft_iic_aht20](peripherals/iic/soft_iic_aht20) | [soft_i2c](../../docs/nt26/api/peripherals/soft_i2c.md) |
 | [pwm/…](peripherals/pwm) | [pwm](../../docs/nt26/api/peripherals/pwm.md) |
 

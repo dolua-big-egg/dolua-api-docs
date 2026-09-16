@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "projectInfo": {
+    "softwareVersion": "1.0.0"
+  },
+  "main": "main.lua",
+  "modules": [
+    "ssd1306.lua",
+    "ssd1306_font.lua"
+  ],
+  "configs": [
+    "rtu_config.cfg"
+  ],
+  "selectedConfig": "rtu_config.cfg",
+  "internal": [],
+  "checked": [
+    "main.lua",
+    "ssd1306.lua",
+    "ssd1306_font.lua"
+  ],
+  "othersOrder": [
+    "manifest.json"
+  ]
+}
