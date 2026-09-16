@@ -1,6 +1,6 @@
 # lvgl
 
-**文档版本** `1.6.1`
+**文档版本** `1.6.2`
 
 把已经 `lcd.new` 好的彩屏交给图形栈：控件、主题、脏区刷新都走本模块。刷屏在独立任务里跑，脚本只要建树、改字、改样式，然后 `rt.delay` 让出即可。
 
@@ -88,7 +88,7 @@ local lvgl = require("lvgl")
 | 默认 light/dark 主题 + 样式覆盖 | 换官方主题引擎 |
 | 独立任务刷脏区 | 触摸、按键输入设备（点按要等输入，或用 `ui:click`） |
 | 按钮点击：回调按 **任务** 跑，可 `rt.delay` | 不要当 gpio 那种「立刻返回」的短回调 |
-| RGB565 屏（GRAM）；内部也可选 RGB888 再转 565 | 用本模块当 `lcd:fill` 的替代去打点 |
+| RGB565 屏（ST7789 GRAM）；内部也可选 RGB888 再转 565。SSD1306 先用 [`lcd`](lcd.md) 的 1 bit 画布，不要 `lvgl.create` | 用本模块当 `lcd:fill` 的替代去打点 |
 
 ---
 
@@ -1478,3 +1478,4 @@ end
 | 1.5.1 | 2026-09-10 | 选型与完整示例补上 `set_scale` 循环；可烧录工程增加 [lvgl_img](../../../examples/nt26/module/lvgl/lvgl_img) |
 | 1.6.0 | 2026-09-10 | 增加 `ui:font` / `ui:set_font`：LVGL 点阵 `.bin` 与 TTF；源为 RAM / ublob / lfs；样式表可写 `font` |
 | 1.6.1 | 2026-09-10 | 点阵 `.bin` 支持 Font Converter 压缩输出 |
+| 1.6.2 | 2026-09-15 | 标明 SSD1306 先走 `lcd` 1 bit 画布，暂不要 `lvgl.create` |

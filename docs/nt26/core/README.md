@@ -1,6 +1,14 @@
-# DoLua 核心
+<!--
+ * @Author: BURIBURI ZAEMON 59598825+liam-so-sad@users.noreply.github.com
+ * @Date: 2026-09-12 13:11:13
+ * @LastEditors: BURIBURI ZAEMON 59598825+liam-so-sad@users.noreply.github.com
+ * @LastEditTime: 2026-09-14 09:49:52
+ * @FilePath: \PLAT\dolua\docs\NT26\core\README.md
+ * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+-->
+# doLua 核心
 
-**文档版本** `1.2.0`
+**文档版本** `1.3.0`
 
 本分类讲 **DoLua 是什么、怎么跑起来、消息和调度怎么协作、资源有多大**。读完再进各模块 API，会对「为什么回调里不能等」「脚本为什么突然没空间」有一张整图。
 
@@ -29,6 +37,8 @@
 6. [存储怎么分](storage.md) — 内部共享配额 vs 外挂盘，存什么用哪一块
 
 侧边栏怎么认工程、五区、LUAPK，另见 [工程结构](../../dolua-assisant/project-structure.md)（开发助手分类）。
+
+还没装插件、没烧过第一份脚本：先看 [开始使用](../../get-started/get-started.md)。
 
 入门工程仍建议：`started/hello` → `started/log` → `started/task`，见 [示例索引](../../../examples/nt26/README.md)。
 
@@ -69,3 +79,4 @@
 | 1.0.0 | 2026-09-12 | 首版：DoLua 核心分类入口 |
 | 1.1.0 | 2026-09-12 | 索引标明当前未启用双槽切换 |
 | 1.2.0 | 2026-09-13 | 链到开发助手「工程结构」（五区 / LUAPK） |
+| 1.3.0 | 2026-09-16 | 链到「开始使用」 |

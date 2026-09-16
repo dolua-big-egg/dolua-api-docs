@@ -60,6 +60,8 @@
 | lvgl | [lvgl.md](module/lvgl.md) | [lvgl_demo](../../../examples/nt26/module/lvgl/lvgl_demo)、[lvgl_img](../../../examples/nt26/module/lvgl/lvgl_img) |
 | json | [json.md](module/json.md) | [json_api](../../../examples/nt26/module/json/json_api) |
 | hex | [hex.md](module/hex.md) | [hex_api](../../../examples/nt26/module/hex/hex_api) |
+| nmea | [nmea.md](module/nmea.md) | [gps_api](../../../examples/nt26/module/gps/gps_api) |
+| gps | [gps.md](module/gps.md) | [gps_api](../../../examples/nt26/module/gps/gps_api) |
 | tls | [tls.md](module/tls.md) | [tls_api](../../../examples/nt26/module/tls/tls_api) |
 | random | [random.md](module/random.md) | [random_api](../../../examples/nt26/module/random/random_api) |
 | dream | [dream.md](module/dream.md) | [dream_api](../../../examples/nt26/module/dream/dream_api) |
