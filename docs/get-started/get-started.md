@@ -90,7 +90,7 @@ DoLua 是设备端 Lua 5.5 运行时，单设备独立虚拟机，支持协作�
 
 下载路径：https://dolua.cn/plugins 
 
-![dolua-plugins](ims/dolua-plugins.png)
+![dolua-plugins](img/dolua-plugins.png)
 
 ### 3.2 开发工具安装教程
 
@@ -104,15 +104,15 @@ DoLua 是设备端 Lua 5.5 运行时，单设备独立虚拟机，支持协作�
 
 下方为 vscode 的演示
 
-![drag_install](ims/drag_install.png)
+![drag_install](img/drag_install.png)
 
 下方为 cursor 的演示
 
-![drag_install-cursor](ims/drag_install-cursor.png)
+![drag_install-cursor](img/drag_install-cursor.png)
 
 cursor 的布局导致他容易被折叠到下拉栏里，点击展开找到插件，并把它锚定在主界面，然后把左侧栏拉宽一点即可常驻
 
-![cursor-补充细节](ims/cursor-补充细节.png)
+![cursor-补充细节](img/cursor-补充细节.png)
 
 另一种安装方式，如果你已经通过上面的方式安装则可以跳过这段
 
@@ -120,15 +120,15 @@ cursor 的布局导致他容易被折叠到下拉栏里，点击展开找到插�
 2. 执行「从 VSIX 安装…」/ `Install from VSIX…`。
 3. 选刚下的 `.vsix`，装完后重载窗口。
 
-![指令方式安装1](ims/指令方式安装1.png)
+![指令方式安装1](img/指令方式安装1.png)
 
-![指令方式安装2](ims/指令方式安装2.png)
+![指令方式安装2](img/指令方式安装2.png)
 
 无论你用哪种方式下载，最后都可以找到我们的插件
 
-![vscode-安装好后的界面](ims/vscode-安装好后的界面.png)
+![vscode-安装好后的界面](img/vscode-安装好后的界面.png)
 
-![cursor安装好后的界面](ims/cursor安装好后的界面.png)
+![cursor安装好后的界面](img/cursor安装好后的界面.png)
 
 #### 第 3 步：设置 Lua 工作目录
 
@@ -146,9 +146,9 @@ cursor 的布局导致他容易被折叠到下拉栏里，点击展开找到插�
 
 【图片】
 
-![设置工作目录](ims/设置工作目录.png)
+![设置工作目录](img/设置工作目录.png)
 
-![设置工作目录2](ims/设置工作目录2.png)
+![设置工作目录2](img/设置工作目录2.png)
 
 设置完成后，扩展会在该目录写入编辑器所需的助手配置（规则、技能说明等）。工作目录里暂时没有子工程是正常的。
 
@@ -198,21 +198,23 @@ hello/                          ← 工程根（含 luaproj 的这一层）
 
 不要把 `main.lua` 直接放在 workspace 根目录。
 
-![新建工程](ims/新建工程.png)
+![新建工程](img/新建工程.png)
 
 新建工程对话框（文件夹名 `hello`）
 
-![输入工程名](ims/输入工程名.png)
+![输入工程名](img/输入工程名.png)
 
 侧边栏出现 `hello` 工程，下半「工程文件」已分五区
 
-![第一个工程模板](ims/第一个工程模板.png)
+![第一个工程模板](img/第一个工程模板.png)
 
 也可以从例程中心导入 `started/hello`，效果相同。
 
 #### 第 2 步：写入口脚本
 
 打开工程里的 `main.lua`，加上一行输出：
+
+![写上第一行代码](img/写上第一行代码.png)
 
 ```lua
 local rt = require("rt")
@@ -242,7 +244,7 @@ log_route=uart1
 
 如果你本就用的物理串口1则不用改。
 
-![示例代码](ims/示例代码.png)
+![示例代码](img/示例代码.png)
 
 #### 第 3 步：**下载并看输出**
 
@@ -250,7 +252,7 @@ log_route=uart1
 
 USB DOWNLOAD / USB AT / UART COMx【必须是连接设备的串口】 都是可以作为下载口的。 
 
-![下载开始](ims/下载开始.png)
+![下载开始](img/下载开始.png)
 
 之后点击设备的RESET按钮，复位设备【如果板子没有留出，则可以重新上电】
 
@@ -262,7 +264,7 @@ hello world
 
 > 关于+VERSION,+SIM 等log，是 RTU 输出，如果不需要是可以用配置进行关闭。
 
-![串口输出](ims/串口输出.png)
+![串口输出](img/串口输出.png)
 
 串口输出循环打印 `hello world`
 
@@ -280,11 +282,11 @@ hello world
 
 点击例程->入门->info->下载到workspace
 
-![下载例程](ims/下载例程.png)
+![下载例程](img/下载例程.png)
 
 双击工程  info 或者选中 info 后点击下方的 mian.lua 则能展开这个工程的 main 文件。
 
-![双击工程](ims/双击工程.png)
+![双击工程](img/双击工程.png)
 
 ### 3.4 关于下载方式
 
@@ -315,23 +317,25 @@ hello world
 
 1. 本地工程在插件里点 **上传到云端**（需要在线 id）。
 
-   ![云平台id](ims/云平台id.png)
+   ![云平台id](img/云平台id.png)
 
-   ![设置id](ims/设置id.png)
+   ![设置id](img/设置id.png)
 
-   ![点击上传](ims/点击上传.png)
+   ![点击上传](img/点击上传.png)
 
    之后复位设备即可。
 
 2. 也可以手动选择导出的 .luapk
 
-   ![导出luapk](ims/导出luapk.png)
+   ![导出luapk](img/导出luapk.png)
 
-   ![点击链接可以找到导出位置](ims/点击链接可以找到导出位置.png)
+   ![点击链接可以找到导出位置](img/点击链接可以找到导出位置.png)
 
    云平台选择导出的 .luapk
 
-   ![上传](ims/上传.png)
+   ![直接选择插件导出的luapk上传](img/直接选择插件导出的luapk上传.png)
+
+   ![上传](img/上传.png)
 
    之后复位设备即可。
 
@@ -438,7 +442,7 @@ led.on()
 
 注意一定要被选中的文件才会被下载哦，如果一个文件暂时不需要下载，可以先不勾选。
 
-![选中的文件](ims/选中的文件.png)
+![选中的文件](img/选中的文件.png)
 
 ### 5.3 工程日常操作-【太累了，先写到这儿，后面接着完善】
 
