@@ -64,7 +64,7 @@
 
 来源（任选其一，后到的文件覆盖盘上旧文件）：
 
-1. DoLua 工程 config 分区：`doiot_lua_project.luaproj` 的 `configs` / `selectedConfig`。
+1. doLua 工程 config 分区：`doiot_lua_project.luaproj` 的 `configs` / `selectedConfig`。
 2. YMODEM 文件名 `_rtu_config_.cmd`：只写入 `/rtu_config.cfg`，不当场套用。`_rtu_config_erase_.cmd` 删除该文件。
 3. LUAPK / 云配置包里的同名文件。
 
