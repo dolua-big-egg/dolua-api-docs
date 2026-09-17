@@ -1,6 +1,6 @@
 # doLua 工程形态
 
-**文档版本** `1.1.0`
+**文档版本** `1.1.1`
 
 本页是 [开始使用](get-started.md) 的续篇。侧边栏规则的全文见 [工程结构](../dolua-assisant/project-structure.md)；设备上这份包怎么跑见 [工程与脚本包](../nt26/core/project.md)。
 

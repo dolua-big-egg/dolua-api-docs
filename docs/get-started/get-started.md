@@ -1,6 +1,6 @@
 # 开始使用
 
-**文档版本** `1.1.0`
+**文档版本** `1.1.1`
 
 这是 **doLua** 的入门教程。我们先搞懂 **doLua** 是什么、能干哪些事，接着装好配套开发工具，新建第一个工程，最后把脚本下载到设备（比如 NT26 PRO）里运行。
 
@@ -98,7 +98,7 @@ doLua 是设备端 Lua 5.5 运行时，单设备独立虚拟机，支持协作�
 
 下载路径：https://dolua.cn/plugins 
 
-![dolua-plugins](img/dolua-plugins.png)
+![dolua-plugins](img/dolua-plugins.webp)
 
 ### 3.2 开发工具安装教程
 
@@ -112,15 +112,15 @@ doLua 是设备端 Lua 5.5 运行时，单设备独立虚拟机，支持协作�
 
 下方为 vscode 的演示
 
-![drag_install](img/drag_install.png)
+![drag_install](img/drag_install.webp)
 
 下方为 cursor 的演示
 
-![drag_install-cursor](img/drag_install-cursor.png)
+![drag_install-cursor](img/drag_install-cursor.webp)
 
 cursor 的布局导致它容易被折叠到下拉栏里，点击展开找到插件，并把它锚定在主界面，然后把左侧栏拉宽一点即可常驻
 
-![cursor-pin-sidebar](img/cursor-pin-sidebar.png)
+![cursor-pin-sidebar](img/cursor-pin-sidebar.webp)
 
 另一种安装方式，如果你已经通过上面的方式安装则可以跳过这段
 
@@ -128,13 +128,13 @@ cursor 的布局导致它容易被折叠到下拉栏里，点击展开找到插�
 2. 执行「从 VSIX 安装…」/ `Install from VSIX…`。
 3. 选刚下的 `.vsix`，装完后重载窗口。
 
-![vsix-cmd](img/vsix-cmd.png)
+![vsix-cmd](img/vsix-cmd.webp)
 
-![vsix-pick](img/vsix-pick.png)
+![vsix-pick](img/vsix-pick.webp)
 
 无论你用哪种方式下载，最后都可以找到我们的插件
 
-![plugin-sidebar](img/plugin-sidebar.png)
+![plugin-sidebar](img/plugin-sidebar.webp)
 
 #### 第 3 步：设置 Lua 工作目录
 
@@ -150,9 +150,9 @@ cursor 的布局导致它容易被折叠到下拉栏里，点击展开找到插�
 2. 在侧边栏把 **Lua workspace** 指到这个目录。
 3. 需要官方示例时，再设 **demo** 目录（或稍后从例程中心导入）。
 
-![set-workspace](img/set-workspace.png)
+![set-workspace](img/set-workspace.webp)
 
-![set-workspace-2](img/set-workspace-2.png)
+![set-workspace-2](img/set-workspace-2.webp)
 
 设置完成后，扩展会在该目录写入编辑器所需的助手配置（规则、技能说明等）。工作目录里暂时没有子工程是正常的。
 
@@ -202,11 +202,11 @@ print/                          ← 工程根（含 luaproj 的这一层）
 
 不要把 `main.lua` 直接放在 workspace 根目录。
 
-![new-project](img/new-project.png)
+![new-project](img/new-project.webp)
 
 新建工程对话框（文件夹名 `print`）
 
-![project-name](img/project-name.png)
+![project-name](img/project-name.webp)
 
 侧边栏出现 `print` 工程，下半`工程文件` 区可以看到`main.lua`和`rtu_config.cfg`
 
@@ -214,7 +214,7 @@ print/                          ← 工程根（含 luaproj 的这一层）
 
 打开工程里的 `main.lua`，加上一行输出：
 
-![expand-main](img/expand-main.png)
+![expand-main](img/expand-main.webp)
 
 ```lua
 local rt = require("rt")
@@ -227,7 +227,7 @@ while true do
 end
 ```
 
-![edit-main](img/edit-main.png)
+![edit-main](img/edit-main.webp)
 
 要点：
 
@@ -256,7 +256,7 @@ log_route=usb_at
 
 如果你本就用的物理串口 MAIN UART 则不用改。
 
-![edit-config](img/edit-config.png)
+![edit-config](img/edit-config.webp)
 
 #### 第 3 步：**下载并看输出**
 
@@ -266,9 +266,9 @@ log_route=usb_at
 
 以下图为例，使用 USB 下载端口进行下载，点击下载后出现进度条。
 
-![download-start](img/download-start.png)
+![download-start](img/download-start.webp)
 
-![download-done](img/download-done.png)
+![download-done](img/download-done.webp)
 
 下载完成后会出现提示，之后点击设备的 `reset` 按钮来复位设备，也可以通过串口或者USB AT端口发送指令`AT+RESET` 进行复位，如果 AT 口未通则最好是先把新到的设备发送指令 PING 通，即发送 `AT` 会回复 `OK` 。如果物理串口未通，则后续调试也很难进行，还有就是如果设备因为程序进入无响应状态，又未引出`reset`等情况，则可以给设备断电一阵子，再重新上电即可。
 
@@ -304,11 +304,11 @@ hello world
 
 点击`例程` -> `入门` ->` led` -> `下载到workspace`
 
-![demo-download](img/demo-download.png)
+![demo-download](img/demo-download.webp)
 
 关掉`例程中心`后，双击工程 ` led `或者选中` led` 后点击下方的 `main.lua` 则能展开这个工程的 main 文件。
 
-![open-project](img/open-project.png)
+![open-project](img/open-project.webp)
 
 点击下载后，即可看到开发板的 LED 灯在闪烁，示例使用的是 IO 9，如果使用的是其他板，可以根据留出的 IO 自行更换。
 
@@ -347,3 +347,4 @@ hello world
 | 1.0.0 | 2026-09-16 | 首版：开始使用（框架、特点、安装与第一份工程、下载通道、工程形态、工具指南、调度导读） |
 | 1.0.1 | 2026-09-16 | 插件改为从 https://dolua.cn/plugins 下载 VSIX；标明暂未上架扩展市场 |
 | 1.1.0 | 2026-09-17 | 拆成多页：本页只保留快速入门；下载、工程、工具、调度各成一篇 |
+| 1.1.1 | 2026-09-17 | 截图改为长边 1280 的有损 WebP（质量 85），减小体积 |

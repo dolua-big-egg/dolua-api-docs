@@ -1,6 +1,6 @@
 # 下载与云端
 
-**文档版本** `1.1.0`
+**文档版本** `1.1.1`
 
 本页是 [开始使用](get-started.md) 的续篇，讲三种本地下载口和云平台上传。装插件、建第一份工程仍看上一页。
 
@@ -45,19 +45,19 @@
 
 1. 本地工程在插件里点 **上传到云端**（需要在线 id）。
 
-   ![cloud-id](img/cloud-id.png)
+   ![cloud-id](img/cloud-id.webp)
 
-   ![set-cloud-id](img/set-cloud-id.png)
+   ![set-cloud-id](img/set-cloud-id.webp)
 
    注意这个 `id` 绑定的是工程，比如我这里配置的是 `led` 这个工程的云平台组 `id` ，则是只针对该工程生效，其他工程还需要再手动设置，不同的设备可以使用不同的组 `id`，上传到不同的分组中，对应不同的设备。
 
-   ![upload-btn](img/upload-btn.png)
+   ![upload-btn](img/upload-btn.webp)
 
-   ![upload-click](img/upload-click.png)
+   ![upload-click](img/upload-click.webp)
 
    可以注意到，点击上传时，设备版本号会自增，这是默认开启的，如果不需要版本号自增可以手动关闭，但是注意的是，如果使用云端下载，版本号不变时，设备不会拉取最新的`.luapk`，就是只认版本。
 
-   ![version-bump](img/version-bump.png)
+   ![version-bump](img/version-bump.webp)
 
    文件上传完毕，复位设备就能更新最新固件。设备启动阶段会自动向服务器获取固件包，**采用云端更新时，设备必须正常联网**。
 
@@ -117,15 +117,15 @@
 
 2. 也可以手动选择导出的 .luapk
 
-   ![export-luapk](img/export-luapk.png)
+   ![export-luapk](img/export-luapk.webp)
 
-   ![export-path](img/export-path.png)
+   ![export-path](img/export-path.webp)
 
    云平台选择导出的 .luapk
 
-   ![cloud-pick-luapk](img/cloud-pick-luapk.png)
+   ![cloud-pick-luapk](img/cloud-pick-luapk.webp)
 
-   ![cloud-upload](img/cloud-upload.png)
+   ![cloud-upload](img/cloud-upload.webp)
 
    之后复位设备即可。
 
@@ -138,9 +138,9 @@
 
 本地导出备份：插件可把当前工程写成 `工程名-版本.luapk`。**把 `.luapk` 拖进侧边栏工程目录即可还原成可编辑工程。**
 
-![import-luapk](img/import-luapk.png)
+![import-luapk](img/import-luapk.webp)
 
-![imported-project](img/imported-project.png)
+![imported-project](img/imported-project.webp)
 
 如果您在开发 `doLua` 时遇到问题，可以截取代码询问我们，也可以直接导出成 `.luapk `文件，发到客服群里询问技术支持。
 
