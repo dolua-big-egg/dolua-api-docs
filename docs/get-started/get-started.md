@@ -757,7 +757,7 @@ end
 | 查 `require("…")` | [API 索引](../nt26/api/README.md) |
 | 对原理图、选脚 | [硬件脚位](../nt26/hardware/README.md) |
 | 应用 AT | [AT 索引](../nt26/at/README.md) |
-| 抄可烧录工程 | [examples/nt26](../../examples/nt26/README.md) |
+| 抄可烧录工程 | [例程](https://dolua.cn/market) |
 
 ---
 
