@@ -1,0 +1,39 @@
+{
+  "id": "gps_api",
+  "name": "gps 内置模块",
+  "version": "1.0.0",
+  "category": "module",
+  "hw": "中",
+  "tags": [
+    "gps",
+    "nmea",
+    "uart"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "gps",
+      "uart",
+      "rt",
+      "log",
+      "rtu"
+    ],
+    "pins": [],
+    "peripherals": [],
+    "controllers": [
+      "UART3"
+    ],
+    "extras": [
+      "GPS"
+    ],
+    "network": false
+  },
+  "readme": "",
+  "description": "require(\"gps\") 内置模块。C 层解析 NMEA，UART3 一包一次回调。日志走 UART1。需要外接 GPS（默认 9600 8N1）。纯 Lua 解析见 apps/uart_collect/gps_uart2。\n"
+}

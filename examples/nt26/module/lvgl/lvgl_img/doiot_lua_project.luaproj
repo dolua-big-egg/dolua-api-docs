@@ -19,5 +19,7 @@
     "main.lua",
     "photo.jpg"
   ],
-  "othersOrder": []
+  "othersOrder": [
+    "manifest.json"
+  ]
 }

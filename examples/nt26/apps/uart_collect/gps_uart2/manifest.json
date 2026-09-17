@@ -1,0 +1,38 @@
+{
+  "id": "gps_uart2",
+  "name": "UART3 GPS NMEA 解析",
+  "version": "1.0.0",
+  "category": "apps",
+  "hw": "中",
+  "tags": [
+    "uart",
+    "gps",
+    "nmea"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "uart",
+      "rt",
+      "log",
+      "rtu"
+    ],
+    "pins": [],
+    "peripherals": [],
+    "controllers": [
+      "UART3"
+    ],
+    "extras": [
+      "GPS"
+    ],
+    "network": false
+  },
+  "readme": "",
+  "description": "UART3 接 GPS 模组。nmea.lua 解析多种 NMEA；gps.lua 在串口回调里 datain，任务里回调定位。可配输出频率和语句（PMTK 或 PCAS）。日志走 UART1。需要外接 GPS（默认 9600 8N1）。\n"
+}

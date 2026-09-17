@@ -4,14 +4,19 @@
     "softwareVersion": "1.0.0"
   },
   "main": "main.lua",
-  "modules": [],
+  "modules": [
+    "nmea.lua",
+    "gps.lua"
+  ],
   "configs": [
     "rtu_config.cfg"
   ],
   "selectedConfig": "rtu_config.cfg",
   "internal": [],
   "checked": [
-    "main.lua"
+    "main.lua",
+    "nmea.lua",
+    "gps.lua"
   ],
   "othersOrder": [
     "manifest.json"

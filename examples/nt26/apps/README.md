@@ -11,7 +11,7 @@
 | [protocol_pack](protocol_pack) | 协议打包 | 组帧、拆帧、自定义协议、`framekit` |
 | [passthrough](passthrough) | 透传网关 | 串口 ↔ TCP / MQTT / 传统 RTU 通道 |
 | [cloud_report](cloud_report) | 云上报 | 定时或变化上报到 MQTT / HTTP |
-| [uart_collect](uart_collect) | 串口采集 | 读仪表、拼包、本地缓存后再上云 |
+| [uart_collect](uart_collect) | 串口采集 | 读仪表、拼包；[gps_uart2](uart_collect/gps_uart2) 为 Lua 解析例程（`nmea.lua`/`gps.lua`）。固件内置 `require("gps")` 见 [gps_api](../module/gps/gps_api) |
 | [modbus_gateway](modbus_gateway) | Modbus 网关 | RS485 轮询后转发云端 |
 | [io_control](io_control) | IO 采集与控制 | GPIO 输入输出、变化上报、时序 |
 | [env_sensor](env_sensor) | 环境传感 | I2C / ADC 温湿度、电压等 |

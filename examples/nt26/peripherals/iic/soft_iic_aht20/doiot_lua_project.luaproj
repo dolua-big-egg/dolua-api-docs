@@ -9,8 +9,11 @@
     "rtu_config.cfg"
   ],
   "selectedConfig": "rtu_config.cfg",
+  "internal": [],
   "checked": [
     "main.lua"
   ],
-  "othersOrder": []
+  "othersOrder": [
+    "manifest.json"
+  ]
 }

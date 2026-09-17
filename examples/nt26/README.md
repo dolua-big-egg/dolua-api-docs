@@ -1,6 +1,6 @@
 # NT26 示例
 
-每个子目录是一份可直接打开的 Lua 工程（`main.lua`、`manifest.json`、`.luaproj`）。用配套工具导入该目录即可烧录。先建立运行时整图请读 [DoLua 核心](../../docs/nt26/core/README.md)；工程文件夹和 LUAPK 见 [工程结构](../../docs/dolua-assisant/project-structure.md)；API 说明在 [docs/nt26/api](../../docs/nt26/api/README.md)。
+每个子目录是一份可直接打开的 Lua 工程（`main.lua`、`manifest.json`、`.luaproj`）。用配套工具导入该目录即可烧录。先建立运行时整图请读 [doLua 核心](../../docs/nt26/core/README.md)；工程文件夹和 LUAPK 见 [工程结构](../../docs/dolua-assisant/project-structure.md)；API 说明在 [docs/nt26/api](../../docs/nt26/api/README.md)。
 
 先从 `started/` 跑通：打印、日志、任务。再按外设 / 网络 / 存储选工程。多模块场景工程放 [apps](apps/README.md)。
 
@@ -65,6 +65,7 @@
 | --- | --- |
 | [json](module/json) | [json](../../docs/nt26/api/module/json.md) |
 | [hex](module/hex) | [hex](../../docs/nt26/api/module/hex.md) |
+| [gps](module/gps)（[gps_api](module/gps/gps_api)） | [gps](../../docs/nt26/api/module/gps.md)、[nmea](../../docs/nt26/api/module/nmea.md) |
 | [tls](module/tls) | [tls](../../docs/nt26/api/module/tls.md) |
 | [info](module/info) | [info](../../docs/nt26/api/module/info.md) |
 | [random](module/random) | [random](../../docs/nt26/api/module/random.md) |
@@ -86,7 +87,7 @@
 | [protocol_pack](apps/protocol_pack) | 协议打包：[rtu_ch1_uart_frame](apps/protocol_pack/rtu_ch1_uart_frame)、[tcp_uart_frame](apps/protocol_pack/tcp_uart_frame) |
 | [passthrough](apps/passthrough) | 透传网关 |
 | [cloud_report](apps/cloud_report) | 云上报 |
-| [uart_collect](apps/uart_collect) | 串口采集 |
+| [uart_collect](apps/uart_collect) | 串口采集：[gps_uart2](apps/uart_collect/gps_uart2) |
 | [modbus_gateway](apps/modbus_gateway) | Modbus 网关 |
 | [io_control](apps/io_control) | IO 采集与控制 |
 | [env_sensor](apps/env_sensor) | 环境传感 |
