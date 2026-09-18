@@ -2,7 +2,7 @@
 
 **文档版本** `1.1.1`
 
-本页是 [开始使用](get-started.md) 的进阶导读。**【新手提示】** 第一次只要会 `print` + `rt.delay` + 下载即可。等要写串口回调、MQTT、多任务时再读；全文见 [消息和调度](../nt26/core/schedule.md)、[doLua 是怎么运行的](../nt26/core/runtime.md)。
+本页是 [开始使用](get-started.md) 的进阶导读。**【新手提示】** 第一次只要会 `print` + `rt.delay` + 下载即可。等要写串口回调、MQTT、多任务时再读；全文见 [消息和调度](../dolua-core/schedule.md)、[doLua 是怎么运行的](../dolua-core/runtime.md)。
 
 [← 开发工具](tools.md)
 

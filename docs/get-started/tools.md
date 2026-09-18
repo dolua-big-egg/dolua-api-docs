@@ -151,7 +151,7 @@
 - 改完 Lua 后，以设备上跑起来的为准；电脑上能打开的 `.lua` 若没进模块区或者未勾选，设备 `require` 会失败。
 - 不要把平台模块实现成同名用户文件，比如你自己新建的模块不要叫 `gpio`。
 - 布尔参数写真 / 假。走布尔语义的接口里，**数字 `0` 往往是「真」**这是lua语法。
-- 接外部硬件先读 [硬件脚位](../nt26/hardware/README.md)，再打开当前产品那一篇（NT26-PRO 为 [pro.md](../nt26/hardware/pro.md)）。
+- 接外部硬件先读 [硬件脚位](../dolua-api/nt26/hardware/README.md)，再打开当前产品那一篇（NT26-PRO 为 [pro.md](../dolua-api/nt26/hardware/pro.md)）。
 - 日常等待用 `rt.delay`。不要用 `sys.delay_ms` 当循环延时。
 
 ---

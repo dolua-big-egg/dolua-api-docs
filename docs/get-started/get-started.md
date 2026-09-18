@@ -4,7 +4,7 @@
 
 这是 **doLua** 的入门教程。我们先搞懂 **doLua** 是什么、能干哪些事，接着装好配套开发工具，新建第一个工程，最后把脚本下载到设备（比如 NT26 PRO）里运行。
 
-至于设备底层运行原理、资源配额、各类模块参数，本篇就不细讲了。如果后续需要了解，再去看 [doLua 核心](../nt26/core/README.md) 和 [API 索引](../nt26/api/README.md) 这两份文档。
+至于设备底层运行原理、各类模块参数，本篇就不细讲了。如果后续需要了解，再去看 [doLua 核心](../dolua-core/README.md) 和 [API 索引](../dolua-api/nt26/api/README.md)。NT26 的堆 / Flash 名额见 [资源](../dolua-api/nt26/resources/README.md)。
 
 当前公开型号：**NT26**（含 NT26 PRO）。下文以该型号当前固件为准。
 
@@ -57,7 +57,7 @@ doLua 是成都度云未来科技有限公司模组上，跑在设备端的 Lua 
 
 一句话：一台设备、**一个脚本虚拟机**、协作式多任务。你写业务（闪灯、采数、上报、存盘）；驻网、协议栈、看门狗、AT 通道由固件其它部分负责。
 
-更完整的定位见 [什么是 doLua](../nt26/core/what.md)。
+更完整的定位见 [什么是 doLua](../dolua-core/what.md)。
 
 ### 1.3 内置集成模块 & 核心能力
 
@@ -71,7 +71,7 @@ doLua 是成都度云未来科技有限公司模组上，跑在设备端的 Lua 
 | 网络 | `tcp`、`http`、`mqtt`、`dns`、`ntp`、`lbs`、`rndis`、`wifiscan`、`sms` | 连接、上报、对时、定位、USB 网卡、扫热点、短信 |
 | 存储 | `ufs`、`ublob`、`lfs`、`flashdb`、`sfud` | 内部短对象 / 字节文件、外挂 Flash 文件树与 KV |
 | 协议与工具 | `json`、`hex`、`modbus`、`framekit`、`rtu`、`tls`、`nmea`、`gps`、`cron`、`lp` | 编解码、工业协议、TLS、定位语句、日程、低功耗 |
-| 配置（不是 `require`） | 工程里的 `rtu_config.cfg` | 开机解析串口、映射、业务开关；见 [rtu_config](../nt26/api/rtu_config/rtu_config.md) |
+| 配置（不是 `require`） | 工程里的 `rtu_config.cfg` | 开机解析串口、映射、业务开关；见 [rtu_config](../dolua-api/nt26/api/rtu_config/rtu_config.md) |
 
 ---
 
@@ -331,11 +331,12 @@ hello world
 
 | 接下来 | 去这里 |
 | --- | --- |
-| 虚拟机、配额、存储怎么分 | [doLua 核心](../nt26/core/README.md) |
+| 虚拟机、调度 | [doLua 核心](../dolua-core/README.md) |
+| 配额、存储怎么分 | [NT26 资源](../dolua-api/nt26/resources/README.md) |
 | 五区 / LUAPK 细则 | [工程结构](../dolua-assisant/project-structure.md) |
-| 查 `require("…")` | [API 索引](../nt26/api/README.md) |
-| 对原理图、选脚 | [硬件脚位](../nt26/hardware/README.md) |
-| 应用 AT | [AT 索引](../nt26/at/README.md) |
+| 查 `require("…")` | [API 索引](../dolua-api/nt26/api/README.md) |
+| 对原理图、选脚 | [硬件脚位](../dolua-api/nt26/hardware/README.md) |
+| 应用 AT | [AT 索引](../dolua-api/nt26/at/README.md) |
 | 抄可烧录工程 | [例程](https://dolua.cn/market) |
 
 ---

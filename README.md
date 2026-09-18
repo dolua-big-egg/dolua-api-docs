@@ -9,36 +9,40 @@
 ## 仓库结构
 
 ```
-docs/get-started/        开始使用（多页：安装、下载、工程、工具、调度）
-docs/nt26/core/          doLua 核心（是什么、怎么跑、调度、资源上限）
-docs/nt26/api/           模块 API（一篇文档对应一个 require）
-docs/nt26/hardware/      全 IO / 封装脚位（按映射表分篇，不是 require）
-docs/nt26/at/            应用 AT 指令（一篇一类业务，不是 require）
-docs/dolua-assisant/     开发助手：工程文件夹、五区、LUAPK
-examples/nt26/           可直接导入烧录的示例工程
+docs/get-started/              开始使用（多页：安装、下载、工程、工具、调度）
+docs/dolua-core/               doLua 核心（跨型号：是什么、引擎、调度）
+docs/dolua-api/                型号 API 总入口
+docs/dolua-api/nt26/resources/ NT26 可用资源（堆、Flash、调度名额）
+docs/dolua-api/nt26/api/       模块 API（一篇文档对应一个 require）
+docs/dolua-api/nt26/hardware/  全 IO / 封装脚位（按映射表分篇，不是 require）
+docs/dolua-api/nt26/at/        应用 AT 指令（一篇一类业务，不是 require）
+docs/dolua-assisant/           开发助手：工程文件夹、五区、LUAPK
+examples/nt26/                 可直接导入烧录的示例工程
 ```
 
 | 你想… | 去这里 |
 | --- | --- |
 | 安装插件、第一份工程、怎么下载 | [开始使用](docs/get-started/get-started.md)（[下载](docs/get-started/download.md) / [工程](docs/get-started/project.md) / [工具](docs/get-started/tools.md) / [调度](docs/get-started/schedule.md)） |
-| 先建立整图：运行时、消息、配额 | [doLua 核心](docs/nt26/core/README.md) |
+| 先建立整图：运行时、消息 | [doLua 核心](docs/dolua-core/README.md) |
+| NT26 堆 / Flash / 调度名额 | [资源](docs/dolua-api/nt26/resources/README.md) |
 | 工程文件夹、侧边栏五区、LUAPK | [工程结构](docs/dolua-assisant/project-structure.md) |
-| 按模块查参数、返回值、失败约定 | [API 索引](docs/nt26/api/README.md) |
-| 对原理图、查 PIN / 复用 | [NT26 硬件脚位](docs/nt26/hardware/README.md) |
-| 查 `AT+` 指令 | [AT 索引](docs/nt26/at/README.md) |
+| 按模块查参数、返回值、失败约定 | [API 索引](docs/dolua-api/nt26/api/README.md) |
+| 对原理图、查 PIN / 复用 | [NT26 硬件脚位](docs/dolua-api/nt26/hardware/README.md) |
+| 查 `AT+` 指令 | [AT 索引](docs/dolua-api/nt26/at/README.md) |
 | 找一份能跑的工程 | [示例索引](examples/nt26/README.md) |
-| 本型号总入口 | [NT26 文档](docs/nt26/README.md) |
+| 型号 API 总入口 | [doLua API](docs/dolua-api/README.md) |
+| 本型号文档 | [NT26 文档](docs/dolua-api/nt26/README.md) |
 
 API 按主题放在 `peripherals` / `network` / `module`；示例按工程用途放在 `started` / `os` / `peripherals` / `network` / `storage` / `module` / `apps`。两边分类不完全相同，用上面的索引跳转即可。
 
 ## 建议阅读顺序
 
 1. 新手先读 [开始使用](docs/get-started/get-started.md)：装插件、建第一份工程，再看 [下载与云端](docs/get-started/download.md)。
-2. 读 [doLua 核心](docs/nt26/core/README.md)：虚拟机、协作调度、RAM / Flash / 模块个数。
+2. 读 [doLua 核心](docs/dolua-core/README.md)：虚拟机、协作调度。NT26 的 RAM / Flash / 模块个数见 [资源](docs/dolua-api/nt26/resources/README.md)。
 3. 建工程或看侧边栏分区时，对照 [工程结构](docs/dolua-assisant/project-structure.md)。
 4. 用配套工具导入 [examples/nt26/started/hello](examples/nt26/started/hello)，确认能烧录、能看日志。
 5. 再跑 `started/log`、`started/task`，熟悉日志和协作式任务。
-6. 需要哪块能力，打开 [API 索引](docs/nt26/api/README.md) 对应模块，并对照同页给出的示例目录。
+6. 需要哪块能力，打开 [API 索引](docs/dolua-api/nt26/api/README.md) 对应模块，并对照同页给出的示例目录。
 
 不要从零手写第一份脚本去「试接口」：示例工程已带 `main.lua`、`manifest.json` 和工程文件。
 
@@ -54,7 +58,7 @@ API 按主题放在 `peripherals` / `network` / `module`；示例按工程用途
 | 存储 | 内部文件、外挂 Flash（LittleFS / KV） |
 | 协议与工具 | `json`、`hex`、`modbus`、`framekit`、`rtu` |
 
-完整模块表见 [docs/nt26/api/README.md](docs/nt26/api/README.md)。
+完整模块表见 [docs/dolua-api/nt26/api/README.md](docs/dolua-api/nt26/api/README.md)。
 
 ## 其它说明
 

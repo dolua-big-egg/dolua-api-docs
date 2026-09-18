@@ -1,0 +1,72 @@
+# API
+
+一篇文档对应一个 `require("…")` 模块。交叉引用已按当前目录写好相对路径。运行机制、消息调度见 [doLua 核心](../../../dolua-core/README.md)；RAM / Flash / 模块个数见 [资源](../resources/README.md)。不要只靠本页拼整图。工程文件夹、五区、LUAPK 见 [工程结构](../../../dolua-assisant/project-structure.md)。示例在 [examples/nt26](../../../../examples/nt26/README.md)，分类与这里不完全相同。模块 PIN、默认功能和复用见 [硬件脚位](../hardware/README.md)。应用 AT（按业务分类：标识、驻网、Socket、MQTT、HTTP、IO、短信、脚本…）见 [at/](../at/README.md)，不在本目录。产测指令不收录。
+
+## 外设 `peripherals/`
+
+| 模块 | 文档 | 示例 |
+| --- | --- | --- |
+| gpio | [gpio.md](peripherals/gpio.md) | [gpio/normal](../../../../examples/nt26/peripherals/gpio/normal)、[interrupt](../../../../examples/nt26/peripherals/gpio/interrupt)、[io_task](../../../../examples/nt26/peripherals/gpio/io_task) |
+| uart | [uart.md](peripherals/uart.md) | [uart_normal](../../../../examples/nt26/peripherals/uart/uart_normal)、[uart_block](../../../../examples/nt26/peripherals/uart/uart_block) |
+| spi | [spi.md](peripherals/spi.md) | [spi_api](../../../../examples/nt26/peripherals/spi/spi_api)、[spi_lcd](../../../../examples/nt26/peripherals/spi/spi_lcd)、[spi_st7789](../../../../examples/nt26/peripherals/spi/spi_st7789) |
+| i2c | [i2c.md](peripherals/i2c.md) | [iic_aht20](../../../../examples/nt26/peripherals/iic/iic_aht20)、[iic_ssd1306](../../../../examples/nt26/peripherals/iic/iic_ssd1306) |
+| soft_i2c | [soft_i2c.md](peripherals/soft_i2c.md) | [soft_iic_aht20](../../../../examples/nt26/peripherals/iic/soft_iic_aht20) |
+| pwm | [pwm.md](peripherals/pwm.md) | [pins](../../../../examples/nt26/peripherals/pwm/pins)、[timer](../../../../examples/nt26/peripherals/pwm/timer)、[apwm](../../../../examples/nt26/peripherals/pwm/apwm)、[timer_mhz](../../../../examples/nt26/peripherals/pwm/timer_mhz)、[timer_comp](../../../../examples/nt26/peripherals/pwm/timer_comp) |
+| adc | [adc.md](peripherals/adc.md) | 无单独工程，见文档内示例 |
+| charge | [charge.md](peripherals/charge.md) | [charge_api](../../../../examples/nt26/module/charge/charge_api) |
+
+## 网络 `network/`
+
+| 模块 | 文档 | 示例 |
+| --- | --- | --- |
+| tcp | [tcp.md](network/tcp.md) | [tcp_api](../../../../examples/nt26/network/tcp/tcp_api)、[tcp_cmd](../../../../examples/nt26/network/tcp/tcp_cmd)、[tcp_uart_frame](../../../../examples/nt26/apps/protocol_pack/tcp_uart_frame) |
+| http | [http.md](network/http.md) | [http_request](../../../../examples/nt26/network/http/http_request)、[https](../../../../examples/nt26/network/http/https)、[http_file_ublob](../../../../examples/nt26/network/http/http_file_ublob)、[http_file_lfs](../../../../examples/nt26/network/http/http_file_lfs) |
+| mqtt | [mqtt.md](network/mqtt.md) | [mqtt_client](../../../../examples/nt26/network/mqtt/mqtt_client)、[mqtt_cmd](../../../../examples/nt26/network/mqtt/mqtt_cmd) |
+| dns | [dns.md](network/dns.md) | [dns_api](../../../../examples/nt26/network/dns/dns_api) |
+| ntp | [ntp.md](network/ntp.md) | [ntp_api](../../../../examples/nt26/network/ntp/ntp_api) |
+| lbs | [lbs.md](network/lbs.md) | [lbs_api](../../../../examples/nt26/network/lbs/lbs_api) |
+| rndis | [rndis.md](network/rndis.md) | [rndis_api](../../../../examples/nt26/network/rndis/rndis_api) |
+| wifiscan | [wifiscan.md](network/wifiscan.md) | [wifiscan_api](../../../../examples/nt26/network/wifiscan/wifiscan_api) |
+
+短信文档在 `module/`：[sms.md](module/sms.md) → [sms_api](../../../../examples/nt26/network/sms/sms_api)、[sms_cmd](../../../../examples/nt26/network/sms/sms_cmd)。
+
+## 配置 `rtu_config/`
+
+不是 `require` 模块。开机解析工程 config 分区里的 `rtu_config.cfg`（落到 `/rtu_config.cfg`），按段写入 RTU / UART / 映射等业务配置。未写的 key 保持机内原值。
+
+| 文档 | 说明 |
+| --- | --- |
+| [rtu_config.md](rtu_config/rtu_config.md) | 文件语法、全部段与 key、总覆盖权、联合影响、错误码 |
+
+## 模块 `module/`
+
+含系统、存储、协议与工具。对应示例可能在 `os/`、`storage/` 或 `module/`。
+
+| 模块 | 文档 | 示例 |
+| --- | --- | --- |
+| rt | [rt.md](module/rt.md) | [task_delay](../../../../examples/nt26/os/rt/task_delay)、[mbox_uart](../../../../examples/nt26/os/rt/mbox_uart)、[mq_api](../../../../examples/nt26/os/rt/mq_api)、[tmr_api](../../../../examples/nt26/os/rt/tmr_api) |
+| sys | [sys.md](module/sys.md) | [sys_api](../../../../examples/nt26/os/sys/sys_api)、[sys_cmd](../../../../examples/nt26/os/sys/sys_cmd) |
+| script | [script.md](module/script.md) | [script_api](../../../../examples/nt26/os/script/script_api) |
+| log | [log.md](module/log.md) | [started/log](../../../../examples/nt26/started/log) |
+| info | [info.md](module/info.md) | [info_api](../../../../examples/nt26/module/info/info_api)、[started/info](../../../../examples/nt26/started/info) |
+| lp | [lp.md](module/lp.md) | [lowpower_api](../../../../examples/nt26/module/lp/lowpower_api)、[lowpower_vote](../../../../examples/nt26/module/lp/lowpower_vote)、[lowpower_cron](../../../../examples/nt26/module/lp/lowpower_cron) |
+| cron | [cron.md](module/cron.md) | [lowpower_cron](../../../../examples/nt26/module/lp/lowpower_cron) |
+| ufs | [ufs.md](module/ufs.md) | [ufs_api](../../../../examples/nt26/storage/ufs/ufs_api)、[ufs_cmd](../../../../examples/nt26/storage/ufs/ufs_cmd) |
+| ublob | [ublob.md](module/ublob.md) | [ublob_api](../../../../examples/nt26/storage/ublob/ublob_api)、[ublob_cmd](../../../../examples/nt26/storage/ublob/ublob_cmd) |
+| sfud | [sfud.md](module/sfud.md) | [flashdb_kv](../../../../examples/nt26/storage/flashdb_kv) 等外挂盘工程 |
+| flashdb | [flashdb.md](module/flashdb.md) | [flashdb_kv](../../../../examples/nt26/storage/flashdb_kv)、[flashdb_ts](../../../../examples/nt26/storage/flashdb_ts)、[mix](../../../../examples/nt26/storage/mix) |
+| lfs | [lfs.md](module/lfs.md) | [littlefs](../../../../examples/nt26/storage/littlefs)、[mix](../../../../examples/nt26/storage/mix) |
+| lcd | [lcd.md](module/lcd.md) | [spi_lcd](../../../../examples/nt26/peripherals/spi/spi_lcd)、[spi_st7789](../../../../examples/nt26/peripherals/spi/spi_st7789) |
+| lvgl | [lvgl.md](module/lvgl.md) | [lvgl_demo](../../../../examples/nt26/module/lvgl/lvgl_demo)、[lvgl_btn](../../../../examples/nt26/module/lvgl/lvgl_btn)、[lvgl_arclabel](../../../../examples/nt26/module/lvgl/lvgl_arclabel)、[lvgl_bar](../../../../examples/nt26/module/lvgl/lvgl_bar)、[lvgl_arc](../../../../examples/nt26/module/lvgl/lvgl_arc)、[lvgl_checkbox](../../../../examples/nt26/module/lvgl/lvgl_checkbox)、[lvgl_dropdown](../../../../examples/nt26/module/lvgl/lvgl_dropdown)、[lvgl_textarea](../../../../examples/nt26/module/lvgl/lvgl_textarea)、[lvgl_keyboard](../../../../examples/nt26/module/lvgl/lvgl_keyboard)、[lvgl_switch](../../../../examples/nt26/module/lvgl/lvgl_switch)、[lvgl_spinner](../../../../examples/nt26/module/lvgl/lvgl_spinner)、[lvgl_msgbox](../../../../examples/nt26/module/lvgl/lvgl_msgbox)、[lvgl_watchface](../../../../examples/nt26/module/lvgl/lvgl_watchface)、[lvgl_span](../../../../examples/nt26/module/lvgl/lvgl_span)、[lvgl_canvas](../../../../examples/nt26/module/lvgl/lvgl_canvas)、[lvgl_img](../../../../examples/nt26/module/lvgl/lvgl_img) |
+| json | [json.md](module/json.md) | [json_api](../../../../examples/nt26/module/json/json_api) |
+| hex | [hex.md](module/hex.md) | [hex_api](../../../../examples/nt26/module/hex/hex_api) |
+| nmea | [nmea.md](module/nmea.md) | [gps_api](../../../../examples/nt26/module/gps/gps_api) |
+| gps | [gps.md](module/gps.md) | [gps_api](../../../../examples/nt26/module/gps/gps_api) |
+| tls | [tls.md](module/tls.md) | [tls_api](../../../../examples/nt26/module/tls/tls_api) |
+| random | [random.md](module/random.md) | [random_api](../../../../examples/nt26/module/random/random_api) |
+| dream | [dream.md](module/dream.md) | [dream_api](../../../../examples/nt26/module/dream/dream_api) |
+| framekit | [framekit.md](module/framekit.md) | [framekit_cmd](../../../../examples/nt26/module/framekit/framekit_cmd) |
+| modbus | [modbus.md](module/modbus.md) | [modbus_api](../../../../examples/nt26/module/modbus/modbus_api)、[modbus_rs485](../../../../examples/nt26/module/modbus/modbus_rs485) |
+| rtu | [rtu.md](module/rtu.md) | [rtu_api](../../../../examples/nt26/module/rtu/rtu_api)、[rtu_cmd](../../../../examples/nt26/module/rtu/rtu_cmd)、[rtu_ch1_uart_frame](../../../../examples/nt26/apps/protocol_pack/rtu_ch1_uart_frame) |
+| virat | [virat.md](module/virat.md) | [virt_api](../../../../examples/nt26/module/virt/virt_api) |
+| sms | [sms.md](module/sms.md) | [sms_api](../../../../examples/nt26/network/sms/sms_api)、[sms_cmd](../../../../examples/nt26/network/sms/sms_cmd) |
