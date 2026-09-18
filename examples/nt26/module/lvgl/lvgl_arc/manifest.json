@@ -1,0 +1,40 @@
+{
+  "id": "lvgl_arc",
+  "name": "LVGL 弧进度",
+  "version": "1.0.0",
+  "category": "module",
+  "hw": "高",
+  "tags": [
+    "lcd",
+    "st7789",
+    "lvgl",
+    "arc"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "lcd",
+      "lvgl",
+      "log",
+      "rt"
+    ],
+    "pins": [],
+    "peripherals": [],
+    "controllers": [
+      "SPI0"
+    ],
+    "extras": [
+      "ST7789",
+      "LVGL"
+    ],
+    "network": false
+  },
+  "readme": "",
+  "description": "与 lvgl_demo 同一套 ST7789/SPI0 接线。演示 ui:arc：270° 表盘、范围、当前值，以及 NORMAL / REVERSE / SYMMETRICAL。进度用 set_value，背景弧用 set_bg_angle / set_rotation。须使用已编入 arc 的 AP 固件。UART2 必须 pin_map=1。\n"
+}

@@ -1,0 +1,40 @@
+{
+  "id": "lvgl_btn",
+  "name": "LVGL 按钮",
+  "version": "1.0.0",
+  "category": "module",
+  "hw": "高",
+  "tags": [
+    "lcd",
+    "st7789",
+    "lvgl",
+    "btn"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "lcd",
+      "lvgl",
+      "log",
+      "rt"
+    ],
+    "pins": [],
+    "peripherals": [],
+    "controllers": [
+      "SPI0"
+    ],
+    "extras": [
+      "ST7789",
+      "LVGL"
+    ],
+    "network": false
+  },
+  "readme": "",
+  "description": "与 lvgl_demo 同一套 ST7789/SPI0 接线。演示 ui:btn / on_click；没有触摸时 add_state(PRESSED) 看按下动画，再 ui:click。须使用已编入 add_state 的 AP 固件。UART2 必须 pin_map=1。\n"
+}

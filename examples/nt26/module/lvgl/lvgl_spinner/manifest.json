@@ -1,0 +1,40 @@
+{
+  "id": "lvgl_spinner",
+  "name": "LVGL 转圈",
+  "version": "1.0.0",
+  "category": "module",
+  "hw": "高",
+  "tags": [
+    "lcd",
+    "st7789",
+    "lvgl",
+    "spinner"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "lcd",
+      "lvgl",
+      "log",
+      "rt"
+    ],
+    "pins": [],
+    "peripherals": [],
+    "controllers": [
+      "SPI0"
+    ],
+    "extras": [
+      "ST7789",
+      "LVGL"
+    ],
+    "network": false
+  },
+  "readme": "",
+  "description": "与 lvgl_demo 同一套 ST7789/SPI0 接线。演示 ui:spinner：不同周期、弧长、arc_color/arc_width。须使用已编入 spinner 的 AP 固件。UART2 必须 pin_map=1。\n"
+}

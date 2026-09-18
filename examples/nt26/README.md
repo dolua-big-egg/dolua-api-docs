@@ -76,7 +76,7 @@
 | [rtu](module/rtu) | [rtu](../../docs/nt26/api/module/rtu.md) |
 | [virt](module/virt) | [virat](../../docs/nt26/api/module/virat.md) |
 | [charge](module/charge) | [charge](../../docs/nt26/api/peripherals/charge.md) |
-| [lvgl](module/lvgl)（[lvgl_demo](module/lvgl/lvgl_demo)、[lvgl_img](module/lvgl/lvgl_img)） | [lvgl](../../docs/nt26/api/module/lvgl.md) |
+| [lvgl](module/lvgl)（[lvgl_demo](module/lvgl/lvgl_demo)、[lvgl_btn](module/lvgl/lvgl_btn)、[lvgl_arclabel](module/lvgl/lvgl_arclabel)、[lvgl_bar](module/lvgl/lvgl_bar)、[lvgl_arc](module/lvgl/lvgl_arc)、[lvgl_checkbox](module/lvgl/lvgl_checkbox)、[lvgl_dropdown](module/lvgl/lvgl_dropdown)、[lvgl_textarea](module/lvgl/lvgl_textarea)、[lvgl_keyboard](module/lvgl/lvgl_keyboard)、[lvgl_switch](module/lvgl/lvgl_switch)、[lvgl_spinner](module/lvgl/lvgl_spinner)、[lvgl_msgbox](module/lvgl/lvgl_msgbox)、[lvgl_img](module/lvgl/lvgl_img)） | [lvgl](../../docs/nt26/api/module/lvgl.md) |
 
 ## apps — 应用场景
 

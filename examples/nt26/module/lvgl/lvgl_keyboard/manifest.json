@@ -1,0 +1,41 @@
+{
+  "id": "lvgl_keyboard",
+  "name": "LVGL 软键盘",
+  "version": "1.0.0",
+  "category": "module",
+  "hw": "高",
+  "tags": [
+    "lcd",
+    "st7789",
+    "lvgl",
+    "keyboard",
+    "textarea"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "lcd",
+      "lvgl",
+      "log",
+      "rt"
+    ],
+    "pins": [],
+    "peripherals": [],
+    "controllers": [
+      "SPI0"
+    ],
+    "extras": [
+      "ST7789",
+      "LVGL"
+    ],
+    "network": false
+  },
+  "readme": "",
+  "description": "与 lvgl_demo 同一套 ST7789/SPI0 接线。演示 ui:keyboard 绑 textarea；没有触摸时用 add_text 打 HELLO 再逐字删掉。须使用已编入 keyboard 的 AP 固件。UART2 必须 pin_map=1。\n"
+}

@@ -187,6 +187,10 @@ end
   ui:set_src(img, src|nil)    换源或清像素；只认 JPEG 与 LVGL .bin
   ui:set_scale(img, scale)    缩放像素；256 / lvgl.SCALE_NONE 原尺寸
   ui:get_scale(img)           读当前因子
+  ui:keyboard([parent,] [ta]) 软键盘，默认贴底、宽 100%、高 50%。可创建时绑 textarea
+  ui:set_textarea(kb, ta)     绑文本框；省略 / nil 解开
+  ui:set_mode(kb, mode)       KEYBOARD_MODE_TEXT_LOWER / TEXT_UPPER / SPECIAL / NUMBER
+  ui:set_popovers(kb, en)     按键弹出标题
   ui:font(src [, size])       字库；点阵 .bin / TTF；源同上。TTF size 默认 14
   ui:set_font(obj, font|nil)  挂字库；nil 回默认字。必须一直拿着 font
   ui:deinit()

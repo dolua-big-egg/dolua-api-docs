@@ -1,0 +1,40 @@
+{
+  "id": "lvgl_arclabel",
+  "name": "LVGL 弧标签",
+  "version": "1.0.0",
+  "category": "module",
+  "hw": "高",
+  "tags": [
+    "lcd",
+    "st7789",
+    "lvgl",
+    "arclabel"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "lcd",
+      "lvgl",
+      "log",
+      "rt"
+    ],
+    "pins": [],
+    "peripherals": [],
+    "controllers": [
+      "SPI0"
+    ],
+    "extras": [
+      "ST7789",
+      "LVGL"
+    ],
+    "network": false
+  },
+  "readme": "",
+  "description": "与 lvgl_demo 同一套 ST7789/SPI0 接线。演示 ui:arclabel：整圈 360° 居中排字，用 set_angle 起始角绕圈，再切换顺/逆时针。不要用 set_offset 转圈（CLIP 会把字裁掉）。默认字是 ASCII。须使用已编入 arclabel 的 AP 固件。UART2 必须 pin_map=1。\n"
+}
