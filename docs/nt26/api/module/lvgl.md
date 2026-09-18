@@ -1,6 +1,6 @@
 # lvgl
 
-**文档版本** `1.6.2`
+**文档版本** `1.7.0`
 
 把已经 `lcd.new` 好的彩屏交给图形栈：控件、主题、脏区刷新都走本模块。刷屏在独立任务里跑，脚本只要建树、改字、改样式，然后 `rt.delay` 让出即可。
 
@@ -10,7 +10,7 @@ local lvgl = require("lvgl")
 
 平台预加载模块，无需额外 `.lua` 文件。须先 [`lcd.new`](lcd.md) 得到面板，再 `lvgl.create(panel, opts)`。
 
-本绑定是 LVGL 的 **子集**：标签、按钮、空白容器、图片、样式覆盖。按钮点击已挂上；触摸输入设备尚未接入，真机点按要等输入，脚本可用 `ui:click` 走同一条回调。没有官方 LVGL 全量控件表。默认字体由固件编入（Montserrat 14，ASCII + FontAwesome 子集）。要显示中文请用 [`ui:font`](#7-30-font) 加载自己的子集字库（LVGL 点阵 `.bin` 或 TTF），不要假设默认字含汉字。图片只认 **JPEG** 和 **LVGL 图像 `.bin`**（靠文件头，不靠扩展名）；BMP 不支持。字库 `.bin` 和图像 `.bin` 不是同一种文件。
+本绑定是 LVGL 的 **子集**：标签、弧标签、按钮、空白容器、进度条、图片、样式覆盖。按钮点击已挂上；触摸输入设备尚未接入，真机点按要等输入，脚本可用 `ui:click` 走同一条回调。没有官方 LVGL 全量控件表。默认字体由固件编入（Montserrat 14，ASCII + FontAwesome 子集）。要显示中文请用 [`ui:font`](#7-30-font) 加载自己的子集字库（LVGL 点阵 `.bin` 或 TTF），不要假设默认字含汉字。图片只认 **JPEG** 和 **LVGL 图像 `.bin`**（靠文件头，不靠扩展名）；BMP 不支持。字库 `.bin` 和图像 `.bin` 不是同一种文件。
 
 ---
 
@@ -55,6 +55,23 @@ local lvgl = require("lvgl")
   - [7.29 `ui:get_scale`](#7-29-get-scale)
   - [7.30 `ui:font`](#7-30-font)
   - [7.31 `ui:set_font`](#7-31-set-font)
+  - [7.32 `ui:arclabel`](#7-32-arclabel)
+  - [7.33 `ui:bar`](#7-33-bar)
+  - [7.34 `ui:align`](#7-34-align)
+  - [7.35 `ui:set_text_align`](#7-35-set-text-align)
+  - [7.36 `ui:set_dir`](#7-36-set-dir)
+  - [7.37 `ui:set_range`](#7-37-set-range)
+  - [7.38 `ui:set_value`](#7-38-set-value)
+  - [7.39 `ui:set_start_value`](#7-39-set-start-value)
+  - [7.40 `ui:get_value`](#7-40-get-value)
+  - [7.41 `ui:get_range`](#7-41-get-range)
+  - [7.42 `ui:get_dir`](#7-42-get-dir)
+  - [7.43 `ui:set_mode`](#7-43-set-mode)
+  - [7.44 `ui:set_angle`](#7-44-set-angle)
+  - [7.45 `ui:set_offset`](#7-45-set-offset)
+  - [7.46 `ui:set_center_offset`](#7-46-set-center-offset)
+  - [7.47 `ui:set_recolor`](#7-47-set-recolor)
+  - [7.48 `ui:set_overflow`](#7-48-set-overflow)
 - [8. 样式对象方法](#8-样式对象方法)
   - [8.1 `style:set`](#8-1-set)
 - [9. `create` 配置表](#9-create-配置表)
@@ -75,14 +92,14 @@ local lvgl = require("lvgl")
 
 1. `lcd.new(cfg)` 打开总线和面板（见 [lcd](lcd.md)）。`create` 之前可以用 `panel:full` 确认屏是通的。
 2. `lvgl.create(panel, opts)` 把这块屏交给图形栈，得到 `ui`。之后再调 `panel:full` / `fill` / `flush` 会失败，文案 `lcd bound to lvgl`。屏幕背景改走 `opts.bg` 或 `ui:set_bg`。
-3. `ui:scr_act` / `ui:label` / `ui:btn` / `ui:obj` / `ui:img` 建树；外观用默认主题，再用 `ui:style` + `add_style` 或 `ui:set_style` 覆盖。图片源见 [7.27](#7-27-set-src)。
+3. `ui:scr_act` / `ui:label` / `ui:arclabel` / `ui:btn` / `ui:obj` / `ui:bar` / `ui:img` 建树；外观用默认主题，再用 `ui:style` + `add_style` 或 `ui:set_style` 覆盖。图片源见 [7.27](#7-27-set-src)。
 4. 改文字、改位置只记脏。脚本让出后，独立任务才画、才往屏上刷。
 5. 不要循环 `ui:handler()`。长期脚本用 `rt.delay(-1)` 或自己的业务循环。
 6. 不用时 `ui:deinit()`，才能再 `create` 一次。
 
 | 能做 | 不能做 |
 | --- | --- |
-| 标签、按钮、空白容器、图片 | 官方 LVGL 其它控件（slider、list…）未挂 |
+| 标签、弧标签、按钮、空白容器、进度条、图片 | 官方 LVGL 其它控件（slider、list…）未挂 |
 | JPEG、LVGL 图像 `.bin`（RAM / ublob / lfs）；`set_scale` 缩放像素 | BMP、PNG、GIF；不认盘符路径；`set_size` 只改外框不缩放 |
 | 子集字库：LVGL 点阵 `.bin`（含压缩）/ TTF（RAM / ublob / lfs） | 运行时 OTF(CFF)、WOFF、WOFF2；FreeType |
 | 默认 light/dark 主题 + 样式覆盖 | 换官方主题引擎 |
@@ -97,7 +114,7 @@ local lvgl = require("lvgl")
 ```
 ┌─────────────────────────────────────────────────────────┐
 │  Lua 脚本                                                │
-│  lcd.new → lvgl.create → label/btn/img/style → rt.delay     │
+│  lcd.new → lvgl.create → label/arclabel/bar/btn/img/style → rt.delay     │
 │  一次让出结束前：只记脏，不刷屏                           │
 └────────────────────────────┬────────────────────────────┘
                              │
@@ -139,7 +156,7 @@ local lvgl = require("lvgl")
 | 对象 | 怎么来 | 有没有方法 | 必须持有 |
 | --- | --- | --- | --- |
 | **ui** | `lvgl.create` | 有，见 [第 7 节](#7-对象方法) | 是，丢掉会被回收并 `deinit` |
-| **控件** | `scr_act` / `label` / `btn` / `obj` / `img` | **没有。** 不能 `lab:set_pos` | 建议拿着方便传给 `ui:set_*`；GC 掉句柄 **不会** 删掉树上的控件 |
+| **控件** | `scr_act` / `label` / `arclabel` / `btn` / `obj` / `bar` / `img` | **没有。** 不能 `lab:set_pos` | 建议拿着方便传给 `ui:set_*`；GC 掉句柄 **不会** 删掉树上的控件 |
 | **样式** | `ui:style({...})` | 只有 `style:set` | **是。** 丢掉引用会被回收并重置；已 `add_style` 的控件会丢这份样式 |
 | **字库** | `ui:font(src)` | **没有。** | **是。** 丢掉会被回收；仍 `set_font` 在控件上等于空悬指针。和样式一样放到模块级 / upvalue |
 
@@ -189,6 +206,7 @@ lvgl.label("x")         -- create 之前：抛错 call lvgl.create first
 | `opts.dark` 写成 number | `~= 0` | `0` = light |
 | 样式 `clip_corner` | Lua 布尔（非 nil 就读） | **数字 `0` 为真**。请写 `true`/`false` |
 | 样式 `scrollable` / `clickable` | **只接受 boolean 类型** | 写成 `0`/`1` 会被忽略，旗标不变 |
+| `set_value` / `set_start_value` 的 `anim`、`set_recolor` | boolean 走 Lua 布尔；number 走 `~= 0` | boolean 路径下 **`0` 为真**。请写 `true`/`false`；整数请写 `0`/`1` |
 
 推荐：开关一律 `true`/`false`，主题用 `"light"` / `"dark"`。
 
@@ -196,7 +214,9 @@ lvgl.label("x")         -- create 之前：抛错 call lvgl.create first
 
 ## 4. 常量与枚举
 
-`luaopen` 导出不透明度符号和图片缩放基准。主题名、色深、缓冲模式都是 **字符串**，没有对应整数常量。
+`luaopen` 导出不透明度、缩放基准，以及对齐 / 方向 / 进度条模式 / 弧标签溢出。主题名、色深、缓冲模式仍是 **字符串**。
+
+### 4.1 不透明度与缩放
 
 | 符号 | 值 | 含义 | 用在哪个参数 |
 | --- | --- | --- | --- |
@@ -206,7 +226,70 @@ lvgl.label("x")         -- create 之前：抛错 call lvgl.create first
 
 `bg_opa` 还可以直接写字符串 `"cover"` / `"COVER"` / `"transp"` / `"transparent"` / `"TRANSP"`，或 boolean（`true` = COVER，`false` = TRANSP；数字 `0` 当 boolean 时为真）。整数 `0`～`255` 按不透明度用。
 
-未挂到模块的官方 LVGL 枚举（部件选择器、调色板名、对齐常量等）不要当可用 API。`add_style` 的 `selector` 若要传，请传整数；省略即 `0`（主部件）。
+### 4.2 控件对齐 `ui:align`
+
+相对父亲（或另一控件）摆位置。`ALIGN_OUT_*` 只适合 `align(obj, base, …)` 那种「对齐到另一控件」；相对父亲时不要用 `OUT_`。
+
+| 符号 | 值 | 含义 | 字符串写法 |
+| --- | --- | --- | --- |
+| `lvgl.ALIGN_DEFAULT` | `0` | 默认（LTR 左上） | `"default"` |
+| `lvgl.ALIGN_TOP_LEFT` | `1` | 上左 | `"top_left"` |
+| `lvgl.ALIGN_TOP_MID` | `2` | 上中 | `"top_mid"` |
+| `lvgl.ALIGN_TOP_RIGHT` | `3` | 上右 | `"top_right"` |
+| `lvgl.ALIGN_BOTTOM_LEFT` | `4` | 下左 | `"bottom_left"` |
+| `lvgl.ALIGN_BOTTOM_MID` | `5` | 下中 | `"bottom_mid"` |
+| `lvgl.ALIGN_BOTTOM_RIGHT` | `6` | 下右 | `"bottom_right"` |
+| `lvgl.ALIGN_LEFT_MID` | `7` | 左中 | `"left_mid"` |
+| `lvgl.ALIGN_RIGHT_MID` | `8` | 右中 | `"right_mid"` |
+| `lvgl.ALIGN_CENTER` | `9` | 居中 | `"center"` |
+| `lvgl.ALIGN_OUT_TOP_LEFT` | `10` | 外侧上左 | `"out_top_left"` |
+| `lvgl.ALIGN_OUT_TOP_MID` | `11` | 外侧上中 | `"out_top_mid"` |
+| `lvgl.ALIGN_OUT_TOP_RIGHT` | `12` | 外侧上右 | `"out_top_right"` |
+| `lvgl.ALIGN_OUT_BOTTOM_LEFT` | `13` | 外侧下左 | `"out_bottom_left"` |
+| `lvgl.ALIGN_OUT_BOTTOM_MID` | `14` | 外侧下中 | `"out_bottom_mid"` |
+| `lvgl.ALIGN_OUT_BOTTOM_RIGHT` | `15` | 外侧下右 | `"out_bottom_right"` |
+| `lvgl.ALIGN_OUT_LEFT_TOP` | `16` | 外侧左上 | `"out_left_top"` |
+| `lvgl.ALIGN_OUT_LEFT_MID` | `17` | 外侧左中 | `"out_left_mid"` |
+| `lvgl.ALIGN_OUT_LEFT_BOTTOM` | `18` | 外侧左下 | `"out_left_bottom"` |
+| `lvgl.ALIGN_OUT_RIGHT_TOP` | `19` | 外侧右上 | `"out_right_top"` |
+| `lvgl.ALIGN_OUT_RIGHT_MID` | `20` | 外侧右中 | `"out_right_mid"` |
+| `lvgl.ALIGN_OUT_RIGHT_BOTTOM` | `21` | 外侧右下 | `"out_right_bottom"` |
+
+### 4.3 文字对齐 `ui:set_text_align`
+
+直线标签与弧标签共用这组整数。弧标签的 leading/trailing 对应 left/right。
+
+| 符号 | 值 | 含义 | 字符串写法 |
+| --- | --- | --- | --- |
+| `lvgl.TEXT_ALIGN_AUTO` / `TEXT_ALIGN_DEFAULT` | `0` | 自动 / 默认 | `"auto"` / `"default"` |
+| `lvgl.TEXT_ALIGN_LEFT` / `TEXT_ALIGN_LEADING` | `1` | 左 / 起点 | `"left"` / `"leading"` |
+| `lvgl.TEXT_ALIGN_CENTER` | `2` | 居中 | `"center"` |
+| `lvgl.TEXT_ALIGN_RIGHT` / `TEXT_ALIGN_TRAILING` | `3` | 右 / 终点 | `"right"` / `"trailing"` |
+
+### 4.4 方向 `ui:set_dir`
+
+弧标签和进度条的方向枚举数值有重叠，**按控件选带前缀的符号**，不要把弧标签的顺时针常量塞给进度条。
+
+| 符号 | 值 | 用在 | 字符串写法 |
+| --- | --- | --- | --- |
+| `lvgl.ARCLABEL_DIR_CLOCKWISE` / `DIR_CLOCKWISE` | `0` | 弧标签顺时针 | `"cw"` / `"clockwise"` |
+| `lvgl.ARCLABEL_DIR_COUNTER_CLOCKWISE` / `DIR_COUNTER_CLOCKWISE` | `1` | 弧标签逆时针 | `"ccw"` / `"counterclockwise"` / `"counter_clockwise"` |
+| `lvgl.BAR_DIR_AUTO` / `DIR_AUTO` | `0` | 进度条随宽高自动 | `"auto"` |
+| `lvgl.BAR_DIR_HORIZONTAL` / `DIR_HORIZONTAL` | `1` | 进度条水平 | `"h"` / `"hor"` / `"horizontal"` |
+| `lvgl.BAR_DIR_VERTICAL` / `DIR_VERTICAL` | `2` | 进度条垂直 | `"v"` / `"ver"` / `"vertical"` |
+
+### 4.5 进度条模式与弧标签溢出
+
+| 符号 | 值 | 含义 | 字符串写法 |
+| --- | --- | --- | --- |
+| `lvgl.BAR_MODE_NORMAL` | `0` | 从最小值长到当前值 | `"normal"` |
+| `lvgl.BAR_MODE_SYMMETRICAL` | `1` | 以 0 为中心向两侧 | `"symmetrical"` / `"sym"` |
+| `lvgl.BAR_MODE_RANGE` | `2` | 用起始值 + 当前值画一段 | `"range"` |
+| `lvgl.OVERFLOW_VISIBLE` | `0` | 弧文字可画出控件 | `"visible"` |
+| `lvgl.OVERFLOW_ELLIPSIS` | `1` | 超出画省略号 | `"ellipsis"` |
+| `lvgl.OVERFLOW_CLIP` | `2` | 超出裁掉（创建时默认） | `"clip"` |
+
+未挂到模块的官方 LVGL 枚举（部件选择器、调色板名等）不要当可用 API。`add_style` 的 `selector` 若要传，请传整数；省略即 `0`（主部件）。
 
 ---
 
@@ -216,7 +299,7 @@ lvgl.label("x")         -- create 之前：抛错 call lvgl.create first
 | --- | --- | --- |
 | `panel` | lcd 对象 | 必须已经 `lcd.new` 成功 |
 | `ui` | userdata | `create` 的返回值 |
-| `obj` / `parent` / `lab` / `btn` / `img` | userdata | 控件句柄，元表无方法 |
+| `obj` / `parent` / `lab` / `btn` / `img` / `bar` | userdata | 控件句柄，元表无方法 |
 | `font` | userdata | `ui:font` 的返回值 |
 | `src` | string 或 table | 图片见 [7.27](#7-27-set-src)；字库见 [7.30](#7-30-font)。表字段同一套：`data` / `ublob` / `lfs`+`path` |
 | `style` | userdata | `ui:style` 的返回值 |
@@ -225,7 +308,9 @@ lvgl.label("x")         -- create 之前：抛错 call lvgl.create first
 | `text` | string | Lua 会把 number 转成字面 |
 | `selector` | integer | 样式选择器，省略为 `0` |
 | `opa` | integer / string / boolean | 见第 4 节 |
+| `align` / `dir` / `mode` / `overflow` | integer 或 string | 见 [第 4 节](#4-常量与枚举) |
 | `x` `y` `w` `h` `r` | integer | 像素 |
+| `min` `max` `value` | integer | 进度条范围与当前值 |
 | `scale` | integer | 图片缩放。`256` / `lvgl.SCALE_NONE` = 原尺寸；`128` = 一半；`512` = 两倍 |
 
 ---
@@ -328,7 +413,7 @@ used, peak, limit = ui:mem()
 
 ### 7.3 `ui:scr_act()` {#7-3-scr-act}
 
-当前活动屏幕。省略 `parent` 的 `label`/`btn`/`obj`/`img` 都挂在这上面。
+当前活动屏幕。省略 `parent` 的 `label`/`arclabel`/`btn`/`obj`/`bar`/`img` 都挂在这上面。
 
 **调用模式**
 
@@ -524,7 +609,7 @@ ok = ui:set_parent(obj, parent)
 
 ### 7.12 `ui:set_radius(obj, r)` {#7-12-set-radius}
 
-写本地圆角，等价于 `set_style` 的 `radius`（选择器 `0`）。
+普通控件：写本地圆角，等价于 `set_style` 的 `radius`（选择器 `0`）。弧标签：写沿弧排字的曲率半径（像素），不是圆角。
 
 **调用模式**
 
@@ -532,7 +617,7 @@ ok = ui:set_parent(obj, parent)
 ok = ui:set_radius(obj, r)
 ```
 
-`r` 必须是 integer。
+`r` 必须是 integer。弧标签创建时默认按控件较短边的一半来排字；之后若要固定半径，传像素。弧标签 `r < 0` 返回 `false, "bad radius"`。
 
 **返回** `true`。
 
@@ -540,7 +625,7 @@ ok = ui:set_radius(obj, r)
 
 ### 7.13 `ui:set_text(obj, text)` {#7-13-set-text}
 
-改标签正文。目标必须是 `label` 建出来的那种标签；按钮本身不是标签。
+改正文。目标必须是 `label` 或 `arclabel` 建出来的那种标签；按钮本身不是标签。
 
 **调用模式**
 
@@ -556,8 +641,8 @@ ok, err = ui:set_text(obj, text)
 
 | 结果 | 返回 |
 | --- | --- |
-| 目标是标签 | `true` |
-| 不是标签 | `false, "not a label"`（不抛错） |
+| 目标是标签或弧标签 | `true` |
+| 不是这两种 | `false, "not a label"`（不抛错） |
 
 `text` 不是 string/number 时抛错（缺参等）。
 
@@ -1088,7 +1173,7 @@ end
 
 ### 7.31 `ui:set_font(obj, font)` {#7-31-set-font}
 
-把字库挂到控件的文字上。`nil`（或省略）回到默认 Montserrat 14。按钮、标签都能设。
+把字库挂到控件的文字上。`nil`（或省略）回到默认 Montserrat 14。按钮、标签、弧标签都能设。
 
 也可以写在样式表里：`ui:set_style(obj, { font = font })` 或 `ui:style({ font = font })`。
 
@@ -1109,6 +1194,440 @@ local font = ui:font({ lfs = fs, path = "/zh.bin" })
 ui:set_font(hint, font)
 ui:set_text(hint, "温度")
 ```
+
+---
+
+### 7.32 `ui:arclabel([parent,] [text])` {#7-32-arclabel}
+
+建一个沿圆弧排字的标签。默认尺寸约 `dpi × dpi`（默认 130×130），曲率半径按较短边的一半。0° 在正右，90° 在正下，顺时针。中文同样要先 [`ui:font`](#7-30-font)。
+
+**调用模式**
+
+```lua
+arc = ui:arclabel()
+```
+
+```lua
+arc = ui:arclabel(text)
+```
+
+```lua
+arc = ui:arclabel(parent)
+```
+
+```lua
+arc = ui:arclabel(parent, text)
+```
+
+参数规则与 `label` 相同。省略 `text` 则为空串。
+
+**返回** 控件句柄。失败抛错：`invalid parent` / `arclabel create failed`。刷屏占锁超时：`false, "lvgl busy"`。
+
+```lua
+local arc = ui:arclabel("HELLO")
+ui:set_size(arc, 180, 180)
+ui:align(arc, lvgl.ALIGN_CENTER)
+ui:set_dir(arc, lvgl.ARCLABEL_DIR_CLOCKWISE)
+ui:set_text_align(arc, lvgl.TEXT_ALIGN_CENTER, lvgl.TEXT_ALIGN_CENTER)
+ui:set_angle(arc, 0, 270)
+ui:set_text_color(arc, 0xFFFFFF)
+```
+
+---
+
+### 7.33 `ui:bar([parent,] [value])` {#7-33-bar}
+
+建一个进度条。默认范围 `0`～`100`，方向 `BAR_DIR_AUTO`（宽大于高则水平），模式 `BAR_MODE_NORMAL`。指示条走主题色；要改外观对主部件和指示条分别 `set_style`（指示条选择器常用 `256`）。
+
+**调用模式**
+
+```lua
+bar = ui:bar()
+```
+
+```lua
+bar = ui:bar(parent)
+```
+
+```lua
+bar = ui:bar(value)
+```
+
+```lua
+bar = ui:bar(parent, value)
+```
+
+第 1 个额外参数若是控件句柄，当作父亲；若是 number 当作初始 `value`，父亲用当前屏幕。省略 `value` 则为 `0`。
+
+**返回** 控件句柄。失败抛错：`invalid parent` / `bar create failed`。刷屏占锁超时：`false, "lvgl busy"`。
+
+```lua
+local bar = ui:bar(40)
+ui:set_size(bar, 200, 12)
+ui:align(bar, lvgl.ALIGN_TOP_MID, 0, 80)
+ui:set_range(bar, 0, 100)
+ui:set_dir(bar, lvgl.BAR_DIR_HORIZONTAL)
+ui:set_value(bar, 75)
+```
+
+---
+
+### 7.34 `ui:align(obj, align [, x_ofs, y_ofs])` {#7-34-align}
+
+把控件对齐到父亲，或对齐到另一控件。所有控件都能用，包括弧标签和进度条。`ui:center(obj)` 等价于 `ui:align(obj, lvgl.ALIGN_CENTER)`。
+
+**调用模式**
+
+```lua
+ok = ui:align(obj, align)
+```
+
+```lua
+ok = ui:align(obj, align, x_ofs, y_ofs)
+```
+
+```lua
+ok = ui:align(obj, base, align)
+```
+
+```lua
+ok = ui:align(obj, base, align, x_ofs, y_ofs)
+```
+
+第 2 个额外参数若是控件句柄，当作 `base`（对齐到它）；否则第 2 参是 `align`。`align` 可以是 [4.2](#42-控件对齐-uialign) 的整数常量或小写字符串。`x_ofs` / `y_ofs` 省略为 `0`；只给 `x_ofs` 时 `y_ofs` 仍为 `0`。
+
+**返回**
+
+| 结果 | 返回 |
+| --- | --- |
+| 成功 | `true` |
+| 对齐值非法 | `false, "bad align"` |
+| 刷屏占锁超时 | `false, "lvgl busy"` |
+
+非法句柄抛错。
+
+---
+
+### 7.35 `ui:set_text_align(obj, h_align [, v_align])` {#7-35-set-text-align}
+
+改文字在控件里的对齐。直线标签只看 `h_align`（走文字样式）。弧标签：`h_align` 是沿弧方向，`v_align` 是径向（靠内/居中/靠外）；省略 `v_align` 则不改径向。
+
+**调用模式**
+
+```lua
+ok = ui:set_text_align(lab, h_align)
+```
+
+```lua
+ok = ui:set_text_align(arc, h_align, v_align)
+```
+
+`h_align` / `v_align` 可以是 [4.3](#43-文字对齐-uiset_text_align) 的整数常量或字符串。
+
+**返回**
+
+| 结果 | 返回 |
+| --- | --- |
+| 目标是标签或弧标签 | `true` |
+| 对齐值非法 | `false, "bad align"` |
+| 不是这两种 | `false, "not a label"` |
+| 刷屏占锁超时 | `false, "lvgl busy"` |
+
+---
+
+### 7.36 `ui:set_dir(obj, dir)` {#7-36-set-dir}
+
+改方向。弧标签：顺时针 / 逆时针。进度条：自动 / 水平 / 垂直。其它控件失败。
+
+**调用模式**
+
+```lua
+ok = ui:set_dir(arc, lvgl.ARCLABEL_DIR_CLOCKWISE)
+```
+
+```lua
+ok = ui:set_dir(arc, "ccw")
+```
+
+```lua
+ok = ui:set_dir(bar, lvgl.BAR_DIR_VERTICAL)
+```
+
+```lua
+ok = ui:set_dir(bar, "horizontal")
+```
+
+`dir` 可以是 [4.4](#44-方向-uiset_dir) 的整数常量或字符串。取值必须匹配当前控件种类。
+
+**返回**
+
+| 结果 | 返回 |
+| --- | --- |
+| 成功 | `true` |
+| 不是弧标签也不是进度条 | `false, "unsupported"` |
+| 取值对当前控件不合法 | `false, "bad dir"` |
+| 刷屏占锁超时 | `false, "lvgl busy"` |
+
+---
+
+### 7.37 `ui:set_range(obj, min, max)` {#7-37-set-range}
+
+进度条的最小、最大值。若 `min > max`，绘制方向反过来。
+
+**调用模式**
+
+```lua
+ok = ui:set_range(bar, min, max)
+```
+
+`min` / `max` 必须是 integer。
+
+**返回**
+
+| 结果 | 返回 |
+| --- | --- |
+| 目标是进度条 | `true` |
+| 不是进度条 | `false, "not a bar"` |
+| 刷屏占锁超时 | `false, "lvgl busy"` |
+
+---
+
+### 7.38 `ui:set_value(obj, value [, anim])` {#7-38-set-value}
+
+进度条当前值。超出范围会被夹到 `min`～`max`。`anim` 省略为立刻改（关动画）。
+
+**调用模式**
+
+```lua
+ok = ui:set_value(bar, value)
+```
+
+```lua
+ok = ui:set_value(bar, value, anim)
+```
+
+`value` 必须是 integer。`anim`：boolean 为 `true` 开动画；number `~= 0` 开动画。boolean 路径下数字 `0` 为真，请写 `true`/`false`。
+
+**返回** 同 [7.37](#7-37-set-range)。
+
+---
+
+### 7.39 `ui:set_start_value(obj, value [, anim])` {#7-39-set-start-value}
+
+进度条起始值，主要给 `BAR_MODE_RANGE` 用。参数与 `set_value` 相同。
+
+**调用模式**
+
+```lua
+ok = ui:set_start_value(bar, value)
+```
+
+```lua
+ok = ui:set_start_value(bar, value, anim)
+```
+
+**返回** 同 [7.37](#7-37-set-range)。
+
+---
+
+### 7.40 `ui:get_value(obj)` {#7-40-get-value}
+
+读进度条当前值。
+
+**调用模式**
+
+```lua
+value = ui:get_value(bar)
+```
+
+```lua
+ok, err = ui:get_value(obj)
+```
+
+**返回** 成功：整数。不是进度条：`false, "not a bar"`。刷屏占锁超时：`false, "lvgl busy"`。
+
+---
+
+### 7.41 `ui:get_range(obj)` {#7-41-get-range}
+
+读进度条最小、最大值。
+
+**调用模式**
+
+```lua
+min, max = ui:get_range(bar)
+```
+
+**返回** 成功：两个整数。不是进度条：`false, "not a bar"`。刷屏占锁超时：`false, "lvgl busy"`。
+
+---
+
+### 7.42 `ui:get_dir(obj)` {#7-42-get-dir}
+
+读方向。弧标签返回 `ARCLABEL_DIR_*`；进度条返回 `BAR_DIR_*`。
+
+**调用模式**
+
+```lua
+dir = ui:get_dir(obj)
+```
+
+**返回** 成功：整数。不是这两种：`false, "unsupported"`。刷屏占锁超时：`false, "lvgl busy"`。
+
+---
+
+### 7.43 `ui:set_mode(obj, mode)` {#7-43-set-mode}
+
+进度条模式。
+
+**调用模式**
+
+```lua
+ok = ui:set_mode(bar, lvgl.BAR_MODE_NORMAL)
+```
+
+```lua
+ok = ui:set_mode(bar, "range")
+```
+
+```lua
+ok = ui:set_mode(bar, "symmetrical")
+```
+
+`mode` 可以是 [4.5](#45-进度条模式与弧标签溢出) 的整数常量或字符串。
+
+**返回**
+
+| 结果 | 返回 |
+| --- | --- |
+| 目标是进度条 | `true` |
+| 模式非法 | `false, "bad mode"` |
+| 不是进度条 | `false, "not a bar"` |
+| 刷屏占锁超时 | `false, "lvgl busy"` |
+
+对称模式需要范围跨过 `0`（例如 `-50`～`50`）。
+
+---
+
+### 7.44 `ui:set_angle(obj, start [, size])` {#7-44-set-angle}
+
+弧标签的起始角和弧长，单位度。0° 正右，90° 正下。省略 `size` 只改起始角；创建时默认起始 `0`、弧长 `360`。
+
+**调用模式**
+
+```lua
+ok = ui:set_angle(arc, start)
+```
+
+```lua
+ok = ui:set_angle(arc, start, size)
+```
+
+`start` / `size` 必须是 integer。
+
+**返回**
+
+| 结果 | 返回 |
+| --- | --- |
+| 目标是弧标签 | `true` |
+| 不是弧标签 | `false, "not an arclabel"` |
+| 刷屏占锁超时 | `false, "lvgl busy"` |
+
+---
+
+### 7.45 `ui:set_offset(obj, offset)` {#7-45-set-offset}
+
+弧标签整体旋转偏移（沿弧的像素偏移，不是 `set_pos`）。只对弧标签有效。
+
+**调用模式**
+
+```lua
+ok = ui:set_offset(arc, offset)
+```
+
+`offset` 必须是 integer。
+
+**返回** 同 [7.44](#7-44-set-angle)。
+
+---
+
+### 7.46 `ui:set_center_offset(obj, x [, y])` {#7-46-set-center-offset}
+
+弧标签圆心相对控件中心的偏移，像素。省略 `y` 为 `0`。`x` / `y` 不能为负。
+
+**调用模式**
+
+```lua
+ok = ui:set_center_offset(arc, x)
+```
+
+```lua
+ok = ui:set_center_offset(arc, x, y)
+```
+
+**返回**
+
+| 结果 | 返回 |
+| --- | --- |
+| 目标是弧标签 | `true` |
+| `x` 或 `y` 小于 0 | `false, "bad offset"` |
+| 不是弧标签 | `false, "not an arclabel"` |
+| 刷屏占锁超时 | `false, "lvgl busy"` |
+
+---
+
+### 7.47 `ui:set_recolor(obj, en)` {#7-47-set-recolor}
+
+弧标签行内着色。打开后，正文里 `"#ff0000 red#"` 这种片段会变色。
+
+**调用模式**
+
+```lua
+ok = ui:set_recolor(arc, true)
+```
+
+```lua
+ok = ui:set_recolor(arc, false)
+```
+
+```lua
+ok = ui:set_recolor(arc, 1)
+```
+
+`en`：boolean 走 Lua 布尔；number 走 `~= 0`。boolean 路径下数字 `0` 为真。
+
+**返回** 同 [7.44](#7-44-set-angle)。
+
+---
+
+### 7.48 `ui:set_overflow(obj, overflow)` {#7-48-set-overflow}
+
+弧标签文字超出弧长时怎么处理。创建时默认 `OVERFLOW_CLIP`。
+
+**调用模式**
+
+```lua
+ok = ui:set_overflow(arc, lvgl.OVERFLOW_CLIP)
+```
+
+```lua
+ok = ui:set_overflow(arc, "ellipsis")
+```
+
+```lua
+ok = ui:set_overflow(arc, "visible")
+```
+
+`overflow` 可以是 [4.5](#45-进度条模式与弧标签溢出) 的整数常量或字符串。
+
+**返回**
+
+| 结果 | 返回 |
+| --- | --- |
+| 目标是弧标签 | `true` |
+| 取值非法 | `false, "bad overflow"` |
+| 不是弧标签 | `false, "not an arclabel"` |
+| 刷屏占锁超时 | `false, "lvgl busy"` |
 
 ---
 
@@ -1242,14 +1761,21 @@ rt.delay(-1)   -- 或业务循环里正常 delay；让出后独立任务才画
 | 接口 | 成功 | 失败 |
 | --- | --- | --- |
 | `create` | `ui` | **抛错** |
-| `label` / `btn` / `obj` / `img` / `font` | 句柄 | 刷屏占锁超时：`false, "lvgl busy"`；`img(src)` / `font(src)` 解码失败：**抛错**（不建对象）；其余 **抛错** |
+| `label` / `arclabel` / `btn` / `obj` / `bar` / `img` / `font` | 句柄 | 刷屏占锁超时：`false, "lvgl busy"`；`img(src)` / `font(src)` 解码失败：**抛错**（不建对象）；其余 **抛错** |
 | `set_src` | `true` | 非图片：`false, "not an image"`；源失败：`false, 文案`（原图还在）；锁超时：`false, "lvgl busy"` |
 | `set_font` | `true` | 锁超时：`false, "lvgl busy"`；非法字库句柄：**抛错** `invalid lvgl font` |
 | `set_scale` | `true` | 非图片：`false, "not an image"`；`scale < 0`：`false, "bad scale"`；锁超时：`false, "lvgl busy"` |
 | `get_scale` | 整数 | 非图片：`false, "not an image"`；锁超时：`false, "lvgl busy"` |
 | `scr_act` | 句柄或 `nil` | 未 create 抛错 |
 | `on_click` / `click` | `true` | `click` 队列满：`false, "click post failed"`；其余 **抛错** |
-| `set_text` | `true` | 非标签：`false, "not a label"`；刷屏占锁超时：`false, "lvgl busy"`；缺参抛错 |
+| `set_text` / `set_text_align` | `true` | 非标签/弧标签：`false, "not a label"`；对齐非法：`false, "bad align"`；刷屏占锁超时：`false, "lvgl busy"`；缺参抛错 |
+| `align` | `true` | 对齐非法：`false, "bad align"`；锁超时：`false, "lvgl busy"` |
+| `set_dir` / `get_dir` | `true` / 整数 | 非弧标签且非进度条：`false, "unsupported"`；方向非法：`false, "bad dir"`；锁超时：`false, "lvgl busy"` |
+| `set_range` / `set_value` / `set_start_value` / `set_mode` | `true` | 非进度条：`false, "not a bar"`；模式非法：`false, "bad mode"`；锁超时：`false, "lvgl busy"` |
+| `get_value` | 整数 | 非进度条：`false, "not a bar"`；锁超时：`false, "lvgl busy"` |
+| `get_range` | 两整数 | 非进度条：`false, "not a bar"`；锁超时：`false, "lvgl busy"` |
+| `set_angle` / `set_offset` / `set_center_offset` / `set_recolor` / `set_overflow` | `true` | 非弧标签：`false, "not an arclabel"`；溢出非法：`false, "bad overflow"`；圆心偏移为负：`false, "bad offset"`；锁超时：`false, "lvgl busy"` |
+| `set_radius` | `true` | 弧标签 `r < 0`：`false, "bad radius"`；锁超时：`false, "lvgl busy"` |
 | `handler` | 整数 `0` | 未 create 抛错 |
 | `mem` | 三整数 | 未 create 抛错 |
 | 其余 `ui:*` / `style:set` | `true` | 刷屏占锁超时：`false, "lvgl busy"`；未 create / 非法 userdata：**抛错** |
@@ -1278,7 +1804,7 @@ rt.delay(-1)   -- 或业务循环里正常 delay；让出后独立任务才画
 | `unsupported font format` | `ui:font(src)` 文件头不是点阵 `.bin` / TTF |
 | `bad size` | `ui:font` 的 TTF 字号 `<= 0` |
 | `invalid parent` | 父亲句柄坏或当前没有屏幕 |
-| `label create failed` / `btn create failed` / `obj create failed` / `img create failed` | 控件堆不够，看 `ui:mem()`，加大 `mem_max` 或少建控件 |
+| `label create failed` / `arclabel create failed` / `btn create failed` / `obj create failed` / `bar create failed` / `img create failed` | 控件堆不够，看 `ui:mem()`，加大 `mem_max` 或少建控件 |
 | `unsupported image format` | `ui:img(src)` 文件头不是 JPEG / LVGL `.bin` |
 | `bad src` / `not found` / `fs not mounted` / `decode failed` / `no mem` | `ui:img(src)` / `ui:font(src)` 源无效、找不到、解不开或缓冲不够；`set_src` 同一批文案走返回值 |
 | `rt vm context missing` | 脚本还没进 rt 调度（极少见） |
@@ -1289,14 +1815,23 @@ rt.delay(-1)   -- 或业务循环里正常 delay；让出后独立任务才画
 
 | 摘要 | 可能原因 |
 | --- | --- |
-| `false, "not a label"` | `set_text` 的目标是按钮/容器，不是 `ui:label` 的句柄 |
+| `false, "not a label"` | `set_text` / `set_text_align` 的目标不是 `ui:label` / `ui:arclabel` 的句柄 |
+| `false, "not an arclabel"` | `set_angle` / `set_offset` / `set_center_offset` / `set_recolor` / `set_overflow` 打在非弧标签上 |
+| `false, "not a bar"` | `set_range` / `set_value` / `set_start_value` / `get_value` / `get_range` / `set_mode` 打在非进度条上 |
+| `false, "unsupported"` | `set_dir` / `get_dir` 的目标既不是弧标签也不是进度条 |
+| `false, "bad align"` | `align` / `set_text_align` 的对齐值不在导出枚举 / 字符串表里 |
+| `false, "bad dir"` | `set_dir` 的取值对当前控件不合法（例如把 `"vertical"` 传给弧标签） |
+| `false, "bad mode"` | `set_mode` 不是 `normal` / `symmetrical` / `range` 或其整数 |
+| `false, "bad overflow"` | `set_overflow` 不是 `visible` / `ellipsis` / `clip` 或其整数 |
+| `false, "bad radius"` | 弧标签 `set_radius` 传了负数 |
+| `false, "bad offset"` | `set_center_offset` 的 x 或 y 小于 0 |
 | `false, "not an image"` | `set_src` / `set_scale` / `get_scale` 打在非 `ui:img` 的句柄上 |
 | `false, "bad scale"` | `set_scale` 的因子小于 0 |
 | `false, "click post failed"` | 内部事件队列满，稍后重试 |
 | `false, "lvgl busy"` | 图形任务正在画/持锁，Lua 等锁超过约 200ms。可稍后重试；不要当致命错误 |
 | `false, "bad src"` 等 | `set_src` 源失败，文案同 [7.27](#7-27-set-src) 表；原图还在 |
 
-诊断：create 抛错看 `mem_max` 和是否已 create；`bound to lvgl` 出现在 **lcd** 侧；`not a label` 对按钮要用内部 label 或改 `set_style` 文字色而不是 `set_text(btn)`。图片失败先看文件头和 `ui:mem()`。
+诊断：create 抛错看 `mem_max` 和是否已 create；`bound to lvgl` 出现在 **lcd** 侧；`not a label` 对按钮要用内部 label 或改 `set_style` 文字色而不是 `set_text(btn)`。弧标签/进度条用错控件会看到 `not an arclabel` / `not a bar`。图片失败先看文件头和 `ui:mem()`。
 
 ---
 
@@ -1335,7 +1870,7 @@ VM 退出会回收还活着的 `ui`。
 | 需求 | 用 |
 | --- | --- |
 | 先确认 SPI 和屏能出纯色 | [`lcd`](lcd.md) 的 `full` / `fill`，**尚未** `lvgl.create` |
-| 标签、按钮、顶栏、主题 | 本模块 |
+| 标签、弧标签、按钮、进度条、顶栏、主题 | 本模块 |
 | 显示 JPEG / LVGL `.bin` | `ui:img` / `ui:set_src`；源可以是 RAM 字节、[`ublob`](ublob.md) 短名、已挂载的 [`lfs`](lfs.md) 对象 + 路径 |
 | 已上屏的图要缩小 / 放大 | [`ui:set_scale`](#7-28-set-scale)；`256` / `lvgl.SCALE_NONE` 为原尺寸。[`ui:set_size`](#7-19-set-size) 只改外框 |
 | BMP / PNG / GIF | 不是本模块 |
@@ -1405,6 +1940,23 @@ ui:set_pos(btn, 16, 48)
 
 local hint = ui:label("hello")
 ui:set_pos(hint, 16, 100)
+ui:set_text_align(hint, lvgl.TEXT_ALIGN_LEFT)
+
+-- 弧标签：沿圆弧排字。set_radius 在弧标签上是曲率半径。
+-- local arc = ui:arclabel("HELLO")
+-- ui:set_size(arc, 160, 160)
+-- ui:align(arc, lvgl.ALIGN_CENTER, 0, 20)
+-- ui:set_dir(arc, lvgl.ARCLABEL_DIR_CLOCKWISE)
+-- ui:set_text_align(arc, "center", "center")
+-- ui:set_angle(arc, 0, 270)
+
+-- 进度条：范围、方向、当前值。
+-- local bar = ui:bar(40)
+-- ui:set_size(bar, 200, 12)
+-- ui:align(bar, lvgl.ALIGN_TOP_MID, 0, 48)
+-- ui:set_range(bar, 0, 100)
+-- ui:set_dir(bar, lvgl.BAR_DIR_HORIZONTAL)
+-- ui:set_value(bar, 75)
 
 -- 图片：先建空控件，再 set_src。不要把大图写进仓库。
 -- local pic = ui:img()
@@ -1479,3 +2031,4 @@ end
 | 1.6.0 | 2026-09-10 | 增加 `ui:font` / `ui:set_font`：LVGL 点阵 `.bin` 与 TTF；源为 RAM / ublob / lfs；样式表可写 `font` |
 | 1.6.1 | 2026-09-10 | 点阵 `.bin` 支持 Font Converter 压缩输出 |
 | 1.6.2 | 2026-09-15 | 标明 SSD1306 先走 `lcd` 1 bit 画布，暂不要 `lvgl.create` |
+| 1.7.0 | 2026-09-18 | 增加弧标签 `ui:arclabel` 与进度条 `ui:bar`；`set_text` / `set_radius` / 文字对齐适配弧标签；新增 `align`、`set_dir`、`set_range`、`set_value` 及弧标签角度/溢出接口；导出对齐与方向常量 |

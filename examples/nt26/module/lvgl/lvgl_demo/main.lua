@@ -157,26 +157,32 @@ end
   ui:mem() -> used, peak, limit
   ui:scr_act()                当前屏幕（默认父亲）
   ui:label([parent,] text)    省略 parent = 当前屏幕；主题默认样式不改
+  ui:arclabel([parent,] text) 弧标签。set_text / set_text_align / set_dir / set_angle / set_radius
   ui:btn([parent,] [text])
   ui:obj([parent])            空白容器，走默认主题（light 下是 card）
+  ui:bar([parent,] [value])   进度条。set_range / set_dir / set_value / set_mode
   ui:style({...})             新建 lv_style_t，不改主题。须在 Lua 里一直拿着引用
   ui:add_style(obj, style [, selector])
   ui:remove_style(obj, style [, selector])
   ui:set_style(obj, {...} [, selector])  写到该控件的 local style / flag
   style:set({...})            改已有 style，已 add 的控件会跟着刷新
-  ui:set_radius(obj, r)       仍可用；等价 local radius
+  ui:set_radius(obj, r)       普通控件=圆角；arclabel=曲率半径
   ui:set_parent(obj, parent)  相当于 lv_obj_set_parent
-  ui:set_text(label, text)
+  ui:set_text(label, text)    label 与 arclabel
+  ui:set_text_align(obj, h [, v])
+  ui:align(obj, align [, x, y])
+  ui:align(obj, base, align [, x, y])
+  ui:set_dir(obj, dir)        arclabel 顺/逆时针；bar 水平/垂直/自动
   ui:set_theme("light"|"dark")
   ui:set_bg([obj,] color)     省略 obj = 当前屏幕；只改 bg_color + 不透明
   ui:set_text_color(obj, color)
+  ui:center(obj)
   ui:set_pos(obj, x, y)
   ui:set_size(obj, w, h)
   ui:invalidate([obj])        可选；省略 obj = 当前屏幕。一般不用
   ui:refr_pause()             可嵌套。暂停 C 任务刷屏，脏区照记
   ui:refr_resume()            与 pause 配对；hold 降到 0 后下次 handler 画出完整树
                              中间有 rt.delay/wait 时用：pause → 建控件/改 style → resume
-  ui:center(obj)
   ui:img([parent,] [src])     图片；src 为字节 / { data= } / { ublob= } / { lfs=, path= }
   ui:set_src(img, src|nil)    换源或清像素；只认 JPEG 与 LVGL .bin
   ui:set_scale(img, scale)    缩放像素；256 / lvgl.SCALE_NONE 原尺寸

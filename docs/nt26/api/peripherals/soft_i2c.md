@@ -1,6 +1,6 @@
 # soft_i2c
 
-**文档版本** `1.1.1`
+**文档版本** `1.2.0`
 
 对象化软件 I2C 主机。用两根普通 GPIO 模拟 SCL/SDA，不占用硬件 I2C 控制器。可同时开多路（脚不要冲突）。
 
@@ -167,7 +167,7 @@ soft_i2c.new(sda, scl, cfg)
 | `clock_speed` | `10000` | 整数 Hz |
 | `addressing_mode` 等 | 见 4.2 | 整数常量 |
 
-脚非法或初始化失败 **抛** `"soft_i2c init failed: N"`。
+脚非法或初始化失败 **抛** `"soft_i2c init failed: N"`。`N` 按失败点区分，取值见 [第 9 节](#9-错误与返回约定)。
 
 ```lua
 -- GPIO8=SDA，GPIO9=SCL（demo 常用）
@@ -366,7 +366,20 @@ obj:deinit()
 | 摘要 | 可能原因 |
 | --- | --- |
 | `invalid input, expect INPUT_GPIO/INPUT_PINNO` | `cfg.input` 写了整数，但不是 `soft_i2c.INPUT_GPIO` / `INPUT_PINNO` |
-| `soft_i2c init failed: N` | 脚号解析失败、脚已被占用、或软件总线初始化失败。`N` 是底层返回码 |
+| `soft_i2c init failed: N` | `new` 打开两根脚失败。`N` 是整数，按下表对照；常见是解析失败或脚已被占用 |
+
+`new` 抛错里的 `N`：
+
+| `N` | 含义 | 可能原因 |
+| --- | --- | --- |
+| `-1` | 内部句柄为空 | 正常脚本走不到 |
+| `-2` | 打开类型非法 | 一般会被上面的 `invalid input` 先拦住 |
+| `-3` | SDA 编号无法解析 | `sda` 不在当前型号脚表里，或 `cfg.input` 和编号体系对不上（GPIO 号当成 pinno，或反过来） |
+| `-4` | SCL 编号无法解析 | 同上，换 SCL |
+| `-5` | SDA 脚配置失败 | 这根脚不能当输出/上拉，或已被其它外设占用 |
+| `-6` | SCL 脚配置失败 | 同上，换 SCL |
+| `-7` | SDA 打开失败 | 脚无效、已被占用，或配置过后仍打不开 |
+| `-8` | SCL 打开失败 | 同上，换 SCL |
 
 读写 / `is_ready` / `test_hardware` 失败没有文案：对象已 `deinit`、从设备无应答、超时、或接线错误都会变成 `false`/`nil`。`error()` 只给整数状态，没有对应英文短句表。先 `test_hardware` 再 `scan`。
 
@@ -431,3 +444,4 @@ local raw = bus:read(ADDR, 7)
 | 1.0.1 | 2026-09-04 | 修正跨目录文档链接，demo 路径改为 examples/ |
 | 1.1.0 | 2026-09-05 | 补全错误文案/错误码与可能原因 |
 | 1.1.1 | 2026-09-09 | 与 gpio 编号对照改为 `gpio.BY_GPIO` |
+| 1.2.0 | 2026-09-18 | `new` 抛错 `soft_i2c init failed: N` 按失败点列出 `N`（解析 / 配置 / 打开，分 SDA、SCL） |
