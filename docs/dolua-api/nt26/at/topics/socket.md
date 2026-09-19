@@ -1,6 +1,6 @@
 # Socket 专栏
 
-**文档版本** `1.0.1`
+**文档版本** `1.0.2`
 
 场景专题：用应用 AT 把一路或多路 **TCP/UDP Socket** 跑起来，再走串口透传或指令主动发送。指令逐条的测试/查询/设置、参数表、错误码见 [Socket 指令手册](../manual/sock.md)、[透传任务](../manual/rtu.md)、[路由串](../manual/route.md)。本篇不重复那些表格。
 
@@ -339,18 +339,18 @@ AT+MQTTPLATFORM=2,"normal"
 
 OK
 
-AT+MQTTAUTH=2,"my-client","","",""
-+MQTTAUTH: 2,"my-client","","",""
+AT+MQTTAUTH=2,"<#IMEI>","doiot","web",""
++MQTTAUTH: 2,"<#IMEI>","doiot","web",""
 
 OK
 
-AT+MQTTSUB=2,1,"/server/demo",0
-+MQTTSUB: 2,1,"/server/demo",0
+AT+MQTTSUB=2,1,"/server/<#IMEI>",0
++MQTTSUB: 2,1,"/server/<#IMEI>",0
 
 OK
 
-AT+MQTTPUB=2,1,"/device/demo",0,0
-+MQTTPUB: 2,1,"/device/demo",0,0
+AT+MQTTPUB=2,1,"/device/<#IMEI>",0,0
++MQTTPUB: 2,1,"/device/<#IMEI>",0,0
 
 OK
 
@@ -393,8 +393,8 @@ AT+SOCKSYNC=1,1,doiot
 
 OK
 
-AT+MQTTSYNC=2,"/device/demo",0,0,1,hello-mqtt
-+MQTTSYNC: 2,"/device/demo",0,0,1,10
+AT+MQTTSYNC=2,"/device/<#IMEI>",0,0,1,hello-mqtt
++MQTTSYNC: 2,"/device/<#IMEI>",0,0,1,10
 
 OK
 ```
@@ -582,3 +582,4 @@ OK
 | --- | --- | --- |
 | 1.0.0 | 2026-09-19 | 首版：单通道 / 多通道 / 混合通道、透传、指令主动发送、同步与异步 |
 | 1.0.1 | 2026-09-19 | 对端统一为 `socket.doiot.cn:5000`；写明发啥回啥，发 `doiot` 回 `测试成功` |
+| 1.0.2 | 2026-09-19 | 混合通道 MQTT 侧与 MQTT 专栏对齐：`mqtts.doiot.cn:1883`、平台 `normal`、ClientId `"<#IMEI>"`、账号 `doiot` / 密码 `web` |

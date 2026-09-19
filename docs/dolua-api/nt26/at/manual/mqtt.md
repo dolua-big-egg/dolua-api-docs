@@ -1,6 +1,6 @@
 #  MQTT
 
-**文档版本** `1.0.1`
+**文档版本** `1.0.2`
 
 配置并收发模组上的 **4 路 MQTT 通道**。指令走应用 AT 口（主串口 / USB AT 等），与 [`rtu_config.cfg` 的 `[mqtt.N]`](../../api/rtu_config/rtu_config.md#10-mqttn) 以及主题槽 [`[mqtt.N.subscribe.M]` / `[mqtt.N.publish.M]`](../../api/rtu_config/rtu_config.md#11-mqttnsubscribem--mqttnpublishm) 读写**同一份持久化配置**。通道号一律 **1～4**，与配置段 `[mqtt.1]`～`[mqtt.4]` 对应。
 
@@ -426,7 +426,7 @@ AT+MQTTAUTH=<id>,<auth1>[,<auth2>[,<auth3>[,<auth4>]]]
 | `<auth1>` | 字符串 | 1～127，非空 | 普通平台 = ClientId |
 | `<auth2>` | 字符串 | 0～127 | 可省略；省略则清空 |
 | `<auth3>` | 字符串 | 0～127 | 可省略；省略则清空 |
-| `<auth4>` | 字符串 | 0～127 | 可省略；省略则清空。仅 DoIoT 参与 ClientId |
+| `<auth4>` | 字符串 | 0～127 | 可省略；省略则清空。仅玄武（`platform=doiot`）参与 ClientId |
 
 只想改 `auth2` 而保留其它：先查再四段一起写。只发 `auth1` 会把 2～4 清掉。
 
@@ -445,17 +445,21 @@ AT+MQTTAUTH=<id>,<auth1>[,<auth2>[,<auth3>[,<auth4>]]]
 
 ### 6.4 示例
 
+公开演示口 `mqtts.doiot.cn:1883`（平台必须 `"normal"`）用本机 IMEI 当 ClientId：
+
 ```lua
-AT+MQTTAUTH=1,"device001","user","pass"
-+MQTTAUTH: 1,"device001","user","pass",""
+AT+MQTTAUTH=1,"<#IMEI>","doiot","web",""
++MQTTAUTH: 1,"<#IMEI>","doiot","web",""
 
 OK
 
 AT+MQTTAUTH=1?
-+MQTTAUTH: 1,"device001","user","pass",""
++MQTTAUTH: 1,"<#IMEI>","doiot","web",""
 
 OK
 ```
+
+连上时 `"<#IMEI>"` 按 `[maping]` 展开。自建 broker 把三段换成自己的 ClientId / 用户名 / 密码即可。
 
 ---
 
@@ -500,9 +504,9 @@ AT+MQTTPLATFORM=<id>,"<platform>"
 | 参数 | 类型 | 范围 | 说明 |
 | --- | --- | --- | --- |
 | `<id>` | 整数 | 1～4 | 通道 |
-| `<platform>` | 字符串 | `normal` / `onenet` / `doiot` | **大小写不敏感** |
+| `<platform>` | 字符串 | `normal` / `onenet` / `doiot` | **大小写不敏感**。`doiot` **只给玄武平台**；公开演示口用 `normal` |
 
-其它拼写 → `"error platform"`。必须是字符串类型，写 `0` 当数字会 `param`。
+其它拼写 → `"error platform"`。必须是字符串类型，写 `0` 当数字会 `param`。把测试口写成 `"doiot"` 会按玄武规则改写三元组，连不上。
 
 **应答（成功）** 回显规范化小写名，与查询同形。
 
@@ -511,16 +515,18 @@ AT+MQTTPLATFORM=<id>,"<platform>"
 ### 7.4 示例
 
 ```lua
-AT+MQTTPLATFORM=1,"onenet"
-+MQTTPLATFORM: 1,"onenet"
+AT+MQTTPLATFORM=1,"normal"
++MQTTPLATFORM: 1,"normal"
 
 OK
 
 AT+MQTTPLATFORM=1?
-+MQTTPLATFORM: 1,"onenet"
++MQTTPLATFORM: 1,"normal"
 
 OK
 ```
+
+OneNET 写成 `"onenet"`。玄武平台才写 `"doiot"`。
 
 ---
 
@@ -994,14 +1000,18 @@ OK
 
 ## 15. 联调顺序
 
-1. 驻网完成（CSQ / CEREG 正常）。
-2. `AT+MQTT=1,"<broker>",1883` 配主机端口并 `enable=1`。
-3. `AT+MQTTPLATFORM=1,"normal"`，再 `AT+MQTTAUTH=1,"<clientId>","<user>","<pass>"`。
-4. 需要 TLS：先按 [ssl.md](ssl.md) 写入证书组，再 `AT+MQTTCFG=1,"ssl_id",1` 与 `AT+MQTTCFG=1,"ssl_level",2`。
-5. `AT+MQTTSUB=1,1,"down/cmd",1`，`AT+MQTTPUB=1,1,"up/data",1,0`。需要遗嘱则 `AT+MQTTWILL`。
-6. 确认 RTU 任务该路已使能且 `task_id` 指向 MQTT。等通道起来。
-7. `AT+MQTTSYNC=1,"up/data",0,0,1,ping` 看是否 `OK` 且 `<len>` 合理。
+公开演示口（**明文 1883**，不要开 TLS，平台必须 `"normal"`）：
+
+1. 驻网完成（CSQ / CEREG 正常，或 `AT+ISLINK` 回 `1`）。
+2. `AT+MQTT=1,"mqtts.doiot.cn",1883` 配主机端口并 `enable=1`。
+3. `AT+MQTTPLATFORM=1,"normal"`，再 `AT+MQTTAUTH=1,"<#IMEI>","doiot","web",""`。**不要**写成 `"doiot"` 平台——那只给玄武。
+4. 演示口保持 `ssl_level=0`。自建 TLS：先按 [ssl.md](ssl.md) 写入证书组，再 `AT+MQTTCFG=1,"ssl_id",1` 与 `AT+MQTTCFG=1,"ssl_level",2`。
+5. `AT+MQTTSUB=1,1,"/server/<#IMEI>",0`，`AT+MQTTPUB=1,1,"/device/<#IMEI>",0,0`。需要遗嘱则 `AT+MQTTWILL`。
+6. 确认 RTU 任务该路已使能且 `task_id` 指向 MQTT。按产品流程 `AT+RESET` 后等通道起来。
+7. `AT+MQTTSYNC=1,"/device/<#IMEI>",0,0,1,ping` 看是否 `OK` 且 `<len>` 合理。
 8. 改地址后若仍连旧 broker：先按产品流程重启该通道或复位，再发。
+
+场景抄写见 [专栏 · MQTT 连接](../topics/mqtt.md)。
 
 完整细项用 `AT+MQTTCFG=1?` 与 `rtu_config.cfg` 的 `[mqtt.1]` 对照。主题槽也可用 `AT+MQTTSUB=1?` / `AT+MQTTPUB=1?`。
 
@@ -1013,3 +1023,4 @@ OK
 | --- | --- | --- |
 | 1.0.0 | 2026-09-05 | 首版：MQTT / MQTTCFG / MQTTAUTH / MQTTPLATFORM / MQTTSUB / MQTTPUB / MQTTSYNC / MQTTASYNC / MQTTCLRRET / MQTTWILL 的测试、查询、设置、错误与示例 |
 | 1.0.1 | 2026-09-19 | 随目录迁到 `at/manual/`；文首链到 [专栏 · MQTT 连接](../topics/mqtt.md) |
+| 1.0.2 | 2026-09-19 | 联调示例改为演示口 `mqtts.doiot.cn:1883`、平台 `normal`、ClientId `"<#IMEI>"`、账号 `doiot` / 密码 `web`；标明 `"doiot"` 平台仅玄武 |

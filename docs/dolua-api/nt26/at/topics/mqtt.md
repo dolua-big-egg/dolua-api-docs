@@ -1,6 +1,6 @@
 # MQTT 连接专栏
 
-**文档版本** `1.0.0`
+**文档版本** `1.0.1`
 
 场景专题：用应用 AT 把一路或多路 **MQTT** 连上 broker，再走串口透传或指令主动发布。指令逐条的测试/查询/设置、参数表、错误码见 [MQTT 指令手册](../manual/mqtt.md)、[透传任务](../manual/rtu.md)、[路由串](../manual/route.md)、[SSL](../manual/ssl.md)。本篇不重复那些表格。
 
@@ -39,7 +39,7 @@ AT 口主动发 ──AT+MQTTSYNC / MQTTASYNC / RTUWRITE──► 同一路任�
 | 角色 | 谁来配 | 说明 |
 | --- | --- | --- |
 | broker 主机/端口 | `AT+MQTT` | 顺带 `enable=1`；不立刻断开旧连接 |
-| 平台 / 三元组 | `AT+MQTTPLATFORM` + `AT+MQTTAUTH` | `normal` / `onenet` / `doiot` 对 `auth1`～`auth4` 含义不同 |
+| 平台 / 三元组 | `AT+MQTTPLATFORM` + `AT+MQTTAUTH` | 演示口用 `"normal"`。`"doiot"` 只给玄武平台，见 [第 9 节](#9-平台鉴权tls遗嘱) |
 | 订阅 / 发布槽 | `AT+MQTTSUB` / `AT+MQTTPUB` | 透传和 `RTUWRITE` 走发布槽 |
 | 这一路是不是 MQTT | `AT+DTUTASK=<id>,1,"MQTT"` | 没开任务，光写 `AT+MQTT` 也发不出去 |
 | 串口 → 网络 | `AT+DTUPSUP` | 路由里的子通道 = 发布槽号 |
@@ -48,7 +48,18 @@ AT 口主动发 ──AT+MQTTSYNC / MQTTASYNC / RTUWRITE──► 同一路任�
 
 **AT 口和透传数据口尽量分开。** 配置走主串口 / USB AT；MCU 业务数据走另一路 UART。同一口既当 AT 又当透传时，以 `AT` 开头的行会被当指令。共用一口时配完用 [AT+RTUPSD](../manual/rtu.md#8-atrtuctl--atrtupsd--atdtumsghead) 锁成透传。
 
-下文 `mqtts.doiot.cn:1883` 是公开演示 broker，可换成自己的。载荷是 **TAILRAW**。主题、载荷里的 `<#IMEI>` 按 `[maping]` 展开。
+下文 MQTT 对端一律用公开演示 broker（**明文 1883**，`ssl_level` 保持 0）：
+
+| | 值 |
+| --- | --- |
+| 主机 | `mqtts.doiot.cn` |
+| 端口 | `1883` |
+| 平台 | `"normal"`（**不要**写成 `"doiot"`） |
+| ClientId | `"<#IMEI>"`（连上时按映射展开成本机 IMEI） |
+| 用户名 | `doiot` |
+| 密码 | `web` |
+
+`"doiot"` 平台只用于**玄武平台**接入；这个测试口是普通 MQTT，必须 `"normal"`。载荷是 **TAILRAW**。主题、ClientId、载荷里的 `<#IMEI>` 按 `[maping]` 展开。联调自己的 broker 时换主机和三元组即可，指令形态不变。
 
 ---
 
@@ -99,8 +110,8 @@ AT+MQTTPLATFORM=1,"normal"
 
 OK
 
-AT+MQTTAUTH=1,"my-client","user","pass",""
-+MQTTAUTH: 1,"my-client","user","pass",""
+AT+MQTTAUTH=1,"<#IMEI>","doiot","web",""
++MQTTAUTH: 1,"<#IMEI>","doiot","web",""
 
 OK
 
@@ -120,7 +131,7 @@ AT+DTUTASK=1,1,"MQTT"
 OK
 ```
 
-无用户名密码时 `auth2` / `auth3` 留空串。`AT+MQTTAUTH` 四个字符串都会入库；`normal` 下第四段无意义。
+`AT+MQTTAUTH` 四个字符串都会入库；`normal` 下第四段无意义。ClientId 写成 `"<#IMEI>"` 即可，不要手填一串 IMEI 数字（除非你故意不用映射）。
 
 查询本路发布槽：
 
@@ -208,7 +219,7 @@ OK
 AT+ISLINK
 AT+MQTT=1,"mqtts.doiot.cn",1883
 AT+MQTTPLATFORM=1,"normal"
-AT+MQTTAUTH=1,"my-client","","",""
+AT+MQTTAUTH=1,"<#IMEI>","doiot","web",""
 AT+MQTTSUB=1,1,"/server/<#IMEI>",0
 AT+MQTTPUB=1,1,"/device/<#IMEI>",0,0
 AT+DTUTASK=1,1,"MQTT"
@@ -229,21 +240,21 @@ AT+MQTTSYNC=1,"/device/<#IMEI>",0,0,1,ping
 
 ## 4. 多通道
 
-目标：两路 MQTT 各连一台 broker（或同一台不同 clientId），主题互不干扰。
+目标：两路 MQTT 都连演示口（或同一台不同 ClientId），主题互不干扰。**同一 ClientId 不能同时在线**，第二路给 IMEI 加后缀。
 
 ```lua
 AT+MQTT=1,"mqtts.doiot.cn",1883
 AT+MQTTPLATFORM=1,"normal"
-AT+MQTTAUTH=1,"client-a","","",""
-AT+MQTTSUB=1,1,"/server/a",0
-AT+MQTTPUB=1,1,"/device/a",0,0
+AT+MQTTAUTH=1,"<#IMEI>","doiot","web",""
+AT+MQTTSUB=1,1,"/server/<#IMEI>",0
+AT+MQTTPUB=1,1,"/device/<#IMEI>",0,0
 AT+DTUTASK=1,1,"MQTT"
 
-AT+MQTT=2,"broker.example.com",1883
+AT+MQTT=2,"mqtts.doiot.cn",1883
 AT+MQTTPLATFORM=2,"normal"
-AT+MQTTAUTH=2,"client-b","","",""
-AT+MQTTSUB=2,1,"/server/b",0
-AT+MQTTPUB=2,1,"/device/b",0,0
+AT+MQTTAUTH=2,"<#IMEI>-2","doiot","web",""
+AT+MQTTSUB=2,1,"/server/<#IMEI>/b",0
+AT+MQTTPUB=2,1,"/device/<#IMEI>/b",0,0
 AT+DTUTASK=2,1,"MQTT"
 ```
 
@@ -267,13 +278,13 @@ AT+DTUPSDN=2,"6[2]"
 AT 口分别发布：
 
 ```lua
-AT+MQTTSYNC=1,"/device/a",0,0,1,from-ch1
-+MQTTSYNC: 1,"/device/a",0,0,1,8
+AT+MQTTSYNC=1,"/device/<#IMEI>",0,0,1,from-ch1
++MQTTSYNC: 1,"/device/<#IMEI>",0,0,1,8
 
 OK
 
-AT+MQTTASYNC=2,"/device/b",0,0,1,from-ch2
-+MQTTASYNC: 2,"/device/b",0,0,1,8
+AT+MQTTASYNC=2,"/device/<#IMEI>/b",0,0,1,from-ch2
++MQTTASYNC: 2,"/device/<#IMEI>/b",0,0,1,8
 
 OK
 ```
@@ -293,9 +304,9 @@ AT+MQTT=1,"mqtts.doiot.cn",1883
 OK
 
 AT+MQTTPLATFORM=1,"normal"
-AT+MQTTAUTH=1,"my-client","","",""
-AT+MQTTSUB=1,1,"/server/demo",0
-AT+MQTTPUB=1,1,"/device/demo",0,0
+AT+MQTTAUTH=1,"<#IMEI>","doiot","web",""
+AT+MQTTSUB=1,1,"/server/<#IMEI>",0
+AT+MQTTPUB=1,1,"/device/<#IMEI>",0,0
 AT+DTUTASK=1,1,"MQTT"
 +DTUTASK: 1,1,"MQTT"
 
@@ -327,20 +338,20 @@ AT+DTUPSDN=2,"6[1]"
 MQTT 若还要槽 2：
 
 ```lua
-AT+MQTTPUB=1,2,"/device/demo/alarm",0,0
+AT+MQTTPUB=1,2,"/device/<#IMEI>/alarm",0,0
 AT+DTUPSUP=1,"1[1:2]|2"
 ```
 
 复位后分别主动发：
 
 ```lua
-AT+MQTTSYNC=1,"/device/demo",0,0,1,hello-mqtt
-+MQTTSYNC: 1,"/device/demo",0,0,1,10
+AT+MQTTSYNC=1,"/device/<#IMEI>",0,0,1,hello
++MQTTSYNC: 1,"/device/<#IMEI>",0,0,1,5
 
 OK
 
-AT+SOCKSYNC=2,1,hello-tcp
-+SOCKSYNC: 2,1,9
+AT+SOCKSYNC=2,1,doiot
++SOCKSYNC: 2,1,5
 
 OK
 ```
@@ -397,10 +408,10 @@ AT+MQTTPUB=1?
 `rsp=0` 时发布成败都不回 `+CMD` / `OK` / `ERROR`；**解析错误仍回 ERROR**。
 
 ```lua
-AT+MQTTSYNC=1,"/device/demo",0,0,0,hello
+AT+MQTTSYNC=1,"/device/<#IMEI>",0,0,0,hello
 
-AT+MQTTASYNC=1,"/device/demo",1,0,1,hello
-+MQTTASYNC: 1,"/device/demo",1,0,1,5
+AT+MQTTASYNC=1,"/device/<#IMEI>",1,0,1,hello
++MQTTASYNC: 1,"/device/<#IMEI>",1,0,1,5
 
 OK
 
@@ -411,12 +422,12 @@ OK
 通道未起、未连接：
 
 ```lua
-AT+MQTTSYNC=1,"/device/demo",0,0,1,hello
+AT+MQTTSYNC=1,"/device/<#IMEI>",0,0,1,hello
 +MQTTSYNC: "error send"
 
 ERROR
 
-AT+MQTTASYNC=1,"/device/demo",0,0,1,hello
+AT+MQTTASYNC=1,"/device/<#IMEI>",0,0,1,hello
 +MQTTASYNC: "error enqueue"
 
 ERROR
@@ -457,23 +468,25 @@ QoS 非 0 时同步发布会在 AT 口上多等一会儿（对端堵塞或低功
 | --- | --- | --- | --- | --- |
 | `"normal"` | ClientId | 用户名 | 密码 | 忽略 |
 | `"onenet"` | ClientId | 用户名 | 密码 | 忽略 |
-| `"doiot"` | ClientId | 用户名 | 密码 | user_id |
+| `"doiot"` | ClientId | 用户名 | 密码 | user_id（**仅玄武平台**） |
 
-度云演示常用（ClientId 用 IMEI 占位符，连上时展开）：
+公开演示口 `mqtts.doiot.cn:1883` 走 **`normal`**，不要写成 `"doiot"`：
 
 ```lua
-AT+MQTTPLATFORM=1,"doiot"
-+MQTTPLATFORM: 1,"doiot"
+AT+MQTTPLATFORM=1,"normal"
++MQTTPLATFORM: 1,"normal"
 
 OK
 
-AT+MQTTAUTH=1,"<#IMEI>","doiot","doiot",""
-+MQTTAUTH: 1,"<#IMEI>","doiot","doiot",""
+AT+MQTTAUTH=1,"<#IMEI>","doiot","web",""
++MQTTAUTH: 1,"<#IMEI>","doiot","web",""
 
 OK
 ```
 
-OneNET 连上时会按平台规则强制 `clean_session=1`。更细的拼法见 [rtu_config 第 10.2 节](../../api/rtu_config/rtu_config.md#102-platform--auth联合)。
+连上时 `"<#IMEI>"` 展开成本机 IMEI。用户名 `doiot`、密码 `web`。
+
+`"doiot"` 平台只给**玄武**用：固件会按玄武规则拼三元组。把测试口配成 `"doiot"` 会连不上。OneNET 用 `"onenet"`，连上时会按平台规则强制 `clean_session=1`。更细的拼法见 [rtu_config 第 10.2 节](../../api/rtu_config/rtu_config.md#102-platform--auth联合)。
 
 ### 9.2 TLS
 
@@ -528,7 +541,8 @@ OK
 | 透传有串口数据但 broker 没有 | 发布槽主题是否为空；`DTUPSUP` 子通道是否指向有主题的槽 |
 | 订阅能在其它客户端看到，MCU 没有 | `MQTTSUB` 是否写入并已重连；`DTUPSDN` 是否指向接线 UART |
 | `1[9]` 配不上 | 路由串最多槽 8；槽 9、10 用 `MQTTSYNC` |
-| TLS 失败 | `ssl_id` 1～3、证书组、`ssl_level`，改完要重连 |
+| 把演示口配成 `"doiot"` 平台 | 玄武算法会改写三元组；测试口必须 `"normal"` + 用户名 `doiot` / 密码 `web` |
+| TLS 失败 | `ssl_id` 1～3、证书组、`ssl_level`，改完要重连；演示口 1883 保持 `ssl_level=0` |
 | AT 口不再认指令 | `RTUPSD` 后需 `RTULOCK` |
 
 错误短 reason 全表见 [mqtt.md 第 14 节](../manual/mqtt.md#14-错误一览)。
@@ -554,3 +568,4 @@ OK
 | 版本 | 日期 | 说明 |
 | --- | --- | --- |
 | 1.0.0 | 2026-09-19 | 首版：单通道 / 多通道 / 混合通道、透传、指令主动发送、同步与异步、平台与 TLS |
+| 1.0.1 | 2026-09-19 | 演示口统一 `mqtts.doiot.cn:1883`、平台 `normal`、ClientId `"<#IMEI>"`、账号 `doiot` / 密码 `web`；标明 `"doiot"` 平台仅玄武 |
