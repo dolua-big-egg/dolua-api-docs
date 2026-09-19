@@ -1,12 +1,12 @@
 #  HTTP
 
-**文档版本** `1.0.1`
+**文档版本** `1.0.3`
 
-配置并执行模组上的 **5 路 HTTP 通道**，以及一条**不占通道**的自由请求。指令走应用 AT 口，与 [`rtu_config.cfg` 的 `[http.N]`](../api/rtu_config/rtu_config.md#12-httpn) 读写**同一份持久化配置**（自由请求除外）。通道号一律 **1～5**，与 `[http.1]`～`[http.5]` 对应。
+配置并执行模组上的 **5 路 HTTP 通道**，以及一条**不占通道**的自由请求。指令走应用 AT 口，与 [`rtu_config.cfg` 的 `[http.N]`](../../api/rtu_config/rtu_config.md#12-httpn) 读写**同一份持久化配置**（自由请求除外）。通道号一律 **1～5**，与 `[http.1]`～`[http.5]` 对应。
 
 HTTP 的 N **不是** Socket / MQTT 的 N，也不是 SSL 证书组号。`ssl_id` 才引用 [SSL 组 1～3](ssl.md)。见 [convention.md 第 4 节](convention.md#4-通道编号)。
 
-行格式与失败风格见 [convention.md](convention.md)。Lua `require("http")` 见 [http API](../api/network/http.md)（脚本侧是一次性 `request`，与本篇通道配置不是同一条调用栈，但证书组 / URL 规则可对照）。
+明文 / HTTPS、单通道 / 多通道 / 与 SOCK·MQTT 混合、响应路由、同步异步的场景流程见 [专栏 · HTTP / HTTPS](../topics/http.md)。行格式与失败风格见 [convention.md](convention.md)。Lua `require("http")` 见 [http API](../../api/network/http.md)（脚本侧是一次性 `request`，与本篇通道配置不是同一条调用栈，但证书组 / URL 规则可对照）。
 
 ---
 
@@ -628,3 +628,5 @@ OK
 | --- | --- | --- |
 | 1.0.0 | 2026-09-05 | 首版：HTTPURL / HTTPCFG / HTTPREQ / HTTPFREE 的测试、查询、设置、`resp_at_mode` 静默、请求错误码与示例 |
 | 1.0.1 | 2026-09-07 | `route` 改链到 [route.md](route.md) |
+| 1.0.2 | 2026-09-19 | 相对链接随目录迁到 `at/manual/` |
+| 1.0.3 | 2026-09-19 | 文首链到 [专栏 · HTTP / HTTPS](../topics/http.md) |

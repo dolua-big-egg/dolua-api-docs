@@ -1,6 +1,6 @@
 # rtu_config
 
-**文档版本** `1.1.1`
+**文档版本** `1.1.2`
 
 这不是 `require("…")` 模块。它是模组开机时解析的 **声明式配置文件** `rtu_config.cfg`：只改文件里写到的段和 key，没写到的字段保持机内当前值。Lua 的 [`rtu`](../module/rtu.md)、[`uart`](../peripherals/uart.md)、[`sms`](../module/sms.md)、[`lbs`](../network/lbs.md) 等运行时模块 **读的是这份文件落盘后的业务配置**，不是另起一套通道。
 
@@ -291,7 +291,7 @@ UART：`[uart.1]`～`[uart.3]` 对应硬件 UART1～3。`[uart.0]` **禁止**，
 
 IO：`[io.N]` 的 N 是 GPIO 编号 **1～39**，对应内部脚 0～38。`[io.1]` = GPIO0。写文档和 AT 时按 1-based 脚号。
 
-路由串（`1|6[1]`）的一级数字是 **1～7 出口号**，不是上表的 N。`5[1]` 才是 HTTP 1，`6[1]` 才是 UART1。完整语法见 AT [route.md](../../at/route.md)。
+路由串（`1|6[1]`）的一级数字是 **1～7 出口号**，不是上表的 N。`5[1]` 才是 HTTP 1，`6[1]` 才是 UART1。完整语法见 AT [route.md](../../at/manual/route.md)。
 
 ---
 
@@ -325,7 +325,7 @@ IO：`[io.N]` 的 N 是 GPIO 编号 **1～39**，对应内部脚 0～38。`[io.1
 
 ## 9. `[sock.N]` / `[socket.N]`
 
-N = 1..4。读出该通道当前配置，只改出现的 key，写回。同一套通道也可用应用 AT 读写，见 [AT Socket](../../at/sock.md)。
+N = 1..4。读出该通道当前配置，只改出现的 key，写回。同一套通道也可用应用 AT 读写，见 [AT Socket](../../at/manual/sock.md)。场景流程见 [专栏 · Socket](../../at/topics/socket.md)。
 
 `protocol` **独立**决定实际用 TCP 还是 UDP 那一套参数。另一套参数仍会入库，只是这条通道连上时不用。
 
@@ -808,7 +808,7 @@ key 可带或不带 `mrst.` 前缀（`u_ndata` ≡ `mrst.u_ndata`）。
 | `tmr_period_s` | 整数 | **≥1** | 周期秒；写 0 失败 |
 | `tmr_rpt_type` | 整数 | 0=只采集，1=AT URC，2=自定义文本 | 定时结果怎么出 |
 | `tmr_rpt_data` | 二进制 | `hex:`，最长 256 | 类型 2 的载荷，可含占位符 |
-| `tmr_rpt_route` | 字符串 | 最长 127，须是合法 [路由串](../../at/route.md) 或空 | 例如 `6[1]`；空=默认路径。非法路由失败 |
+| `tmr_rpt_route` | 字符串 | 最长 127，须是合法 [路由串](../../at/manual/route.md) 或空 | 例如 `6[1]`；空=默认路径。非法路由失败 |
 | `reset` | 整数 | **必须是 1** | **总覆盖**：整份 LBS 回到出厂，然后继续本段后面的 key |
 
 `tmr_rpt_type=2` 且要占位符：`map.all=1` 且 `map.lbs_timer=1`。Lua `require("lbs")` 的一次性请求用自己的参数，默认值来自这里。
@@ -1082,3 +1082,4 @@ log_route=uart1
 | 1.0.4 | 2026-09-07 | 第 7 节与 `tmr_rpt_route` 链到 AT [route.md](../../at/route.md) |
 | 1.1.0 | 2026-09-09 | `[lua] print_route` / `log_route` 改为 `uart1` / `uart2` / `uart3` / `usb_at`；旧 `1`/`2`/`3` 仍可用 |
 | 1.1.1 | 2026-09-09 | 写明 `print_route=1` 等价 `uart1`（`2`/`3` 同理）；配置兼容整数，`sys.option` 只认字符串名 |
+| 1.1.2 | 2026-09-19 | AT Socket / 路由串链接改到 `at/manual/`，并链到 Socket 专栏 |

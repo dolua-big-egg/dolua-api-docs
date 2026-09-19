@@ -1,12 +1,12 @@
 #  路由串
 
-**文档版本** `1.0.1`
+**文档版本** `1.0.3`
 
 这不是一条 `AT+…` 指令。它是若干 AT 参数共用的**字符串语法**，用来写「这一包数据要送到哪些出口」。Lua `rtu.write`、配置文件里的同类字段，和本篇是**同一套写法、同一套编号**。
 
-行格式、失败风格见 [convention.md](convention.md)。各指令怎么把路由串嵌进参数（要不要引号、非法时回短 reason 还是 `+CME ERROR: 109`）以该篇为准。
+串口上行、四路通道下行怎么配对，见 [专栏 · 路由](../topics/route.md)。行格式、失败风格见 [convention.md](convention.md)。各指令怎么把路由串嵌进参数（要不要引号、非法时回短 reason 还是 `+CME ERROR: 109`）以该篇为准。
 
-`[lua] print_route` / `[lua] log_route` **不是**本篇语法，那些是 `uart1` / `uart2` / `uart3` / `usb_at`。[`[log] output`](../api/rtu_config/rtu_config.md#16-log) 仍是整数 `0`～`4`。
+`[lua] print_route` / `[lua] log_route` **不是**本篇语法，那些是 `uart1` / `uart2` / `uart3` / `usb_at`。[`[log] output`](../../api/rtu_config/rtu_config.md#16-log) 仍是整数 `0`～`4`。
 
 ---
 
@@ -190,7 +190,7 @@
 
 空串在多数指令里表示「清空 / 不选出口」，与非法串不同。`LBSCFG` 的空串表示走默认路径，见该篇。
 
-Lua 侧同一套：`rtu.write(route, data)`，见 [rtu API 第 8 节](../api/module/rtu.md#8-路由字符串)。
+Lua 侧同一套：`rtu.write(route, data)`，见 [rtu API 第 8 节](../../api/module/rtu.md#8-路由字符串)。
 
 ---
 
@@ -314,3 +314,5 @@ OK
 | --- | --- | --- |
 | 1.0.0 | 2026-09-07 | 首版：路由串语法；通道 1～7 与各子通道指向；默认/回显；与心跳 channel_str 的区别 |
 | 1.0.1 | 2026-09-09 | 标明 `[lua] print_route` / `log_route` 用 `uart1`/`uart2`/`uart3`/`usb_at`，与本篇路由串无关 |
+| 1.0.2 | 2026-09-19 | 相对链接随目录迁到 `at/manual/` |
+| 1.0.3 | 2026-09-19 | 文首链到 [专栏 · 路由](../topics/route.md) |

@@ -1,12 +1,12 @@
 #  MQTT
 
-**文档版本** `1.0.0`
+**文档版本** `1.0.1`
 
-配置并收发模组上的 **4 路 MQTT 通道**。指令走应用 AT 口（主串口 / USB AT 等），与 [`rtu_config.cfg` 的 `[mqtt.N]`](../api/rtu_config/rtu_config.md#10-mqttn) 以及主题槽 [`[mqtt.N.subscribe.M]` / `[mqtt.N.publish.M]`](../api/rtu_config/rtu_config.md#11-mqttnsubscribem--mqttnpublishm) 读写**同一份持久化配置**。通道号一律 **1～4**，与配置段 `[mqtt.1]`～`[mqtt.4]` 对应。
+配置并收发模组上的 **4 路 MQTT 通道**。指令走应用 AT 口（主串口 / USB AT 等），与 [`rtu_config.cfg` 的 `[mqtt.N]`](../../api/rtu_config/rtu_config.md#10-mqttn) 以及主题槽 [`[mqtt.N.subscribe.M]` / `[mqtt.N.publish.M]`](../../api/rtu_config/rtu_config.md#11-mqttnsubscribem--mqttnpublishm) 读写**同一份持久化配置**。通道号一律 **1～4**，与配置段 `[mqtt.1]`～`[mqtt.4]` 对应。
 
 MQTT 的 N 与 Socket / RTU 任务是**同一路**；HTTP 是另一套 1～5。换入口不换编号，见 [convention.md 第 4 节](convention.md#4-通道编号)。
 
-本篇按常用模组 AT 手册体例写：先约定，再逐条给出测试命令、查询、设置、参数表、应答、错误码和可抄示例。行格式与失败风格见 [convention.md](convention.md)。Lua `require("mqtt")` 见 [mqtt API](../api/network/mqtt.md)。
+单通道 / 多通道 / 混合 / 透传 / 同步异步的场景流程见 [专栏 · MQTT 连接](../topics/mqtt.md)。本篇按常用模组 AT 手册体例写：先约定，再逐条给出测试命令、查询、设置、参数表、应答、错误码和可抄示例。行格式与失败风格见 [convention.md](convention.md)。Lua `require("mqtt")` 见 [mqtt API](../../api/network/mqtt.md)。
 
 ---
 
@@ -136,7 +136,7 @@ MQTT 的 N 与 Socket / RTU 任务是**同一路**；HTTP 是另一套 1～5。�
 
 主机最长 **127** 字节（不含结尾 NUL）。`auth1`～`auth4` 各最长 **127**。主题最长 **127**。遗嘱消息最长 **255**。
 
-`platform` × `auth*` 怎么拼三元组，见 [rtu_config 第 10.2 节](../api/rtu_config/rtu_config.md#102-platform--auth联合)。AT 只负责把字符串入库；连上时才按平台解释。
+`platform` × `auth*` 怎么拼三元组，见 [rtu_config 第 10.2 节](../../api/rtu_config/rtu_config.md#102-platform--auth联合)。AT 只负责把字符串入库；连上时才按平台解释。
 
 ---
 
@@ -1012,3 +1012,4 @@ OK
 | 版本 | 日期 | 说明 |
 | --- | --- | --- |
 | 1.0.0 | 2026-09-05 | 首版：MQTT / MQTTCFG / MQTTAUTH / MQTTPLATFORM / MQTTSUB / MQTTPUB / MQTTSYNC / MQTTASYNC / MQTTCLRRET / MQTTWILL 的测试、查询、设置、错误与示例 |
+| 1.0.1 | 2026-09-19 | 随目录迁到 `at/manual/`；文首链到 [专栏 · MQTT 连接](../topics/mqtt.md) |

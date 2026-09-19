@@ -1,10 +1,10 @@
 #  定位（LBS / Wi-Fi）
 
-**文档版本** `1.0.1`
+**文档版本** `1.0.2`
 
 基站定位、LBS 持久化配置、同步 Wi-Fi 扫描、Wi-Fi 云端定位。行格式见 [convention.md](convention.md)。失败走 `+CME ERROR`（`LBSCFG` 用短 reason）。
 
-Lua 对照：[`require("lbs")`](../api/network/lbs.md)、[`require("wifiscan")`](../api/network/wifiscan.md)。配置文件同一套 key 在 [`[lbs]`](../api/rtu_config/rtu_config.md#26-lbs)。
+Lua 对照：[`require("lbs")`](../../api/network/lbs.md)、[`require("wifiscan")`](../../api/network/wifiscan.md)。配置文件同一套 key 在 [`[lbs]`](../../api/rtu_config/rtu_config.md#26-lbs)。
 
 `AT+LBS` / `AT+WIFILOC` **必须已经能上网**（`AT+ISLINK=1`）。`AT+WIFISCAN` 只要射频能扫。
 
@@ -140,7 +140,7 @@ OK
 
 ## 4. AT+LBSCFG {#4-atlbscfg}
 
-按 key 读写 LBS 持久化配置，与 [`[lbs]`](../api/rtu_config/rtu_config.md#26-lbs) 同名。key 大小写不敏感（内部折成小写）。
+按 key 读写 LBS 持久化配置，与 [`[lbs]`](../../api/rtu_config/rtu_config.md#26-lbs) 同名。key 大小写不敏感（内部折成小写）。
 
 出厂默认：
 
@@ -472,3 +472,4 @@ OK
 | --- | --- | --- |
 | 1.0.0 | 2026-09-05 | 首版：LBS / LBSCFG / WIFISCAN / WIFILOC，链 Lua lbs / wifiscan 与 `[lbs]` |
 | 1.0.1 | 2026-09-07 | `tmr_rpt_route` 链到 [route.md](route.md) |
+| 1.0.2 | 2026-09-19 | 相对链接随目录迁到 `at/manual/` |

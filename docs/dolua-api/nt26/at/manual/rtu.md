@@ -1,10 +1,10 @@
 #  透传任务（RTU / DTU）
 
-**文档版本** `1.1.0`
+**文档版本** `1.1.2`
 
-四路透传任务选 SOCK 还是 MQTT、心跳/注册包、上下行路由、往通道写裸数据、暂停恢复、AT 口密码锁、云配置拉取策略。与 [`[task.N]`](../api/rtu_config/rtu_config.md#17-task--taskn--tasknheart--tasknreg)、[`[netio.N]`](../api/rtu_config/rtu_config.md#21-netion)、`[loader]` 同一套。
+四路透传任务选 SOCK 还是 MQTT、心跳/注册包、上下行路由、往通道写裸数据、暂停恢复、AT 口密码锁、云配置拉取策略。与 [`[task.N]`](../../api/rtu_config/rtu_config.md#17-task--taskn--tasknheart--tasknreg)、[`[netio.N]`](../../api/rtu_config/rtu_config.md#21-netion)、`[loader]` 同一套。
 
-通道 1～4 与 Socket/MQTT **同一路 N**。通用约定见 [convention.md](convention.md)。`DTUPSUP` / `DTUPSDN` / `RTUWRITE` 的路由串见 [route.md](route.md)（`DTUHEART` / `DTUREG` 最后一段不是这套语法）。失败短 reason。
+通道 1～4 与 Socket/MQTT **同一路 N**。透传场景见 [专栏 · Socket](../topics/socket.md)、[专栏 · MQTT 连接](../topics/mqtt.md)。串口上行 / 四路通道下行见 [专栏 · 路由](../topics/route.md)。通用约定见 [convention.md](convention.md)。`DTUPSUP` / `DTUPSDN` / `RTUWRITE` 的路由串见 [route.md](route.md)（`DTUHEART` / `DTUREG` 最后一段不是这套语法）。失败短 reason。
 
 ---
 
@@ -166,3 +166,5 @@ AT+DTUSTATE=1
 | --- | --- | --- |
 | 1.0.0 | 2026-09-05 | 首版：任务、路由、写通道、密码锁、云配置策略 |
 | 1.1.0 | 2026-09-07 | 上下行/写出链到 [route.md](route.md)；纠正 HEART/REG 最后一段是发布槽列表，不是路由串 |
+| 1.1.1 | 2026-09-19 | 随目录迁到 `at/manual/`；文首链到 Socket / MQTT 专栏 |
+| 1.1.2 | 2026-09-19 | 文首链到 [专栏 · 路由](../topics/route.md) |

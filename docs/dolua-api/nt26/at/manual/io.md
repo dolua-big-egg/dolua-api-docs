@@ -1,8 +1,8 @@
 #  GPIO 与 ADC
 
-**文档版本** `1.0.1`
+**文档版本** `1.0.2`
 
-脚号、方向、电平、模板上报、脉冲、波形，以及五路 ADC。AT 的 GPIO id 是 **0～38**。配置文件 `[io.N]` 是 **1-based**：`[io.1]` = 本篇 id `0`。能 `gpio.open` 的脚不是 0～38 全集，见 [硬件 GPIO 落盘](../hardware/pro.md#41-gpio) 与 [gpio API](../api/peripherals/gpio.md)。
+脚号、方向、电平、模板上报、脉冲、波形，以及五路 ADC。AT 的 GPIO id 是 **0～38**。配置文件 `[io.N]` 是 **1-based**：`[io.1]` = 本篇 id `0`。能 `gpio.open` 的脚不是 0～38 全集，见 [硬件 GPIO 落盘](../../hardware/pro.md#41-gpio) 与 [gpio API](../../api/peripherals/gpio.md)。
 
 通用约定见 [convention.md](convention.md)。本篇失败多为 `+CME ERROR`（125～138）。
 
@@ -201,3 +201,4 @@ OK
 | --- | --- | --- |
 | 1.0.0 | 2026-09-05 | 首版：IO 配置/运行时、模板、脉冲、波形、ADC |
 | 1.0.1 | 2026-09-07 | `IOTMPLH` 第二参链到 [route.md](route.md) |
+| 1.0.2 | 2026-09-19 | 相对链接随目录迁到 `at/manual/` |

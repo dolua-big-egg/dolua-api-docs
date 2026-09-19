@@ -1,8 +1,8 @@
 #  短信（SMS）
 
-**文档版本** `1.0.1`
+**文档版本** `1.0.2`
 
-配 10 路短信通道号码、读写删除 **SIM 卡存储**、按通道或按号码发短信，以及收信转发到 RTU。与 [`rtu_config.cfg` 的 `[sms]` / `[sms.N]`](../api/rtu_config/rtu_config.md#27-sms--smsn) 读写**同一份持久化**。行格式见 [convention.md](convention.md)。
+配 10 路短信通道号码、读写删除 **SIM 卡存储**、按通道或按号码发短信，以及收信转发到 RTU。与 [`rtu_config.cfg` 的 `[sms]` / `[sms.N]`](../../api/rtu_config/rtu_config.md#27-sms--smsn) 读写**同一份持久化**。行格式见 [convention.md](convention.md)。
 
 本篇失败风格 **混用**：通道号码 / SIM 存储 / 多数发送走短 reason；`SMSTMPH` 设置与 `SMSCFG` 单项写走 `+CME ERROR`。发送成功时 `+CMD` 里的数字是 **发送结果码**（`0` 成功），不是 CME。
 
@@ -76,7 +76,7 @@ Lua `require("sms")` 用模组短信能力收发，**不读** 这 10 路转发�
 
 `AT+SMSWRITE` 的 id **只能 1～10**（解析规则不含 99）。空号码通道发送会得到发送码 **-1**。
 
-`forward_en=1` 但十路号码都空：没有可转发目标。mode=3 还要模板，且 `[maping] all=1` 占位符才会展开。见 [rtu_config 第 27 节](../api/rtu_config/rtu_config.md#27-sms--smsn)。
+`forward_en=1` 但十路号码都空：没有可转发目标。mode=3 还要模板，且 `[maping] all=1` 占位符才会展开。见 [rtu_config 第 27 节](../../api/rtu_config/rtu_config.md#27-sms--smsn)。
 
 ### 3.2 SIM 存储 index
 
@@ -813,3 +813,4 @@ SIM 维护：`AT+SMSL=2` 看未读 → `AT+SMSR=<index>` → `AT+SMSD=<index>`�
 | --- | --- | --- |
 | 1.0.0 | 2026-09-05 | 首版：SMS/SMSR/SMSL/SMSD/SMSWRITE/SMSSYNC/SMSASYNC/SMSTMPH/SMSCFG；通道 1～10 与 99；SIM index 0/1～255；发送码与 CME/reason |
 | 1.0.1 | 2026-09-07 | `forward_route` 改链到 [route.md](route.md) |
+| 1.0.2 | 2026-09-19 | 相对链接随目录迁到 `at/manual/` |

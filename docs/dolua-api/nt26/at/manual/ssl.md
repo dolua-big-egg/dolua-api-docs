@@ -1,12 +1,12 @@
 #  SSL
 
-**文档版本** `1.0.0`
+**文档版本** `1.0.2`
 
-维护 **3 组** TLS 证书（CA / 客户端证书 / 客户端私钥），供 MQTT / HTTP 的 `ssl_id` 引用。指令走应用 AT 口，与 [`rtu_config.cfg` 的 `[ssl.N]`](../api/rtu_config/rtu_config.md#13-ssln) 是**同一套证书组编号**：`<id>` = **1～3**，对应 `[ssl.1]`～`[ssl.3]`。
+维护 **3 组** TLS 证书（CA / 客户端证书 / 客户端私钥），供 MQTT / HTTP 的 `ssl_id` 引用。指令走应用 AT 口，与 [`rtu_config.cfg` 的 `[ssl.N]`](../../api/rtu_config/rtu_config.md#13-ssln) 是**同一套证书组编号**：`<id>` = **1～3**，对应 `[ssl.1]`～`[ssl.3]`。
 
-SSL 组号 **不是** Socket / MQTT 通道 1～4，也不是 HTTP 通道 1～5。MQTT 写 `ssl_id` / `ssl_level`，HTTP 写 `ssl_id` / `ssl_type`，两边都可以指向本组。见 [convention.md 第 4 节](convention.md#4-通道编号)。
+SSL 组号 **不是** Socket / MQTT 通道 1～4，也不是 HTTP 通道 1～5。MQTT 写 `ssl_id` / `ssl_level`，HTTP 写 `ssl_id` / `ssl_type`，两边都可以指向本组。见 [convention.md 第 4 节](convention.md#4-通道编号)。HTTPS 场景见 [专栏 · HTTP / HTTPS](../topics/http.md#5-https)。
 
-行格式见 [convention.md](convention.md)。Lua 侧证书用法见 [mqtt API](../api/network/mqtt.md) 与 [http API](../api/network/http.md) 的 TLS 字段；本篇只写 AT 读写证书文件。
+行格式见 [convention.md](convention.md)。Lua 侧证书用法见 [mqtt API](../../api/network/mqtt.md) 与 [http API](../../api/network/http.md) 的 TLS 字段；本篇只写 AT 读写证书文件。
 
 `[ssl.N]` 的 `mode`（1 不校验 / 2 校验服务端 / 3 双向）走配置文件，**本指令改不了 mode**，只改三份证书内容。
 
@@ -46,7 +46,7 @@ SSL 组号 **不是** Socket / MQTT 通道 1～4，也不是 HTTP 通道 1～5�
 | 无参查询 `AT+SSL?` | — | **不支持** |
 | 设置 | `AT+SSL=<id>,<action>,<cert_name>[,<payload>]` | 支持 |
 
-没有「只改 mode」的 AT。mode 写 [`[ssl.N]`](../api/rtu_config/rtu_config.md#13-ssln)。
+没有「只改 mode」的 AT。mode 写 [`[ssl.N]`](../../api/rtu_config/rtu_config.md#13-ssln)。
 
 ### 1.3 成功与失败
 
@@ -310,3 +310,5 @@ ERROR
 | 版本 | 日期 | 说明 |
 | --- | --- | --- |
 | 1.0.0 | 2026-09-05 | 首版：SSL write/stream/read/delete、证书名与长度上限、空文件读成功、错误 reason |
+| 1.0.1 | 2026-09-19 | 相对链接随目录迁到 `at/manual/` |
+| 1.0.2 | 2026-09-19 | 文首链到 [专栏 · HTTP / HTTPS](../topics/http.md#5-https) |

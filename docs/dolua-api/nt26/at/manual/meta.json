@@ -1,0 +1,25 @@
+{
+  "title": "指令手册",
+  "pages": [
+    "index",
+    "convention",
+    "route",
+    "info",
+    "netstat",
+    "link",
+    "dns",
+    "ntp",
+    "lbs",
+    "sock",
+    "mqtt",
+    "http",
+    "ssl",
+    "uart",
+    "io",
+    "sms",
+    "rtu",
+    "script",
+    "ota",
+    "sys"
+  ]
+}

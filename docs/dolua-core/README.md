@@ -1,6 +1,6 @@
 # doLua 核心
 
-**文档版本** `1.4.0`
+**文档版本** `1.4.1`
 
 本分类讲 **doLua 是什么、引擎怎么跑、消息和调度怎么协作**。这是跨型号的总图：一台设备、一个脚本虚拟机、协作式多任务。读完再进各型号的 API，会对「为什么回调里不能等」「入口 return 之后业务还在不在」有一张整图。
 
@@ -52,7 +52,7 @@
 | 查 NT26 配额、存哪一块 | [NT26 资源](../dolua-api/nt26/resources/README.md) |
 | 查某个 `require("…")` | [NT26 API](../dolua-api/nt26/api/README.md) |
 | 对原理图、选脚 | [硬件脚位](../dolua-api/nt26/hardware/README.md) |
-| 用 AT 部署/查询脚本包 | [at/script.md](../dolua-api/nt26/at/script.md) |
+| 用 AT 部署/查询脚本包 | [at/script.md](../dolua-api/nt26/at/manual/script.md) |
 | 抄一份能烧录的工程 | [examples/nt26](../../examples/nt26/README.md) |
 | 看工程文件夹 / LUAPK | [工程结构](../dolua-assisant/project-structure.md) |
 
@@ -67,3 +67,4 @@
 | 1.2.0 | 2026-09-13 | 链到开发助手「工程结构」（五区 / LUAPK） |
 | 1.3.0 | 2026-09-16 | 链到「开始使用」 |
 | 1.4.0 | 2026-09-18 | 抽出为跨型号分类；名额放到各型号「资源」 |
+| 1.4.1 | 2026-09-19 | 脚本 AT 链接改到 `at/manual/script.md` |

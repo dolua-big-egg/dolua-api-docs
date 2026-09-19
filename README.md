@@ -15,7 +15,9 @@ docs/dolua-api/                型号 API 总入口
 docs/dolua-api/nt26/resources/ NT26 可用资源（堆、Flash、调度名额）
 docs/dolua-api/nt26/api/       模块 API（一篇文档对应一个 require）
 docs/dolua-api/nt26/hardware/  全 IO / 封装脚位（按映射表分篇，不是 require）
-docs/dolua-api/nt26/at/        应用 AT 指令（一篇一类业务，不是 require）
+docs/dolua-api/nt26/at/        应用 AT（专栏 + 指令手册）
+docs/dolua-api/nt26/at/topics/ 场景专栏（Socket / MQTT / HTTP(S) / 路由）
+docs/dolua-api/nt26/at/manual/ 指令手册（一篇一类业务）
 docs/dolua-assisant/           开发助手：工程文件夹、五区、LUAPK
 examples/nt26/                 可直接导入烧录的示例工程
 ```
@@ -28,7 +30,7 @@ examples/nt26/                 可直接导入烧录的示例工程
 | 工程文件夹、侧边栏五区、LUAPK | [工程结构](docs/dolua-assisant/project-structure.md) |
 | 按模块查参数、返回值、失败约定 | [API 索引](docs/dolua-api/nt26/api/README.md) |
 | 对原理图、查 PIN / 复用 | [NT26 硬件脚位](docs/dolua-api/nt26/hardware/README.md) |
-| 查 `AT+` 指令 | [AT 索引](docs/dolua-api/nt26/at/README.md) |
+| 查 `AT+` 指令 | [AT 索引](docs/dolua-api/nt26/at/README.md)（[专栏](docs/dolua-api/nt26/at/topics/README.md) / [指令手册](docs/dolua-api/nt26/at/manual/README.md)） |
 | 找一份能跑的工程 | [示例索引](examples/nt26/README.md) |
 | 型号 API 总入口 | [doLua API](docs/dolua-api/README.md) |
 | 本型号文档 | [NT26 文档](docs/dolua-api/nt26/README.md) |

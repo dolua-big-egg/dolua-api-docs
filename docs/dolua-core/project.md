@@ -1,6 +1,6 @@
 # 工程与脚本包
 
-**文档版本** `1.3.0`
+**文档版本** `1.3.1`
 
 doLua 工程是 **一层文件夹**：里面有入口脚本、可选的用户模块、配置和资源。配套工具把它打成设备能识别的脚本包再烧进去。底层虽按 A/B 两槽设计，**当前版本未启用双槽切换**，见 [runtime.md 第 2 节](runtime.md#2-脚本副本a--b-两槽)。
 
@@ -128,7 +128,7 @@ function 灯.打开() ... end
 - [存储怎么分](../dolua-api/nt26/resources/storage.md)
 - 侧边栏五区 / LUAPK：[工程结构](../dolua-assisant/project-structure.md)
 - 例程：[started/module](../../examples/nt26/started/module)（用户模块怎么登记）
-- 部署 AT：[script.md](../dolua-api/nt26/at/script.md)
+- 部署 AT：[script.md](../dolua-api/nt26/at/manual/script.md)
 
 ---
 
@@ -140,3 +140,4 @@ function 灯.打开() ... end
 | 1.1.0 | 2026-09-12 | 部署按单份脚本写；双槽切换标明当前未启用 |
 | 1.2.0 | 2026-09-13 | 链到开发助手「工程结构」（五区 / LUAPK） |
 | 1.3.0 | 2026-09-18 | 五区细则只保留在开发助手；本篇只写进设备 |
+| 1.3.1 | 2026-09-19 | 脚本 AT 链接改到 `at/manual/script.md` |

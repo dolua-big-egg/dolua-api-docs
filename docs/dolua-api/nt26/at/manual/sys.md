@@ -1,10 +1,10 @@
 #  系统（日志 / 文件系统 / 诊断 / 整机配置 / 恢复出厂）
 
-**文档版本** `1.0.0`
+**文档版本** `1.0.1`
 
 日志输出口、文件系统容量与根目录列表、堆与线程诊断、立刻改睡眠档、真随机数、整机 KV、云配置编号、恢复出厂、远程调试 MQTT。行格式见 [convention.md](convention.md)。
 
-本篇**不收**产测指令。ADC 在 [io.md](io.md)。Lua / 配置对照：[`[log]`](../api/rtu_config/rtu_config.md#16-log)、[`[monitor]`](../api/rtu_config/rtu_config.md#24-monitor)、[`[loader]`](../api/rtu_config/rtu_config.md#25-loader)、[`[dbg]`](../api/rtu_config/rtu_config.md#28-dbg)。`CFGID` 与 `[task] config_id` 同一份。
+本篇**不收**产测指令。ADC 在 [io.md](io.md)。Lua / 配置对照：[`[log]`](../../api/rtu_config/rtu_config.md#16-log)、[`[monitor]`](../../api/rtu_config/rtu_config.md#24-monitor)、[`[loader]`](../../api/rtu_config/rtu_config.md#25-loader)、[`[dbg]`](../../api/rtu_config/rtu_config.md#28-dbg)。`CFGID` 与 `[task] config_id` 同一份。
 
 ---
 
@@ -620,7 +620,7 @@ OK
 
 ## 14. AT+ONLINEDBG {#14-atonlinedbg}
 
-独立的调试 MQTT（固定调试服务器，主串口双向透传）。**不是** `[mqtt.N]`。与 [`[dbg]`](../api/rtu_config/rtu_config.md#28-dbg) 同一份：`enable` + `id`（最长 **20** 字节）。
+独立的调试 MQTT（固定调试服务器，主串口双向透传）。**不是** `[mqtt.N]`。与 [`[dbg]`](../../api/rtu_config/rtu_config.md#28-dbg) 同一份：`enable` + `id`（最长 **20** 字节）。
 
 写的是落盘。链路要等本次开机的调试初始化；本文件若在调试任务之前套用，**本次开机**就能用新值。
 
@@ -717,3 +717,4 @@ OK
 | 版本 | 日期 | 说明 |
 | --- | --- | --- |
 | 1.0.0 | 2026-09-05 | 首版：LOG / PLOG / FSINFO / FSLIST / HEAPINFO / THREAD / PMU / TRNG / DEVICECFG 全 key / CFGID / FACTORY 模块表 / ONLINEDBG |
+| 1.0.1 | 2026-09-19 | 相对链接随目录迁到 `at/manual/` |

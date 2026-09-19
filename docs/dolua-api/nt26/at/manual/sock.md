@@ -1,10 +1,10 @@
 #  Socket（SOCK）
 
-**文档版本** `1.0.2`
+**文档版本** `1.0.3`
 
-配置并收发模组上的 **4 路 Socket 通道**（TCP 或 UDP）。指令走应用 AT 口（主串口 / USB AT 等），与 [`rtu_config.cfg` 的 `[sock.N]`](../api/rtu_config/rtu_config.md#9-sockn--socketn) 读写**同一份持久化配置**。通道号一律 **1～4**，与配置段 `[sock.1]`～`[sock.4]` 对应。
+配置并收发模组上的 **4 路 Socket 通道**（TCP 或 UDP）。指令走应用 AT 口（主串口 / USB AT 等），与 [`rtu_config.cfg` 的 `[sock.N]`](../../api/rtu_config/rtu_config.md#9-sockn--socketn) 读写**同一份持久化配置**。通道号一律 **1～4**，与配置段 `[sock.1]`～`[sock.4]` 对应。
 
-本篇按常用模组 AT 手册体例写：先约定，再逐条给出测试命令、查询、设置、参数表、应答、错误码和可抄示例。行格式与两种失败风格亦见 [convention.md](convention.md)。其它业务指令按类分篇，索引在 [README.md](README.md)。
+单通道 / 多通道 / 混合 / 透传 / 同步异步的场景流程见 [专栏 · Socket](../topics/socket.md)。本篇按常用模组 AT 手册体例写：先约定，再逐条给出测试命令、查询、设置、参数表、应答、错误码和可抄示例。行格式与两种失败风格亦见 [convention.md](convention.md)。其它业务指令按类分篇，索引在 [指令手册](README.md)。
 
 ---
 
@@ -645,3 +645,4 @@ ERROR
 | 1.0.0 | 2026-09-05 | 首版：SOCK / SOCKCFG / SOCKKEEP / SOCKSYNC / SOCKASYNC 的测试、查询、设置、错误与示例 |
 | 1.0.1 | 2026-09-05 | 全部 AT 演示代码块标注为 lua |
 | 1.0.2 | 2026-09-05 | 交叉链接通用约定与 AT 分类索引 |
+| 1.0.3 | 2026-09-19 | 随目录迁到 `at/manual/`；文首链到 [专栏 · Socket](../topics/socket.md) |

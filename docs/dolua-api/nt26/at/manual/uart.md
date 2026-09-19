@@ -1,10 +1,10 @@
 #  串口（UART）
 
-**文档版本** `1.0.0`
+**文档版本** `1.0.1`
 
-三路业务串口的线参数、收包分包，以及「当前这条 AT 口是谁」。与 [`rtu_config.cfg` 的 `[uart.N]`](../api/rtu_config/rtu_config.md#14-uart--uartn) 同一套持久化。行格式见 [convention.md](convention.md)。
+三路业务串口的线参数、收包分包，以及「当前这条 AT 口是谁」。与 [`rtu_config.cfg` 的 `[uart.N]`](../../api/rtu_config/rtu_config.md#14-uart--uartn) 同一套持久化。行格式见 [convention.md](convention.md)。
 
-本篇改的是 **UART1～3**。没有 UART0。`pin_map` / 流控本篇改不了，写配置文件或看 [硬件 UART 落盘](../hardware/pro.md#41-uart)。
+本篇改的是 **UART1～3**。没有 UART0。`pin_map` / 流控本篇改不了，写配置文件或看 [硬件 UART 落盘](../../hardware/pro.md#41-uart)。
 
 Lua `require("uart")` 的 `config` 只热改 RAM、不写盘；本篇 AT **写盘**。
 
@@ -244,3 +244,4 @@ OK
 | 版本 | 日期 | 说明 |
 | --- | --- | --- |
 | 1.0.0 | 2026-09-05 | 首版：UART / UARTQUE / UARTID |
+| 1.0.1 | 2026-09-19 | 相对链接随目录迁到 `at/manual/` |
