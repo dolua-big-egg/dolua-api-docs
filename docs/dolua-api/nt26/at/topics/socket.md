@@ -1,6 +1,6 @@
 # Socket 专栏
 
-**文档版本** `1.0.0`
+**文档版本** `1.0.1`
 
 场景专题：用应用 AT 把一路或多路 **TCP/UDP Socket** 跑起来，再走串口透传或指令主动发送。指令逐条的测试/查询/设置、参数表、错误码见 [Socket 指令手册](../manual/sock.md)、[透传任务](../manual/rtu.md)、[路由串](../manual/route.md)。本篇不重复那些表格。
 
@@ -45,7 +45,17 @@ AT 口主动发  ──AT+SOCKSYNC / SOCKASYNC / RTUWRITE──► 同一路任�
 
 **AT 口和透传数据口尽量分开。** 配置走主串口 / USB AT；MCU 业务数据走另一路 UART（常见 UART2）。同一口既当 AT 又当透传时，模组会把以 `AT` 开头的行当指令解析，业务二进制很容易被吃掉。若必须共用一口，配完后用 [AT+RTUPSD](../manual/rtu.md#8-atrtuctl--atrtupsd--atdtumsghead) 把 AT 口锁成透传，解锁才重新进指令。
 
-下文示例里的 `socket.doiot.cn:5000` 是公开演示 TCP 口，可换成自己的服务器。载荷是 **TAILRAW**：最后一个逗号之后到行结束之前的原始字节，不要先编成 HEX 文本（除非你就是要发 ASCII 的 `41` `42`）。
+下文 Socket 对端一律用公开演示 TCP：
+
+| | 值 |
+| --- | --- |
+| 主机 | `socket.doiot.cn` |
+| 端口 | `5000` |
+| 协议 | TCP（`AT+SOCK` 的 `proto=0`） |
+
+行为：**发啥回啥**。你发出去的载荷，对端原样从同一条 TCP 连接打回来。特例：发 ASCII `doiot`（5 字节），回的是 `测试成功`，不是再回 `doiot`。回包**不会**夹在 `+SOCKSYNC` 里，要配好 `DTUPSDN` 才能在串口看到。
+
+载荷是 **TAILRAW**：最后一个逗号之后到行结束之前的原始字节，不要先编成 HEX 文本（除非你就是要发 ASCII 的 `41` `42`）。联调自己的服务器时，把主机端口换掉即可，指令形态不变。
 
 ---
 
@@ -116,13 +126,11 @@ AT+SOCK=1?
 OK
 ```
 
-`proto=0` 是 TCP，`1` 是 UDP。UDP 通道「上线」只表示实例创建成功，没有 TCP 那种三次握手。
-
-UDP 写法：
+`proto=0` 是 TCP，`1` 是 UDP。UDP 通道「上线」只表示实例创建成功，没有 TCP 那种三次握手。`socket.doiot.cn:5000` 是 **TCP 回显口**，必须 `proto=0` 才能「发啥回啥」。UDP 只换协议位，主机端口写法相同，但对着这个演示口没有回显：
 
 ```lua
-AT+SOCK=1,"udp.example.com",5000,1
-+SOCK: 1,"udp.example.com",5000,1
+AT+SOCK=1,"socket.doiot.cn",5000,1
++SOCK: 1,"socket.doiot.cn",5000,1
 
 OK
 ```
@@ -160,11 +168,20 @@ AT+DTUPSDN=1,"6[2]"
 OK
 ```
 
-然后 `AT+RESET`，等 `ISLINK=1`。UART 数据口上直接写字节即可，模组按 `UARTQUE` 分包后异步送进 Socket；对端回包从 `DTUPSDN` 指定的口吐出。透传底层走的就是异步发送队列。
+然后 `AT+RESET`，等 `ISLINK=1`。UART 数据口上直接写字节即可，模组按 `UARTQUE` 分包后异步送进 Socket；对端回包从 `DTUPSDN` 指定的口吐出。对着演示口：数据口发 `doiot` 会收回 `测试成功`，发其它内容则原样回来。透传底层走的就是异步发送队列。
 
 ### 3.3 指令主动发送（单通道）
 
 通道已经起来之后，在 **AT 口**发（不必经过透传 UART）：
+
+```lua
+AT+SOCKSYNC=1,1,doiot
++SOCKSYNC: 1,1,5
+
+OK
+```
+
+`+SOCKSYNC` 的 `5` 只是发出去的长度。对端回 `测试成功`，从 `DTUPSDN` 指定的口出来（上面配了 UART1）。发其它内容则原样回显，例如发 `hello` 会在串口收到 `hello`：
 
 ```lua
 AT+SOCKSYNC=1,1,hello
@@ -172,7 +189,7 @@ AT+SOCKSYNC=1,1,hello
 
 OK
 
-AT+SOCKASYNC=1,1,hello
+AT+SOCKASYNC=1,1,doiot
 +SOCKASYNC: 1,1,5
 
 OK
@@ -181,7 +198,7 @@ OK
 按路由写（SOCK 路忽略 MQTT 槽号，整包仍只发到这一路 Socket）：
 
 ```lua
-AT+RTUWRITE="1",hello
+AT+RTUWRITE="1",doiot
 OK
 ```
 
@@ -203,14 +220,14 @@ AT+RESET
 ```lua
 AT+ISLINK
 AT+DTUSTATE=1
-AT+SOCKSYNC=1,1,ping
+AT+SOCKSYNC=1,1,doiot
 ```
 
 ---
 
 ## 4. 多通道
 
-目标：通道 1、通道 2 各连一台服务器，可并行。每路独立的 `AT+SOCK`、`AT+DTUTASK`、下行路由。
+目标：通道 1、通道 2 各建一条 TCP，可并行。演示口允许两路同时连 `socket.doiot.cn:5000`（两条独立连接，各自回显）。每路独立的 `AT+SOCK`、`AT+DTUTASK`、下行路由。
 
 ```lua
 AT+SOCK=1,"socket.doiot.cn",5000,0
@@ -218,8 +235,8 @@ AT+SOCK=1,"socket.doiot.cn",5000,0
 
 OK
 
-AT+SOCK=2,"10.0.0.8",9001,0
-+SOCK: 2,"10.0.0.8",9001,0
+AT+SOCK=2,"socket.doiot.cn",5000,0
++SOCK: 2,"socket.doiot.cn",5000,0
 
 OK
 
@@ -269,21 +286,23 @@ AT+DTUPSUP=2,"2"
 AT 口分别主动发：
 
 ```lua
-AT+SOCKSYNC=1,1,to-server-a
-+SOCKSYNC: 1,1,12
+AT+SOCKSYNC=1,1,doiot
++SOCKSYNC: 1,1,5
 
 OK
 
-AT+SOCKASYNC=2,1,to-server-b
-+SOCKASYNC: 2,1,12
+AT+SOCKASYNC=2,1,doiot
++SOCKASYNC: 2,1,5
 
 OK
 ```
 
-一路 TCP、一路 UDP：
+两路都会各自收到 `测试成功`（走各自的 `DTUPSDN`）。
+
+一路 TCP、一路 UDP（UDP 对着演示口没有回显，只示范写法）：
 
 ```lua
-AT+SOCK=3,"udp.example.com",5000,1
+AT+SOCK=3,"socket.doiot.cn",5000,1
 AT+DTUTASK=3,1,"SOCK"
 ```
 
@@ -369,8 +388,8 @@ AT+DTUPSUP=1,"1|2[1:2]"
 复位后分别主动发：
 
 ```lua
-AT+SOCKSYNC=1,1,hello-tcp
-+SOCKSYNC: 1,1,9
+AT+SOCKSYNC=1,1,doiot
++SOCKSYNC: 1,1,5
 
 OK
 
@@ -438,11 +457,11 @@ OK
 `rsp=0` 时 `SOCKSYNC` / `SOCKASYNC` 成功失败都不回 `+CMD` / `OK` / `ERROR`，主机只能靠超时或其它通道判断。
 
 ```lua
-AT+SOCKSYNC=1,0,hello
+AT+SOCKSYNC=1,0,doiot
 
 AT+SOCKASYNC=1,0,hello
 
-AT+RTUWRITE="1|2",hello
+AT+RTUWRITE="1|2",doiot
 OK
 
 AT+RTUWRITEQ="1",hello
@@ -462,7 +481,7 @@ AT+SOCKASYNC=1,1,doiot
 ERROR
 ```
 
-主动发送**不会**把对端回包夹在 `+SOCKSYNC` 里返回。下行仍走 `DTUPSDN` / Lua 回调。
+主动发送**不会**把对端回包夹在 `+SOCKSYNC` 里返回。连 `socket.doiot.cn:5000` 时：发 `doiot` 下行是 `测试成功`，发其它内容则原样回显。都走 `DTUPSDN` / Lua 回调。
 
 主题、载荷里的 `<#IMEI>` 一类占位符按 `[maping]` 展开；Socket 映射失败时同步/异步发送改发原文，不因此报错。细则见指令手册。
 
@@ -535,6 +554,7 @@ OK
 | `"error send"` / `"error enqueue"` | `DTUTASK` 是否 SOCK、是否已复位生效、`ISLINK`、TCP 是否已连上；UDP 误走了 `SOCKASYNC` |
 | 改了主机仍连旧地址 | 写配置不拆旧连接，需要复位或 `RTUCTL` 停再启 |
 | 串口有数据但服务器没有 | `DTUPSUP` 是否指向该通道；是否把数据打到了 AT 口 |
+| 发了 `doiot` 看不到 `测试成功` | `DTUPSDN` 是否指向你看的那路 UART；回包不在 `+SOCKSYNC` 里 |
 | 服务器有回包但 MCU 没有 | `DTUPSDN` 是否指向实际接线的 UART |
 | AT 口突然不再认指令 | 是否开了 `RTUPSD`，用 `RTULOCK` 解锁 |
 | 通道号搞混 | `AT+SOCK=1` 的 1 是业务通道；`6[1]` 才是 UART1 |
@@ -561,3 +581,4 @@ OK
 | 版本 | 日期 | 说明 |
 | --- | --- | --- |
 | 1.0.0 | 2026-09-19 | 首版：单通道 / 多通道 / 混合通道、透传、指令主动发送、同步与异步 |
+| 1.0.1 | 2026-09-19 | 对端统一为 `socket.doiot.cn:5000`；写明发啥回啥，发 `doiot` 回 `测试成功` |

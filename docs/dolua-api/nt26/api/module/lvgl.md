@@ -1,6 +1,6 @@
 # lvgl
 
-**文档版本** `1.17.0`
+**文档版本** `1.18.0`
 
 把已经 `lcd.new` 好的彩屏交给图形栈：控件、主题、脏区刷新都走本模块。刷屏在独立任务里跑，脚本只要建树、改字、改样式，然后 `rt.delay` 让出即可。
 
@@ -10,7 +10,7 @@ local lvgl = require("lvgl")
 
 平台预加载模块，无需额外 `.lua` 文件。须先 [`lcd.new`](lcd.md) 得到面板，再 `lvgl.create(panel, opts)`。
 
-本绑定是 LVGL 的 **子集**：标签、弧标签、按钮、空白容器、进度条、弧进度、复选框、下拉框、文本框、软键盘、开关、转圈、图片、消息框、折线、刻度盘、富文本分段、画布、样式覆盖。按钮点击已挂上；触摸输入设备尚未接入，真机点按要等输入，脚本可用 `ui:click` 走同一条回调。软键盘的键同样要等触摸；没有输入时用 [`set_mode`](#7-43-set-mode) 看布局，用 [`add_text`](#7-59-add-text) 改已绑定的文本框。消息框脚注按钮同样要等触摸或 `ui:click`；关掉框请 [`ui:close`](#7-56-close)。没有官方 LVGL 全量控件表。默认字体由固件编入（Montserrat 14，ASCII + FontAwesome 子集）。要显示中文请用 [`ui:font`](#7-30-font) 加载自己的子集字库（LVGL 点阵 `.bin` 或 TTF），不要假设默认字含汉字。图片只认 **JPEG** 和 **LVGL 图像 `.bin`**（靠文件头，不靠扩展名）；BMP 不支持。字库 `.bin` 和图像 `.bin` 不是同一种文件。画布是 RGB565 位图，不是图片解码器。
+本绑定是 LVGL 的 **子集**：标签、弧标签、按钮、空白容器、进度条、弧进度、复选框、下拉框、文本框、软键盘、开关、转圈、图片、消息框、折线、刻度盘、富文本分段、画布、指示灯、图表、样式覆盖。按钮点击已挂上；触摸输入设备尚未接入，真机点按要等输入，脚本可用 `ui:click` 走同一条回调。软键盘的键同样要等触摸；没有输入时用 [`set_mode`](#7-43-set-mode) 看布局，用 [`add_text`](#7-59-add-text) 改已绑定的文本框。消息框脚注按钮同样要等触摸或 `ui:click`；关掉框请 [`ui:close`](#7-56-close)。没有官方 LVGL 全量控件表。默认字体由固件编入（Montserrat 14，ASCII + FontAwesome 子集）。要显示中文请用 [`ui:font`](#7-30-font) 加载自己的子集字库（LVGL 点阵 `.bin` 或 TTF），不要假设默认字含汉字。图片只认 **JPEG** 和 **LVGL 图像 `.bin`**（靠文件头，不靠扩展名）；BMP 不支持。字库 `.bin` 和图像 `.bin` 不是同一种文件。画布是 RGB565 位图，不是图片解码器。
 
 ---
 
@@ -113,6 +113,22 @@ local lvgl = require("lvgl")
   - [7.87 `ui:draw_rect`](#7-87-draw-rect)
   - [7.88 `ui:draw_line`](#7-88-draw-line)
   - [7.89 `ui:draw_label`](#7-89-draw-label)
+  - [7.90 `ui:led`](#7-90-led)
+  - [7.91 `ui:set_color`](#7-91-set-color)
+  - [7.92 `ui:set_brightness`](#7-92-set-brightness)
+  - [7.93 `ui:get_brightness`](#7-93-get-brightness)
+  - [7.94 `ui:on` / `off` / `toggle`](#7-94-on)
+  - [7.95 `ui:chart`](#7-95-chart)
+  - [7.96 `ui:set_type`](#7-96-set-type)
+  - [7.97 `ui:set_point_count`](#7-97-set-point-count)
+  - [7.98 `ui:set_div_count`](#7-98-set-div-count)
+  - [7.99 `ui:set_update_mode`](#7-99-set-update-mode)
+  - [7.100 `ui:add_series`](#7-100-add-series)
+  - [7.101 `ui:delete_series`](#7-101-delete-series)
+  - [7.102 `ui:set_next`](#7-102-set-next)
+  - [7.103 `ui:set_all`](#7-103-set-all)
+  - [7.104 `ui:set_values`](#7-104-set-values)
+  - [7.105 `ui:set_point`](#7-105-set-point)
 - [8. 样式对象方法](#8-样式对象方法)
   - [8.1 `style:set`](#8-1-set)
 - [9. `create` 配置表](#9-create-配置表)
@@ -133,14 +149,14 @@ local lvgl = require("lvgl")
 
 1. `lcd.new(cfg)` 打开总线和面板（见 [lcd](lcd.md)）。`create` 之前可以用 `panel:full` 确认屏是通的。
 2. `lvgl.create(panel, opts)` 把这块屏交给图形栈，得到 `ui`。之后再调 `panel:full` / `fill` / `flush` 会失败，文案 `lcd bound to lvgl`。屏幕背景改走 `opts.bg` 或 `ui:set_bg`。
-3. `ui:scr_act` / `ui:label` / `ui:arclabel` / `ui:btn` / `ui:obj` / `ui:bar` / `ui:arc` / `ui:checkbox` / `ui:dropdown` / `ui:textarea` / `ui:keyboard` / `ui:switch` / `ui:spinner` / `ui:img` / `ui:msgbox` / `ui:line` / `ui:scale` / `ui:span` / `ui:canvas` 建树；外观用默认主题，再用 `ui:style` + `add_style` 或 `ui:set_style` 覆盖。图片源见 [7.27](#7-27-set-src)。分段句柄见 [7.82](#7-82-add-span)。
+3. `ui:scr_act` / `ui:label` / `ui:arclabel` / `ui:btn` / `ui:obj` / `ui:bar` / `ui:arc` / `ui:checkbox` / `ui:dropdown` / `ui:textarea` / `ui:keyboard` / `ui:switch` / `ui:spinner` / `ui:img` / `ui:msgbox` / `ui:line` / `ui:scale` / `ui:span` / `ui:canvas` / `ui:led` / `ui:chart` 建树；外观用默认主题，再用 `ui:style` + `add_style` 或 `ui:set_style` 覆盖。图片源见 [7.27](#7-27-set-src)。分段句柄见 [7.82](#7-82-add-span)。图表序列见 [7.100](#7-100-add-series)。
 4. 改文字、改位置只记脏。脚本让出后，独立任务才画、才往屏上刷。
 5. 不要循环 `ui:handler()`。长期脚本用 `rt.delay(-1)` 或自己的业务循环。
 6. 不用时 `ui:deinit()`，才能再 `create` 一次。
 
 | 能做 | 不能做 |
 | --- | --- |
-| 标签、弧标签、按钮、空白容器、进度条、弧进度、复选框、下拉框、文本框、软键盘、开关、转圈、图片、消息框、折线、刻度盘 | 官方 LVGL 其它控件（slider、list…）未挂 |
+| 标签、弧标签、按钮、空白容器、进度条、弧进度、复选框、下拉框、文本框、软键盘、开关、转圈、图片、消息框、折线、刻度盘、富文本、画布、指示灯、图表 | 官方 LVGL 其它控件（slider、list…）未挂 |
 | JPEG、LVGL 图像 `.bin`（RAM / ublob / lfs）；`set_scale` 缩放像素 | BMP、PNG、GIF；不认盘符路径；`set_size` 只改外框不缩放 |
 | 子集字库：LVGL 点阵 `.bin`（含压缩）/ TTF（RAM / ublob / lfs） | 运行时 OTF(CFF)、WOFF、WOFF2；FreeType |
 | 默认 light/dark 主题 + 样式覆盖 | 换官方主题引擎 |
@@ -155,7 +171,7 @@ local lvgl = require("lvgl")
 ```
 ┌─────────────────────────────────────────────────────────┐
 │  Lua 脚本                                                │
-│  lcd.new → lvgl.create → label/arclabel/bar/arc/checkbox/dropdown/textarea/keyboard/switch/spinner/btn/img/msgbox/line/scale/span/canvas/style → rt.delay │
+│  lcd.new → lvgl.create → label/arclabel/bar/arc/checkbox/dropdown/textarea/keyboard/switch/spinner/btn/img/msgbox/line/scale/span/canvas/led/chart/style → rt.delay │
 │  一次让出结束前：只记脏，不刷屏                           │
 └────────────────────────────┬────────────────────────────┘
                              │
@@ -192,13 +208,14 @@ local lvgl = require("lvgl")
 
 ## 3. 对象模型
 
-五种 userdata，职责不同：
+六种 userdata，职责不同：
 
 | 对象 | 怎么来 | 有没有方法 | 必须持有 |
 | --- | --- | --- | --- |
 | **ui** | `lvgl.create` | 有，见 [第 7 节](#7-对象方法) | 是，丢掉会被回收并 `deinit` |
-| **控件** | `scr_act` / `label` / `arclabel` / `btn` / `obj` / `bar` / `arc` / `checkbox` / `dropdown` / `textarea` / `keyboard` / `switch` / `spinner` / `img` / `msgbox` / `line` / `scale` / `span`（组） / `canvas` | **没有。** 不能 `lab:set_pos` | 建议拿着方便传给 `ui:set_*`；GC 掉句柄 **不会** 删掉树上的控件 |
+| **控件** | `scr_act` / `label` / `arclabel` / `btn` / `obj` / `bar` / `arc` / `checkbox` / `dropdown` / `textarea` / `keyboard` / `switch` / `spinner` / `img` / `msgbox` / `line` / `scale` / `span`（组） / `canvas` / `led` / `chart` | **没有。** 不能 `lab:set_pos` | 建议拿着方便传给 `ui:set_*`；GC 掉句柄 **不会** 删掉树上的控件 |
 | **分段** | `ui:add_span` | **没有。** 不是控件，不能 `set_pos` / `set_size` | 建议拿着，才能再 `set_text` / `set_style` / `delete_span`。GC 掉句柄 **不会** 删掉组里的那段文字 |
+| **序列** | `ui:add_series` | **没有。** 不是控件 | 建议拿着，才能再 `set_next` / `set_values` / `delete_series`。GC 掉句柄 **不会** 删掉图上的那条线 |
 | **样式** | `ui:style({...})` | 只有 `style:set` | **是。** 丢掉引用会被回收并重置；已 `add_style` 的控件会丢这份样式 |
 | **字库** | `ui:font(src)` | **没有。** | **是。** 丢掉会被回收；仍 `set_font` 在控件上等于空悬指针。和样式一样放到模块级 / upvalue |
 
@@ -257,7 +274,7 @@ lvgl.label("x")         -- create 之前：抛错 call lvgl.create first
 
 ## 4. 常量与枚举
 
-`luaopen` 导出不透明度、缩放基准、圆角满圆，以及对齐 / 方向 / 进度条与弧进度模式 / 下拉展开方向 / 开关方向 / 软键盘模式 / 刻度盘模式 / 富文本模式与溢出 / 部件与状态 / 弧标签溢出。主题名、色深、缓冲模式仍是 **字符串**。
+`luaopen` 导出不透明度、缩放基准、圆角满圆，以及对齐 / 方向 / 进度条与弧进度模式 / 下拉展开方向 / 开关方向 / 软键盘模式 / 刻度盘模式 / 富文本模式与溢出 / 指示灯亮度 / 图表类型与轴 / 部件与状态 / 弧标签溢出。主题名、色深、缓冲模式仍是 **字符串**。
 
 `lvgl.SCALE_NONE`（256）只给 [`ui:set_scale`](#7-28-set-scale) 当图片 1:1；刻度盘控件请用 `SCALE_MODE_*`，不要和这个常量混。富文本请用 `SPAN_MODE_*` / `SPAN_OVERFLOW_*`，不要拿进度条模式或弧标签 `OVERFLOW_*` 的整数去套。
 
@@ -399,6 +416,35 @@ lvgl.label("x")         -- create 之前：抛错 call lvgl.create first
 | `lvgl.SPAN_OVERFLOW_CLIP` | `0` | 超出裁掉 | `"clip"` |
 | `lvgl.SPAN_OVERFLOW_ELLIPSIS` | `1` | 超出画省略号 | `"ellipsis"` |
 
+### 4.10 指示灯亮度 {#410-指示灯亮度}
+
+只给 [`ui:led`](#7-90-led)。`off` 后亮度是 `LED_BRIGHT_MIN`，不是 `0`。
+
+| 符号 | 值 | 含义 |
+| --- | --- | --- |
+| `lvgl.LED_BRIGHT_MIN` | `80` | `off` 时的亮度 |
+| `lvgl.LED_BRIGHT_MAX` | `255` | `on` 时的亮度 |
+
+### 4.11 图表类型 / 更新 / 轴 {#411-图表}
+
+只给 [`ui:chart`](#7-95-chart)。类型与进度条 `BAR_MODE_*`、折线控件都不是同一套。`set_points` 仍只给折线控件；图表点数用 [`set_point_count`](#7-97-set-point-count)。
+
+| 符号 | 值 | 含义 | 字符串写法 |
+| --- | --- | --- | --- |
+| `lvgl.CHART_TYPE_NONE` | `0` | 不画序列 | `"none"` |
+| `lvgl.CHART_TYPE_LINE` | `1` | 折线（创建时默认） | `"line"` |
+| `lvgl.CHART_TYPE_CURVE` | `2` | 曲线 | `"curve"` |
+| `lvgl.CHART_TYPE_BAR` | `3` | 柱状 | `"bar"` |
+| `lvgl.CHART_TYPE_STACKED` | `4` | 堆叠柱；只要正值 | `"stacked"` |
+| `lvgl.CHART_TYPE_SCATTER` | `5` | 散点（X+Y） | `"scatter"` |
+| `lvgl.CHART_UPDATE_SHIFT` | `0` | 新点从右侧推进，旧点左移 | `"shift"` |
+| `lvgl.CHART_UPDATE_CIRCULAR` | `1` | 环形覆盖 | `"circular"` / `"circ"` |
+| `lvgl.CHART_AXIS_PRIMARY_Y` | `0` | 主 Y（`add_series` / `set_range` 默认） | `"primary_y"` / `"y"` / `"primary"` |
+| `lvgl.CHART_AXIS_SECONDARY_Y` | `1` | 次 Y | `"secondary_y"` / `"y2"` / `"secondary"` |
+| `lvgl.CHART_AXIS_PRIMARY_X` | `2` | 主 X（本绑定的 `set_range` / `add_series` 不用） | `"primary_x"` / `"x"` |
+| `lvgl.CHART_AXIS_SECONDARY_X` | `4` | 次 X | `"secondary_x"` / `"x2"` |
+| `lvgl.CHART_POINT_NONE` | `2147483647` | 隐藏该点 | — |
+
 ---
 
 ## 5. 类型约定
@@ -407,8 +453,9 @@ lvgl.label("x")         -- create 之前：抛错 call lvgl.create first
 | --- | --- | --- |
 | `panel` | lcd 对象 | 必须已经 `lcd.new` 成功 |
 | `ui` | userdata | `create` 的返回值 |
-| `obj` / `parent` / `lab` / `btn` / `img` / `bar` / `arc` / `checkbox` / `dropdown` / `textarea` / `keyboard` / `switch` / `spinner` / `msgbox` / `line` / `scale` / `span` / `canvas` | userdata | 控件句柄，元表无方法。`span` 这里指 **组**（`ui:span` 的返回值） |
+| `obj` / `parent` / `lab` / `btn` / `img` / `bar` / `arc` / `checkbox` / `dropdown` / `textarea` / `keyboard` / `switch` / `spinner` / `msgbox` / `line` / `scale` / `span` / `canvas` / `led` / `chart` | userdata | 控件句柄，元表无方法。`span` 这里指 **组**（`ui:span` 的返回值） |
 | `run` | userdata | `ui:add_span` 的返回值，**不是**控件。只能交给 `set_text` / `get_text` / `set_style` / `delete_span` |
+| `ser` | userdata | `ui:add_series` 的返回值，**不是**控件。只能交给 `set_next` / `set_all` / `set_values` / `set_point` / `set_color` / `delete_series` |
 | `font` | userdata | `ui:font` 的返回值 |
 | `src` | string 或 table | 图片见 [7.27](#7-27-set-src)；字库见 [7.30](#7-30-font)。表字段同一套：`data` / `ublob` / `lfs`+`path` |
 | `style` | userdata | `ui:style` 的返回值 |
@@ -1517,9 +1564,9 @@ ok = ui:set_dir(sw, lvgl.SWITCH_DIR_VERTICAL)
 
 ---
 
-### 7.37 `ui:set_range(obj, min, max)` {#7-37-set-range}
+### 7.37 `ui:set_range(obj, min, max [, axis])` {#7-37-set-range}
 
-进度条、弧进度或刻度盘的最小、最大值。进度条 / 弧进度若 `min > max`，绘制方向反过来。刻度盘的指针 [`set_needle`](#7-79-set-needle) 按这个范围映射角度。
+进度条、弧进度、刻度盘或图表的最小、最大值。进度条 / 弧进度若 `min > max`，绘制方向反过来。刻度盘的指针 [`set_needle`](#7-79-set-needle) 按这个范围映射角度。图表只改 Y 轴；省略 `axis` 则主 Y。
 
 **调用模式**
 
@@ -1535,13 +1582,22 @@ ok = ui:set_range(arc, min, max)
 ok = ui:set_range(scale, min, max)
 ```
 
-`min` / `max` 必须是 integer。
+```lua
+ok = ui:set_range(chart, min, max)
+```
+
+```lua
+ok = ui:set_range(chart, min, max, lvgl.CHART_AXIS_SECONDARY_Y)
+```
+
+`min` / `max` 必须是 integer。图表的 `axis` 只能是主 Y / 次 Y（[4.11](#411-图表)）。
 
 **返回**
 
 | 结果 | 返回 |
 | --- | --- |
-| 目标是进度条、弧进度或刻度盘 | `true` |
+| 目标是进度条、弧进度、刻度盘或图表 | `true` |
+| 图表轴不是主/次 Y | `false, "bad axis"` |
 | 都不是 | `false, "not a bar"` |
 | 刷屏占锁超时 | `false, "lvgl busy"` |
 
@@ -3132,6 +3188,344 @@ ok = ui:draw_label(cv, x, y, text, props)
 
 ---
 
+### 7.90 `ui:led([parent,] [color])` {#7-90-led}
+
+建一盏指示灯。可立刻带上颜色；之后用 [`set_color`](#7-91-set-color)。创建时是亮的（`LED_BRIGHT_MAX`）。这是图形控件，不是 GPIO 灯。
+
+**调用模式**
+
+```lua
+led = ui:led()
+```
+
+```lua
+led = ui:led(parent)
+```
+
+```lua
+led = ui:led(0xFF453A)
+```
+
+```lua
+led = ui:led(parent, 0x34C759)
+```
+
+省略 `parent` 则挂到当前屏幕。
+
+**返回** 控件句柄。刷屏占锁超时：`false, "lvgl busy"`。建不出：**抛错** `led create failed`。非法父亲：**抛错** `invalid parent`。
+
+---
+
+### 7.91 `ui:set_color(obj, color)` {#7-91-set-color}
+
+改指示灯颜色，或改图表一条序列的颜色。
+
+**调用模式**
+
+```lua
+ok = ui:set_color(led, 0x0A84FF)
+```
+
+```lua
+ok = ui:set_color(ser, 0xFF9F0A)
+```
+
+`color` 必须是 integer，编码见 [第 11 节](#11-颜色怎么写)。
+
+**返回**
+
+| 结果 | 返回 |
+| --- | --- |
+| 目标是指示灯或序列 | `true` |
+| 都不是 | `false, "not a led"` |
+| 序列句柄已失效 | **抛错** `invalid lvgl series` |
+| 刷屏占锁超时 | `false, "lvgl busy"` |
+
+---
+
+### 7.92 `ui:set_brightness(obj, bright)` {#7-92-set-brightness}
+
+写指示灯亮度，`0`～`255`。`off` 大约是 `LED_BRIGHT_MIN`（80），不是 0。
+
+**调用模式**
+
+```lua
+ok = ui:set_brightness(led, 180)
+```
+
+**返回**
+
+| 结果 | 返回 |
+| --- | --- |
+| 目标是指示灯 | `true` |
+| 不是指示灯 | `false, "not a led"` |
+| 不在 `0`～`255` | `false, "bad brightness"` |
+| 刷屏占锁超时 | `false, "lvgl busy"` |
+
+缺参抛错。
+
+---
+
+### 7.93 `ui:get_brightness(obj)` {#7-93-get-brightness}
+
+读指示灯当前亮度。
+
+**调用模式**
+
+```lua
+n = ui:get_brightness(led)
+```
+
+**返回** 成功：整数 `0`～`255`。不是指示灯：`false, "not a led"`。刷屏占锁超时：`false, "lvgl busy"`。
+
+---
+
+### 7.94 `ui:on(obj)` / `ui:off(obj)` / `ui:toggle(obj)` {#7-94-on}
+
+指示灯亮、灭、翻转。只对 [`ui:led`](#7-90-led) 有效。和 [`on_click`](#7-24-on-click) 不是一条接口。
+
+**调用模式**
+
+```lua
+ok = ui:on(led)
+```
+
+```lua
+ok = ui:off(led)
+```
+
+```lua
+ok = ui:toggle(led)
+```
+
+`on` 把亮度写成 `LED_BRIGHT_MAX`；`off` 写成 `LED_BRIGHT_MIN`。
+
+**返回** 成功：`true`。不是指示灯：`false, "not a led"`。刷屏占锁超时：`false, "lvgl busy"`。
+
+---
+
+### 7.95 `ui:chart([parent])` {#7-95-chart}
+
+建一个图表。创建时类型 `CHART_TYPE_LINE`。点数默认约 10，请立刻 [`set_point_count`](#7-97-set-point-count)。数据走 [`add_series`](#7-100-add-series) 得到的序列句柄。没有触摸，不能用手点选。
+
+**调用模式**
+
+```lua
+ch = ui:chart()
+```
+
+```lua
+ch = ui:chart(parent)
+```
+
+省略 `parent` 则挂到当前屏幕。
+
+**返回** 控件句柄。刷屏占锁超时：`false, "lvgl busy"`。建不出：**抛错** `chart create failed`。非法父亲：**抛错** `invalid parent`。
+
+一组最多 **8** 条序列，每条最多 **64** 点。
+
+---
+
+### 7.96 `ui:set_type(obj, type)` {#7-96-set-type}
+
+改图表种类。只对图表有效。取值见 [4.11](#411-图表)。
+
+**调用模式**
+
+```lua
+ok = ui:set_type(ch, lvgl.CHART_TYPE_BAR)
+```
+
+```lua
+ok = ui:set_type(ch, "line")
+```
+
+```lua
+ok = ui:set_type(ch, "scatter")
+```
+
+**返回**
+
+| 结果 | 返回 |
+| --- | --- |
+| 目标是图表 | `true` |
+| 取值非法 | `false, "bad type"` |
+| 不是图表 | `false, "not a chart"` |
+| 刷屏占锁超时 | `false, "lvgl busy"` |
+
+---
+
+### 7.97 `ui:set_point_count(obj, n)` {#7-97-set-point-count}
+
+改图表每条序列的点数。`n` 必须是 1～64。和折线控件的 [`set_points`](#7-76-set-points) 不是一条接口。
+
+**调用模式**
+
+```lua
+ok = ui:set_point_count(ch, 24)
+```
+
+**返回** 成功：`true`。越界：`false, "bad points"`。不是图表：`false, "not a chart"`。刷屏占锁超时：`false, "lvgl busy"`。缺参抛错。
+
+---
+
+### 7.98 `ui:set_div_count(obj, hdiv, vdiv)` {#7-98-set-div-count}
+
+改图表水平和竖直分格线数量。`hdiv` / `vdiv` 必须是 0～32。
+
+**调用模式**
+
+```lua
+ok = ui:set_div_count(ch, 3, 5)
+```
+
+**返回** 成功：`true`。越界：`false, "bad div"`。不是图表：`false, "not a chart"`。刷屏占锁超时：`false, "lvgl busy"`。缺参抛错。
+
+---
+
+### 7.99 `ui:set_update_mode(obj, mode)` {#7-99-set-update-mode}
+
+改 [`set_next`](#7-102-set-next) 怎么推进。只对图表有效。不要和 [`set_mode`](#7-43-set-mode) 混用。
+
+**调用模式**
+
+```lua
+ok = ui:set_update_mode(ch, lvgl.CHART_UPDATE_SHIFT)
+```
+
+```lua
+ok = ui:set_update_mode(ch, "circular")
+```
+
+**返回** 成功：`true`。取值非法：`false, "bad mode"`。不是图表：`false, "not a chart"`。刷屏占锁超时：`false, "lvgl busy"`。
+
+---
+
+### 7.100 `ui:add_series(obj, color [, axis])` {#7-100-add-series}
+
+在图表上追加一条序列，返回 **序列 userdata**（不是控件）。省略 `axis` 则挂到主 Y。
+
+**调用模式**
+
+```lua
+ser = ui:add_series(ch, 0x0A84FF)
+```
+
+```lua
+ser = ui:add_series(ch, 0xFF9F0A, lvgl.CHART_AXIS_SECONDARY_Y)
+```
+
+`obj` 必须是 [`ui:chart`](#7-95-chart) 的返回值。`axis` 只能是主 Y / 次 Y。
+
+**返回**
+
+| 结果 | 返回 |
+| --- | --- |
+| 成功 | 序列句柄 |
+| 目标不是图表 | `false, "not a chart"` |
+| 已经 8 条 | `false, "series full"` |
+| 轴非法 | `false, "bad axis"` |
+| 刷屏占锁超时 | `false, "lvgl busy"` |
+| 加不出 | **抛错** `series add failed` |
+
+---
+
+### 7.101 `ui:delete_series(ser)` / `ui:delete_series(chart, ser)` {#7-101-delete-series}
+
+删掉图表上的一条序列。图还在。句柄随后失效。
+
+**调用模式**
+
+```lua
+ok = ui:delete_series(ser)
+```
+
+```lua
+ok = ui:delete_series(ch, ser)
+```
+
+**返回** `true`。句柄已失效：**抛错** `invalid lvgl series`。组与序列对不上：`false, "not a series"`。刷屏占锁超时：`false, "lvgl busy"`。
+
+---
+
+### 7.102 `ui:set_next(ser, y)` / `ui:set_next(ser, x, y)` {#7-102-set-next}
+
+按更新模式推进一个点。折线 / 柱状只传 `y`。散点传 `x, y`。
+
+**调用模式**
+
+```lua
+ok = ui:set_next(ser, 72)
+```
+
+```lua
+ok = ui:set_next(ser, 10, 72)
+```
+
+两参坐标只对 `CHART_TYPE_SCATTER` 有效，否则 `false, "bad type"`。
+
+**返回** `true`。句柄失效：**抛错** `invalid lvgl series`。刷屏占锁超时：`false, "lvgl busy"`。缺参抛错。
+
+---
+
+### 7.103 `ui:set_all(ser, value)` {#7-103-set-all}
+
+把该序列所有点写成同一个值。可用 `lvgl.CHART_POINT_NONE` 隐藏。
+
+**调用模式**
+
+```lua
+ok = ui:set_all(ser, 50)
+```
+
+**返回** 同 [7.102](#7-102-set-next)（无 `bad type`）。
+
+---
+
+### 7.104 `ui:set_values(ser, ys)` / `ui:set_values(ser, xs, ys)` {#7-104-set-values}
+
+按更新模式连续推进表里的点。表长度 1～64。两表写法只给散点，两表长度必须相同。
+
+**调用模式**
+
+```lua
+ok = ui:set_values(ser, { 20, 35, 48, 62 })
+```
+
+```lua
+ok = ui:set_values(ser, { 0, 1, 2 }, { 10, 20, 15 })
+```
+
+**返回**
+
+| 结果 | 返回 |
+| --- | --- |
+| 成功 | `true` |
+| 表非法、过长或两表长度不同 | `false, "bad points"` |
+| 两表却不是散点 | `false, "bad type"` |
+| 句柄失效 | **抛错** `invalid lvgl series` |
+| 刷屏占锁超时 | `false, "lvgl busy"` |
+
+---
+
+### 7.105 `ui:set_point(ser, id, y)` / `ui:set_point(ser, id, x, y)` {#7-105-set-point}
+
+按点数下标直接改一个点。`id` 从 `0` 起，必须小于当前 [`set_point_count`](#7-97-set-point-count)。四参只给散点。
+
+**调用模式**
+
+```lua
+ok = ui:set_point(ser, 0, 80)
+```
+
+```lua
+ok = ui:set_point(ser, 0, 10, 80)
+```
+
+**返回** 成功：`true`。下标越界：`false, "bad id"`。四参却不是散点：`false, "bad type"`。句柄失效：**抛错** `invalid lvgl series`。刷屏占锁超时：`false, "lvgl busy"`。
+
+---
+
 ## 8. 样式对象方法
 
 ---
@@ -3274,7 +3668,7 @@ rt.delay(-1)   -- 或业务循环里正常 delay；让出后独立任务才画
 | 接口 | 成功 | 失败 |
 | --- | --- | --- |
 | `create` | `ui` | **抛错** |
-| `label` / `arclabel` / `btn` / `obj` / `bar` / `arc` / `checkbox` / `dropdown` / `textarea` / `keyboard` / `switch` / `spinner` / `img` / `msgbox` / `line` / `scale` / `span` / `canvas` / `font` | 句柄 | 刷屏占锁超时：`false, "lvgl busy"`；`img(src)` / `font(src)` 解码失败：**抛错**（不建对象）；`dropdown(options)` 非法：`false, "bad options"`；`spinner` 的 `t`/`angle` 非法：`false, "bad anim"` / `"bad angle"`；`keyboard` 第 2 参不是文本框：`false, "not a textarea"`；`line` 点表非法：`false, "bad points"`；点数组分配失败：`false, "no mem"`；`canvas` 宽高越界：`false, "bad size"`；画布缓冲失败：`false, "no mem"`；其余 **抛错** |
+| `label` / `arclabel` / `btn` / `obj` / `bar` / `arc` / `checkbox` / `dropdown` / `textarea` / `keyboard` / `switch` / `spinner` / `img` / `msgbox` / `line` / `scale` / `span` / `canvas` / `led` / `chart` / `font` | 句柄 | 刷屏占锁超时：`false, "lvgl busy"`；`img(src)` / `font(src)` 解码失败：**抛错**（不建对象）；`dropdown(options)` 非法：`false, "bad options"`；`spinner` 的 `t`/`angle` 非法：`false, "bad anim"` / `"bad angle"`；`keyboard` 第 2 参不是文本框：`false, "not a textarea"`；`line` 点表非法：`false, "bad points"`；点数组分配失败：`false, "no mem"`；`canvas` 宽高越界：`false, "bad size"`；画布缓冲失败：`false, "no mem"`；其余 **抛错** |
 | `set_src` | `true` | 非图片：`false, "not an image"`；源失败：`false, 文案`（原图还在）；锁超时：`false, "lvgl busy"` |
 | `set_font` | `true` | 锁超时：`false, "lvgl busy"`；非法字库句柄：**抛错** `invalid lvgl font` |
 | `set_scale` | `true` | 非图片：`false, "not an image"`；`scale < 0`：`false, "bad scale"`；锁超时：`false, "lvgl busy"` |
@@ -3285,7 +3679,7 @@ rt.delay(-1)   -- 或业务循环里正常 delay；让出后独立任务才画
 | `get_text` | string | 非标签/复选框/文本框/下拉框/消息框/分段：`false, "not a label"`；分段句柄失效：**抛错** `invalid lvgl span`；锁超时：`false, "lvgl busy"` |
 | `align` | `true` | 对齐非法：`false, "bad align"`；锁超时：`false, "lvgl busy"` |
 | `set_dir` / `get_dir` | `true` / 整数 | 非弧标签、进度条、下拉框、开关：`false, "unsupported"`；方向非法：`false, "bad dir"`；锁超时：`false, "lvgl busy"` |
-| `set_range` / `set_mode` | `true` | 非进度条且非弧进度且非刻度盘，且非软键盘且非富文本组（仅 `set_mode`）：`false, "not a bar"`；模式对当前控件不合法：`false, "bad mode"`；锁超时：`false, "lvgl busy"` |
+| `set_range` / `set_mode` | `true` | 非进度条且非弧进度且非刻度盘且非图表（`set_range`），且非软键盘且非富文本组（仅 `set_mode`）：`false, "not a bar"`；图表轴非法：`false, "bad axis"`；模式对当前控件不合法：`false, "bad mode"`；锁超时：`false, "lvgl busy"` |
 | `set_value` | `true` | 非进度条/弧进度/复选框/开关/下拉框：`false, "not a bar"`；下拉框下标 `< 0`：`false, "bad value"`；锁超时：`false, "lvgl busy"` |
 | `set_start_value` | `true` | 非进度条：`false, "not a bar"`；锁超时：`false, "lvgl busy"` |
 | `get_value` | 整数 | 非进度条/弧进度/复选框/开关/下拉框：`false, "not a bar"`；锁超时：`false, "lvgl busy"` |
@@ -3307,6 +3701,12 @@ rt.delay(-1)   -- 或业务循环里正常 delay；让出后独立任务才画
 | `add_span` | 分段句柄 | 非富文本组：`false, "not a span"`；已满 24 段：`false, "span full"`；锁超时：`false, "lvgl busy"`；加不出：**抛错** |
 | `delete_span` | `true` | 组与段对不上：`false, "not a span"`；句柄失效：**抛错** `invalid lvgl span`；锁超时：`false, "lvgl busy"` |
 | `fill` / `set_px` / `draw_rect` / `draw_line` / `draw_label` | `true` | 非画布：`false, "not a canvas"`；`set_px` 坐标 `< 0`：`false, "bad pos"`；`draw_rect` / `canvas` 尺寸非法：`false, "bad size"`；不透明度非法：`false, "bad opa"`；无缓冲：`false, "no mem"`；锁超时：`false, "lvgl busy"` |
+| `set_color` / `set_brightness` / `on` / `off` / `toggle` | `true` | 非指示灯且（仅 `set_color`）非序列：`false, "not a led"`；亮度越界：`false, "bad brightness"`；序列句柄失效：**抛错** `invalid lvgl series`；锁超时：`false, "lvgl busy"` |
+| `get_brightness` | 整数 | 非指示灯：`false, "not a led"`；锁超时：`false, "lvgl busy"` |
+| `set_type` / `set_point_count` / `set_div_count` / `set_update_mode` | `true` | 非图表：`false, "not a chart"`；类型非法：`false, "bad type"`；点数越界：`false, "bad points"`；分格越界：`false, "bad div"`；更新模式非法：`false, "bad mode"`；锁超时：`false, "lvgl busy"` |
+| `add_series` | 序列句柄 | 非图表：`false, "not a chart"`；已满 8 条：`false, "series full"`；轴非法：`false, "bad axis"`；锁超时：`false, "lvgl busy"`；加不出：**抛错** |
+| `delete_series` | `true` | 图与序列对不上：`false, "not a series"`；句柄失效：**抛错** `invalid lvgl series`；锁超时：`false, "lvgl busy"` |
+| `set_next` / `set_all` / `set_values` / `set_point` | `true` | 散点接口用在非散点上：`false, "bad type"`；点表非法：`false, "bad points"`；下标越界：`false, "bad id"`；句柄失效：**抛错** `invalid lvgl series`；锁超时：`false, "lvgl busy"` |
 | `set_radius` | `true` | 弧标签 `r < 0`：`false, "bad radius"`；锁超时：`false, "lvgl busy"` |
 | `handler` | 整数 `0` | 未 create 抛错 |
 | `mem` | 三整数 | 未 create 抛错 |
@@ -3332,12 +3732,13 @@ rt.delay(-1)   -- 或业务循环里正常 delay；让出后独立任务才画
 | `lvgl ui not initialized` | ui 已 deinit 还在用 |
 | `invalid lvgl object` | 控件句柄无效或不是本模块对象 |
 | `invalid lvgl span` | 分段句柄无效、所属组已拆，或段已被 `delete_span` |
+| `invalid lvgl series` | 序列句柄无效、所属图已拆，或序列已被 `delete_series` |
 | `invalid lvgl style` | 样式对象无效或已被 GC |
 | `invalid lvgl font` | `set_font` 的第 2 参不是 `ui:font` 的句柄 |
 | `unsupported font format` | `ui:font(src)` 文件头不是点阵 `.bin` / TTF |
 | `bad size` | `ui:font` 的 TTF 字号 `<= 0` |
 | `invalid parent` | 父亲句柄坏或当前没有屏幕 |
-| `label create failed` / `arclabel create failed` / `btn create failed` / `obj create failed` / `bar create failed` / `arc create failed` / `checkbox create failed` / `dropdown create failed` / `textarea create failed` / `keyboard create failed` / `switch create failed` / `spinner create failed` / `img create failed` / `msgbox create failed` / `line create failed` / `scale create failed` / `span create failed` / `span add failed` / `canvas create failed` / `footer btn failed` / `close btn failed` | 控件堆不够，看 `ui:mem()`，加大 `mem_max` 或少建控件 |
+| `label create failed` / `arclabel create failed` / `btn create failed` / `obj create failed` / `bar create failed` / `arc create failed` / `checkbox create failed` / `dropdown create failed` / `textarea create failed` / `keyboard create failed` / `switch create failed` / `spinner create failed` / `img create failed` / `msgbox create failed` / `line create failed` / `scale create failed` / `span create failed` / `span add failed` / `canvas create failed` / `led create failed` / `chart create failed` / `series add failed` / `footer btn failed` / `close btn failed` | 控件堆不够，看 `ui:mem()`，加大 `mem_max` 或少建控件 |
 | `unsupported image format` | `ui:img(src)` 文件头不是 JPEG / LVGL `.bin` |
 | `bad src` / `not found` / `fs not mounted` / `decode failed` / `no mem` | `ui:img(src)` / `ui:font(src)` 源无效、找不到、解不开或缓冲不够；`set_src` 同一批文案走返回值 |
 | `rt vm context missing` | 脚本还没进 rt 调度（极少见） |
@@ -3350,7 +3751,7 @@ rt.delay(-1)   -- 或业务循环里正常 delay；让出后独立任务才画
 | --- | --- |
 | `false, "not a label"` | `set_text` 的目标不是标签 / 弧标签 / 复选框 / 下拉框 / 文本框 / 消息框 / 分段；`get_text` 的目标不是标签 / 复选框 / 文本框 / 下拉框 / 消息框 / 分段；`set_text_align` 的目标不是 `ui:label` / `ui:arclabel` / `ui:textarea` / `ui:span` |
 | `false, "not an arclabel"` | `set_angle` 打在既非弧标签也非弧进度也非刻度盘上；`set_offset` / `set_center_offset` / `set_recolor` 打在非弧标签上；`set_overflow` 打在既非弧标签也非富文本组上 |
-| `false, "not a bar"` | `set_range` / `get_range` 打在既非进度条也非弧进度也非刻度盘上；`set_mode` 打在既非进度条也非弧进度也非软键盘也非刻度盘也非富文本组上；`set_value` / `get_value` 打在进度条、弧进度、复选框、开关、下拉框之外；`set_start_value` 打在非进度条上 |
+| `false, "not a bar"` | `set_range` / `get_range` 打在既非进度条也非弧进度也非刻度盘也非图表（仅 `set_range`）上；`set_mode` 打在既非进度条也非弧进度也非软键盘也非刻度盘也非富文本组上；`set_value` / `get_value` 打在进度条、弧进度、复选框、开关、下拉框之外；`set_start_value` 打在非进度条上 |
 | `false, "not an arc"` | `set_bg_angle` 打在非弧进度上；`set_rotation` 打在既非弧进度也非刻度盘也非图片上 |
 | `false, "not a dropdown"` | `set_options` / `open` 打在非下拉框上；`close` 打在既非下拉框也非消息框上 |
 | `false, "not a textarea"` | `add_text` 打在既非文本框也非消息框上；`set_placeholder` / `set_password` / `set_one_line` 打在非文本框上；`keyboard` / `set_textarea` 的绑定目标不是文本框 |
@@ -3359,7 +3760,11 @@ rt.delay(-1)   -- 或业务循环里正常 delay；让出后独立任务才画
 | `false, "not a scale"` | `set_ticks` / `set_needle` 打在非刻度盘上 |
 | `false, "not a span"` | `add_span` 打在非富文本组上；`delete_span(group, run)` 的组与段对不上 |
 | `false, "not a canvas"` | `fill` / `set_px` / `draw_rect` / `draw_line` / `draw_label` 打在非画布上 |
+| `false, "not a led"` | `set_color` / `set_brightness` / `get_brightness` / `on` / `off` / `toggle` 打在非指示灯上（`set_color` 也接受序列） |
+| `false, "not a chart"` | `set_type` / `set_point_count` / `set_div_count` / `set_update_mode` / `add_series` 打在非图表上 |
+| `false, "not a series"` | `delete_series(chart, ser)` 的图与序列对不上 |
 | `false, "span full"` | 一组已经 24 段 |
+| `false, "series full"` | 一张图已经 8 条序列 |
 | `false, "not a keyboard"` | `set_textarea` / `set_popovers` 打在非软键盘上 |
 | `false, "not a spinner"` | `set_anim` / `get_anim` 打在非转圈上 |
 | `false, "bad anim"` | 转圈周期 `t < 1` |
@@ -3368,13 +3773,18 @@ rt.delay(-1)   -- 或业务循环里正常 delay；让出后独立任务才画
 | `false, "bad dir"` | `set_dir` 的取值对当前控件不合法（例如把 `"vertical"` 传给弧标签，或把 `"cw"` 传给下拉框） |
 | `false, "bad value"` | 下拉框 `set_value` 的下标小于 0 |
 | `false, "bad options"` | `dropdown` / `set_options` 的选项既不是 string 也不是数组表 |
-| `false, "bad mode"` | `set_mode` 的取值对当前控件不合法（进度条：`normal` / `symmetrical` / `range`；弧进度：`normal` / `symmetrical` / `reverse`；软键盘：`lower` / `upper` / `special` / `number`；刻度盘：`round` / `round_outer` / `h_top` / `h_bottom` / `v_left` / `v_right`；富文本组：`fixed` / `expand` / `break`） |
+| `false, "bad mode"` | `set_mode` 的取值对当前控件不合法（进度条：`normal` / `symmetrical` / `range`；弧进度：`normal` / `symmetrical` / `reverse`；软键盘：`lower` / `upper` / `special` / `number`；刻度盘：`round` / `round_outer` / `h_top` / `h_bottom` / `v_left` / `v_right`；富文本组：`fixed` / `expand` / `break`）；或 `set_update_mode` 不是 `shift` / `circular` |
+| `false, "bad type"` | `set_type` 不是图表种类；或 `set_next` / `set_values` / `set_point` 的散点写法用在非散点图上 |
+| `false, "bad axis"` | 图表 `set_range` / `add_series` 的轴不是主 Y / 次 Y |
+| `false, "bad brightness"` | `set_brightness` 不在 `0`～`255` |
+| `false, "bad div"` | `set_div_count` 的水平或竖直格数不在 `0`～`32` |
+| `false, "bad id"` | `set_point` 的下标小于 0 或不小于当前点数 |
 | `false, "bad overflow"` | 弧标签 `set_overflow` 不是 `visible` / `ellipsis` / `clip` 或其整数；富文本组不是 `clip` / `ellipsis` 或 `SPAN_OVERFLOW_*` |
 | `false, "bad radius"` | 弧标签 `set_radius` 传了负数 |
 | `false, "bad state"` | `add_state` / `remove_state` 的 `state` 不是 `1`～`65535` |
 | `false, "bad angle"` | 转圈弧长不在 `1`～`360`；刻度盘 `set_angle` 的量程角 `< 0` |
 | `false, "bad ticks"` | `set_ticks` 的 `total` 或 `major_every` 小于 0 |
-| `false, "bad points"` | `line` / `set_points` 的表不是点数组、扁平坐标不是偶数个、或超过 64 点 |
+| `false, "bad points"` | `line` / `set_points` 的表不是点数组、扁平坐标不是偶数个、或超过 64 点；`set_point_count` 不在 1～64；`set_values` 的表非法、过长或两表长度不同 |
 | `false, "no mem"` | 折线点数组、事件钩或画布缓冲分配失败 |
 | `false, "bad size"` | `ui:canvas` 宽高不在 1～240 × 1～280；`draw_rect` 的 `w`/`h` 小于 1 |
 | `false, "bad pos"` | `set_px` 的 x 或 y 小于 0 |
@@ -3386,7 +3796,7 @@ rt.delay(-1)   -- 或业务循环里正常 delay；让出后独立任务才画
 | `false, "lvgl busy"` | 图形任务正在画/持锁，Lua 等锁超过约 200ms。可稍后重试；不要当致命错误 |
 | `false, "bad src"` 等 | `set_src` 源失败，文案同 [7.27](#7-27-set-src) 表；原图还在 |
 
-诊断：create 抛错看 `mem_max` 和是否已 create；`bound to lvgl` 出现在 **lcd** 侧；`not a label` 对按钮要用内部 label 或改 `set_style` 文字色而不是 `set_text(btn)`。弧标签/进度条/弧进度/下拉框/文本框/软键盘/消息框/折线/刻度盘/富文本组/画布用错控件会看到 `not an arclabel` / `not a bar` / `not an arc` / `not a dropdown` / `not a textarea` / `not a keyboard` / `not a msgbox` / `not a line` / `not a scale` / `not a span` / `not a canvas`。开关方向不合法是 `unsupported` / `bad dir`。图片失败先看文件头和 `ui:mem()`。
+诊断：create 抛错看 `mem_max` 和是否已 create；`bound to lvgl` 出现在 **lcd** 侧；`not a label` 对按钮要用内部 label 或改 `set_style` 文字色而不是 `set_text(btn)`。弧标签/进度条/弧进度/下拉框/文本框/软键盘/消息框/折线/刻度盘/富文本组/画布/指示灯/图表用错控件会看到 `not an arclabel` / `not a bar` / `not an arc` / `not a dropdown` / `not a textarea` / `not a keyboard` / `not a msgbox` / `not a line` / `not a scale` / `not a span` / `not a canvas` / `not a led` / `not a chart`。开关方向不合法是 `unsupported` / `bad dir`。图片失败先看文件头和 `ui:mem()`。
 
 ---
 
@@ -3405,6 +3815,7 @@ rt.delay(-1)   -- 或业务循环里正常 delay；让出后独立任务才画
 | 字库 | 点阵 `.bin` 或 TTF。整文件进 `mem_max`。TTF 原文常驻到字库 GC；点阵解析后释原文。ublob 明文 ≤ 256 KB；lfs 单文件 ≤ 512 KB。默认字仍占固件，不占这份堆。必须持有字库句柄 |
 | 富文本分段 | 每组最多 **24** 段。段 userdata 被 GC **不**删那段；`delete_span` 或拆组才删 |
 | 画布 | RGB565，宽高上限 240×280。缓冲 `w*h*2` 字节走 `mem_max`；控件删除时释放。不要整屏循环 `set_px` |
+| 图表序列 | 每图最多 **8** 条，每条最多 **64** 点。序列 userdata 被 GC **不**删那条线；`delete_series` 或拆图才删 |
 
 `create` 会把 lcd 对象钉在注册表里，脚本丢掉 `panel` 局部变量也不会先拆屏。`ui` 被 GC 或 `deinit` 后面板解除占用。
 
@@ -3427,13 +3838,15 @@ VM 退出会回收还活着的 `ui`。
 | 需求 | 用 |
 | --- | --- |
 | 先确认 SPI 和屏能出纯色 | [`lcd`](lcd.md) 的 `full` / `fill`，**尚未** `lvgl.create` |
-| 标签、弧标签、按钮、进度条、弧进度、复选框、下拉框、文本框、软键盘、开关、转圈、消息框、折线、刻度盘、富文本、画布、顶栏、主题 | 本模块 |
+| 标签、弧标签、按钮、进度条、弧进度、复选框、下拉框、文本框、软键盘、开关、转圈、消息框、折线、刻度盘、富文本、画布、指示灯、图表、顶栏、主题 | 本模块 |
 | 显示 JPEG / LVGL `.bin` | `ui:img` / `ui:set_src`；源可以是 RAM 字节、[`ublob`](ublob.md) 短名、已挂载的 [`lfs`](lfs.md) 对象 + 路径 |
 | 已上屏的图要缩小 / 放大 | [`ui:set_scale`](#7-28-set-scale)；`256` / `lvgl.SCALE_NONE` 为原尺寸。[`ui:set_size`](#7-19-set-size) 只改外框 |
 | 已上屏的图要旋转 | [`ui:set_rotation`](#7-51-set-rotation)（Lua 度）+ [`ui:set_pivot`](#7-80-set-pivot)；或样式 `transform_rotation` |
 | 模拟指针表盘 | [`ui:scale`](#7-77-scale) 圆环 + [`ui:line`](#7-75-line) 指针 + [`set_needle`](#7-79-set-needle) |
 | 一行里多种颜色 / 字重 | [`ui:span`](#7-81-span) + [`add_span`](#7-82-add-span)；不要拿多个 `label` 硬拼 |
 | 自己画矢量装饰 / 小仪表底图 | [`ui:canvas`](#7-84-canvas)；不要循环 `set_px` |
+| 状态指示灯（图形，不是 GPIO） | [`ui:led`](#7-90-led) |
+| 实时曲线 / 柱状 | [`ui:chart`](#7-95-chart) + [`add_series`](#7-100-add-series) |
 | BMP / PNG / GIF | 不是本模块 |
 | create 之后再填色 | `ui:set_bg` / 样式，不要 `panel:full` |
 | 标签要显示中文 / 自选字形 | [`ui:font`](#7-30-font) + [`ui:set_font`](#7-31-set-font)；子集点阵 `.bin` 或 TTF，源为 RAM / ublob / lfs |
@@ -3463,6 +3876,8 @@ VM 退出会回收还活着的 `ui`。
 | [lvgl_watchface](../../../../../examples/nt26/module/lvgl/lvgl_watchface) | 模拟指针表盘：圆环刻度 + 时分秒折线指针，屏底实时 `HH:MM` |
 | [lvgl_span](../../../../../examples/nt26/module/lvgl/lvgl_span) | 富文本：分段着色、BREAK 换行、FIXED 省略号 |
 | [lvgl_canvas](../../../../../examples/nt26/module/lvgl/lvgl_canvas) | 画布：`fill` / `draw_rect`（含满圆）/ `draw_line` / `draw_label` |
+| [lvgl_led](../../../../../examples/nt26/module/lvgl/lvgl_led) | 指示灯：颜色、`on` / `off` / `toggle`、亮度 |
+| [lvgl_chart](../../../../../examples/nt26/module/lvgl/lvgl_chart) | 图表：折线 SHIFT 推点、柱状 `set_values` |
 | [lvgl_img](../../../../../examples/nt26/module/lvgl/lvgl_img) | `ublob` JPEG → `ui:img` → `ui:set_scale` 循环缩小再放大 |
 
 下面是 `lvgl_demo` 同路径的最小脚本。脚号按板子改；SPI0 与 UART2 默认脚重叠时需要配置里 `[uart.2] pin_map=1`。图片不要写进仓库，放到工程内置文件系统、存储选 blob 后再 `set_src`。
@@ -3620,6 +4035,21 @@ ui:set_text_align(hint, lvgl.TEXT_ALIGN_LEFT)
 -- ui:draw_rect(cv, 50, 10, 100, 100, { bg = 0x0A84FF, radius = lvgl.RADIUS_CIRCLE })
 -- ui:draw_label(cv, 16, 90, "canvas", { text_color = 0xFFFFFF })
 
+-- 指示灯：图形控件，不是 GPIO。
+-- local led = ui:led(0x34C759)
+-- ui:set_size(led, 32, 32)
+-- ui:on(led)
+-- ui:set_brightness(led, 180)
+
+-- 图表：序列不是控件。
+-- local ch = ui:chart()
+-- ui:set_size(ch, 200, 100)
+-- ui:set_type(ch, lvgl.CHART_TYPE_LINE)
+-- ui:set_point_count(ch, 24)
+-- ui:set_range(ch, 0, 100)
+-- local ser = ui:add_series(ch, 0x0A84FF)
+-- ui:set_next(ser, 72)
+
 -- 字库：点阵 .bin 或 TTF。必须持有 font。不要把字库文件写进仓库。
 -- local font = ui:font({ ublob = "zh.bin" })
 -- local font = ui:font({ ublob = "zh.ttf", size = 14 })
@@ -3700,3 +4130,4 @@ end
 | 1.15.1 | 2026-09-18 | 可烧录工程增加 [lvgl_watchface](../../../../../examples/nt26/module/lvgl/lvgl_watchface)：三环表盘实时走时 |
 | 1.16.0 | 2026-09-18 | 增加折线 `ui:line`、刻度盘 `ui:scale`；`set_points` / `set_ticks` / `set_needle` / `set_pivot`；`set_range` / `get_range` / `set_mode` / `set_angle` / `set_rotation` 适配刻度盘，`set_rotation` 并适配图片（Lua 度）；样式增加 `line_*` / `length` / `transform_*`；导出 `SCALE_MODE_*`。表盘例程改为指针+刻度 |
 | 1.17.0 | 2026-09-18 | 增加富文本 `ui:span` / `add_span` / `delete_span` 与画布 `ui:canvas`；`set_text` / `get_text` / `set_style` / `set_mode` / `set_overflow` / `set_text_align` 适配分段与组；新增 `fill` / `set_px` / `draw_rect` / `draw_line` / `draw_label`；导出 `SPAN_MODE_*` / `SPAN_OVERFLOW_*` / `RADIUS_CIRCLE`。可烧录工程 [lvgl_span](../../../../../examples/nt26/module/lvgl/lvgl_span)、[lvgl_canvas](../../../../../examples/nt26/module/lvgl/lvgl_canvas) |
+| 1.18.0 | 2026-09-18 | 增加指示灯 `ui:led` 与图表 `ui:chart`；`set_color` / `set_brightness` / `on` / `off` / `toggle`；`add_series` / `set_next` / `set_values` 等；`set_range` 适配图表 Y 轴。导出 `CHART_TYPE_*` / `CHART_UPDATE_*` / `LED_BRIGHT_*`。可烧录工程 [lvgl_led](../../../../../examples/nt26/module/lvgl/lvgl_led)、[lvgl_chart](../../../../../examples/nt26/module/lvgl/lvgl_chart) |

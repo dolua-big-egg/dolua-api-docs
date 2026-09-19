@@ -1,0 +1,44 @@
+{
+  "id": "lvgl_watchface",
+  "name": "LVGL 表盘",
+  "version": "1.0.0",
+  "category": "module",
+  "hw": "高",
+  "tags": [
+    "lcd",
+    "st7789",
+    "lvgl",
+    "watch",
+    "ntp"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "lcd",
+      "lvgl",
+      "log",
+      "rt",
+      "info",
+      "lp",
+      "ntp"
+    ],
+    "pins": [],
+    "peripherals": [],
+    "controllers": [
+      "SPI0"
+    ],
+    "extras": [
+      "ST7789",
+      "LVGL"
+    ],
+    "network": true
+  },
+  "readme": "",
+  "description": "与 lvgl_demo 同一套 ST7789/SPI0 接线。Apple Watch 风格三环表盘：秒/分/时环 + 中间实时 HH:MM。须使用已编入 arc 的 AP 固件。UART2 必须 pin_map=1。有网时会 NTP 授时。\n"
+}
