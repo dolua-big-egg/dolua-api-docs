@@ -28,7 +28,7 @@
 | rndis | [rndis.md](network/rndis.md) | [rndis_api](../../../../examples/nt26/network/rndis/rndis_api) |
 | wifiscan | [wifiscan.md](network/wifiscan.md) | [wifiscan_api](../../../../examples/nt26/network/wifiscan/wifiscan_api) |
 
-短信文档在 `module/`：[sms.md](module/sms.md) → [sms_api](../../../../examples/nt26/network/sms/sms_api)、[sms_cmd](../../../../examples/nt26/network/sms/sms_cmd)、[sms_forward](../../../../examples/nt26/apps/sms_alert/sms_forward)。
+短信文档在 `module/`：[sms.md](module/sms.md) → [sms_api](../../../../examples/nt26/network/sms/sms_api)、[sms_cmd](../../../../examples/nt26/network/sms/sms_cmd)、[sms_forward](../../../../examples/nt26/apps/sms/sms_forward)。
 
 ## 配置 `rtu_config/`
 
@@ -69,4 +69,4 @@
 | modbus | [modbus.md](module/modbus.md) | [modbus_api](../../../../examples/nt26/module/modbus/modbus_api)、[modbus_rs485](../../../../examples/nt26/module/modbus/modbus_rs485) |
 | rtu | [rtu.md](module/rtu.md) | [rtu_api](../../../../examples/nt26/module/rtu/rtu_api)、[rtu_cmd](../../../../examples/nt26/module/rtu/rtu_cmd)、[rtu_ch1_uart_frame](../../../../examples/nt26/apps/protocol_pack/rtu_ch1_uart_frame) |
 | virat | [virat.md](module/virat.md) | [virt_api](../../../../examples/nt26/module/virt/virt_api) |
-| sms | [sms.md](module/sms.md) | [sms_api](../../../../examples/nt26/network/sms/sms_api)、[sms_cmd](../../../../examples/nt26/network/sms/sms_cmd)、[sms_forward](../../../../examples/nt26/apps/sms_alert/sms_forward) |
+| sms | [sms.md](module/sms.md) | [sms_api](../../../../examples/nt26/network/sms/sms_api)、[sms_cmd](../../../../examples/nt26/network/sms/sms_cmd)、[sms_forward](../../../../examples/nt26/apps/sms/sms_forward) |

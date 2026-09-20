@@ -16,7 +16,7 @@
 | [io_control](io_control) | IO 采集与控制 | GPIO 输入输出、变化上报、时序 |
 | [env_sensor](env_sensor) | 环境传感 | I2C / ADC 温湿度、电压等 |
 | [lbs_track](lbs_track) | 定位追踪 | 基站定位、定时轨迹 |
-| [sms_alert](sms_alert) | 短信告警 | 收发、转发、条件触发短信 |
+| [sms](sms) | 短信 | 收发、转发、推送；不限于告警 |
 | [lowpower](lowpower) | 低功耗 | 投票休眠、cron 唤醒、驻网策略 |
 | [data_logger](data_logger) | 本地记录 | ufs / ublob / FlashDB 落盘与回放 |
 | [ota_update](ota_update) | 远程升级 | HTTP 拉包、脚本更新、配置同步 |
