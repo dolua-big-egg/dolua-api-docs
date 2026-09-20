@@ -92,7 +92,7 @@
 | [io_control](apps/io_control) | IO 采集与控制 |
 | [env_sensor](apps/env_sensor) | 环境传感 |
 | [lbs_track](apps/lbs_track) | 定位追踪 |
-| [sms_alert](apps/sms_alert) | 短信告警 |
+| [sms_alert](apps/sms_alert) | 短信告警：[4g_sms_forwarding](apps/sms_alert/4g_sms_forwarding) |
 | [lowpower](apps/lowpower) | 低功耗 |
 | [data_logger](apps/data_logger) | 本地记录 |
 | [ota_update](apps/ota_update) | 远程升级 |

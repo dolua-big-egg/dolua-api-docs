@@ -373,6 +373,8 @@ function cb(ev)
 
 与 [examples/nt26/network/sms/sms_api](../../../../../examples/nt26/network/sms/sms_api) 一致。把 `DA` 换成你的手机号才发测试短信；空串只收不发。必须用手机卡。
 
+收到短信后推到钉钉 / 飞书 / Bark 等，用 [4g_sms_forwarding](../../../../../examples/nt26/apps/sms_alert/4g_sms_forwarding)，只改 `config.lua`。
+
 ```lua
 local rt  = require("rt")
 local log = require("log")

@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "projectInfo": {
+    "softwareVersion": "1.0.0"
+  },
+  "main": "sms_forward.lua",
+  "modules": [
+    "config.lua"
+  ],
+  "configs": [
+    "rtu_config.cfg"
+  ],
+  "selectedConfig": "rtu_config.cfg",
+  "internal": [],
+  "checked": [
+    "config.lua",
+    "sms_forward.lua"
+  ],
+  "othersOrder": [
+    "pc_tool/config_editor.py",
+    "pc_tool/NT26ConfigEditor.spec",
+    "README.md"
+  ]
+}
