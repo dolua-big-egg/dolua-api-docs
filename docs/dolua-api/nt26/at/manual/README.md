@@ -25,7 +25,7 @@
 | [http.md](http.md) | `HTTPURL` `HTTPCFG` `HTTPREQ` `HTTPFREE` | 五路 HTTP 与自由请求 |
 | [ssl.md](ssl.md) | `SSL` | 三组证书 |
 | [uart.md](uart.md) | `UART` `UARTQUE` `UARTID` | 串口线参数、分包、当前口 |
-| [io.md](io.md) | `IOSET` `IOGET` `IOCFG` `IOINIT` `IOVTGCFG` `IOVTGINIT` `IOTOG` `IOTMPLH` `IOLR` `IOCR` `IOPUL` `IOSEQ` `ADC` | GPIO、模板、波形、ADC |
+| [io.md](io.md) | `IOSET` `IOGET` `IOCFG` `IOVTGCFG` `IOVTGINIT` `IOTOG` `IOTMPLH` `IOLR` `IOCR` `IOPUL` `IOSEQ` `ADC` | GPIO、模板、波形、ADC |
 | [sms.md](sms.md) | `SMS` `SMSR` `SMSL` `SMSD` `SMSWRITE` `SMSSYNC` `SMSASYNC` `SMSTMPH` `SMSCFG` | 短信通道、SIM 存储、收发、转发 |
 | [rtu.md](rtu.md) | `RTUCONFIG` `DTUTASK` `DTUSTATE` `NETIO` `DTUHEART` `DTUREG` `DTUPSUP` `DTUPSDN` `RTUWRITE` `RTUWRITEQ` `RTUCTL` `RTUPSD` `DTUMSGHEAD` `CLDCFG` | 透传任务、路由、云配置策略 |
 | [script.md](script.md) | `SCRIPTCLEAR` `SCRIPTDEL` `SCRIPTCB` `SCRIPTBUNDLE` `SCRIPTDEPLOY` `SCRIPTFILE` `SCRIPTMANIFEST` `SCRIPTSELECT` `SCRIPTCONFIRM` `SCRIPTROLLBACK` | Lua 脚本包 AB 槽 |
