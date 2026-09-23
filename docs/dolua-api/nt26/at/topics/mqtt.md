@@ -1,10 +1,12 @@
 # MQTT 连接专栏
 
-**文档版本** `1.0.1`
+**文档版本** `1.0.3`
 
-场景专题：用应用 AT 把一路或多路 **MQTT** 连上 broker，再走串口透传或指令主动发布。指令逐条的测试/查询/设置、参数表、错误码见 [MQTT 指令手册](../manual/mqtt.md)、[透传任务](../manual/rtu.md)、[路由串](../manual/route.md)、[SSL](../manual/ssl.md)。本篇不重复那些表格。
+场景专题：用应用 AT 把一路或多路 **普通 MQTT** 连上 broker，再走串口透传或指令主动发布。指令逐条的测试/查询/设置、参数表、错误码见 [MQTT 指令手册](../manual/mqtt.md)、[透传任务](../manual/rtu.md)、[路由串](../manual/route.md)、[SSL](../manual/ssl.md)。本篇不重复那些表格。
 
 这不是 Lua `require("mqtt")` 里另开的客户端对象。通道号与 `[mqtt.N]` / `AT+DTUTASK=<N>` **同一路 1～4**，和 Socket 任务抢同一组编号。
+
+**`mqtts.doiot.cn` 不是度云物联平台。** 它只是一台通用 MQTT **测试服务器**，用来联调普通 MQTT（平台 `"normal"`）。度云物联（玄武）是度云公司推出的物联网云平台，和 OneNET 同类，Broker 是 `5giot.cn`、平台 `"doiot"`，见 [MQTT 连接度云物联（玄武）](5giot.md)。两套服务器、两套平台类型，不要混用。
 
 ---
 
@@ -39,7 +41,7 @@ AT 口主动发 ──AT+MQTTSYNC / MQTTASYNC / RTUWRITE──► 同一路任�
 | 角色 | 谁来配 | 说明 |
 | --- | --- | --- |
 | broker 主机/端口 | `AT+MQTT` | 顺带 `enable=1`；不立刻断开旧连接 |
-| 平台 / 三元组 | `AT+MQTTPLATFORM` + `AT+MQTTAUTH` | 演示口用 `"normal"`。`"doiot"` 只给玄武平台，见 [第 9 节](#9-平台鉴权tls遗嘱) |
+| 平台 / 三元组 | `AT+MQTTPLATFORM` + `AT+MQTTAUTH` | 本篇测试口 `"normal"`。`"doiot"` 是度云物联云平台，不是 `mqtts.doiot.cn`，见 [5giot.md](5giot.md) |
 | 订阅 / 发布槽 | `AT+MQTTSUB` / `AT+MQTTPUB` | 透传和 `RTUWRITE` 走发布槽 |
 | 这一路是不是 MQTT | `AT+DTUTASK=<id>,1,"MQTT"` | 没开任务，光写 `AT+MQTT` 也发不出去 |
 | 串口 → 网络 | `AT+DTUPSUP` | 路由里的子通道 = 发布槽号 |
@@ -48,18 +50,29 @@ AT 口主动发 ──AT+MQTTSYNC / MQTTASYNC / RTUWRITE──► 同一路任�
 
 **AT 口和透传数据口尽量分开。** 配置走主串口 / USB AT；MCU 业务数据走另一路 UART。同一口既当 AT 又当透传时，以 `AT` 开头的行会被当指令。共用一口时配完用 [AT+RTUPSD](../manual/rtu.md#8-atrtuctl--atrtupsd--atdtumsghead) 锁成透传。
 
-下文 MQTT 对端一律用公开演示 broker（**明文 1883**，`ssl_level` 保持 0）：
+三种 `AT+MQTTPLATFORM` 不要混：
+
+| | 普通 MQTT（本篇） | 度云物联 / 玄武 | OneNET |
+| --- | --- | --- | --- |
+| 是什么 | 通用 MQTT 协议，连任意 broker | 度云公司推出的 **物联网云平台**（和 OneNET 同类） | 中国移动物联网云平台 |
+| 测试 / 接入主机 | **`mqtts.doiot.cn`**（通用测试服务器，**不是**云平台） | **`5giot.cn`** | OneNET 文档里的 broker |
+| `MQTTPLATFORM` | **`"normal"`** | **`"doiot"`** | `"onenet"` |
+| 专栏 | 本篇 | [度云物联（玄武）](5giot.md) | 本篇第 9 节只写平台差，不写 OneNET 控制台 |
+
+主机写 `mqtts.doiot.cn` 却把平台写成 `"doiot"`，或主机写 `5giot.cn` 却用账号 `doiot` / 密码 `web`，都会连不上。
+
+下文对端一律用这台 **普通 MQTT 测试服务器**（明文 1883，`ssl_level` 保持 0）：
 
 | | 值 |
 | --- | --- |
-| 主机 | `mqtts.doiot.cn` |
+| 主机 | `mqtts.doiot.cn`（通用测试口，**不是**度云物联） |
 | 端口 | `1883` |
-| 平台 | `"normal"`（**不要**写成 `"doiot"`） |
+| 平台 | `"normal"`（**禁止** `"doiot"`） |
 | ClientId | `"<#IMEI>"`（连上时按映射展开成本机 IMEI） |
 | 用户名 | `doiot` |
 | 密码 | `web` |
 
-`"doiot"` 平台只用于**玄武平台**接入；这个测试口是普通 MQTT，必须 `"normal"`。载荷是 **TAILRAW**。主题、ClientId、载荷里的 `<#IMEI>` 按 `[maping]` 展开。联调自己的 broker 时换主机和三元组即可，指令形态不变。
+载荷是 **TAILRAW**。主题、ClientId、载荷里的 `<#IMEI>` 按 `[maping]` 展开。联调自己的普通 broker 时换主机和三元组即可，平台仍用 `"normal"`，指令形态不变。接度云物联不要用本表，改走 [5giot.md](5giot.md)。
 
 ---
 
@@ -468,9 +481,9 @@ QoS 非 0 时同步发布会在 AT 口上多等一会儿（对端堵塞或低功
 | --- | --- | --- | --- | --- |
 | `"normal"` | ClientId | 用户名 | 密码 | 忽略 |
 | `"onenet"` | ClientId | 用户名 | 密码 | 忽略 |
-| `"doiot"` | ClientId | 用户名 | 密码 | user_id（**仅玄武平台**） |
+| `"doiot"` | 产品编号（参与拼 ClientId，**不是**直接当 ClientId） | 认证账号 | 认证密码 | 用户 ID（**仅玄武 / 度云物联**） |
 
-公开演示口 `mqtts.doiot.cn:1883` 走 **`normal`**，不要写成 `"doiot"`：
+公开测试服务器 `mqtts.doiot.cn:1883` 是 **普通 MQTT**，走 **`"normal"`**。域名里虽有 doiot，**不是**度云物联云平台，**禁止**写成 `"doiot"`：
 
 ```lua
 AT+MQTTPLATFORM=1,"normal"
@@ -484,9 +497,9 @@ AT+MQTTAUTH=1,"<#IMEI>","doiot","web",""
 OK
 ```
 
-连上时 `"<#IMEI>"` 展开成本机 IMEI。用户名 `doiot`、密码 `web`。
+连上时 `"<#IMEI>"` 展开成本机 IMEI。用户名 `doiot`、密码 `web` 只对这台测试服务器有效。
 
-`"doiot"` 平台只给**玄武**用：固件会按玄武规则拼三元组。把测试口配成 `"doiot"` 会连不上。OneNET 用 `"onenet"`，连上时会按平台规则强制 `clean_session=1`。更细的拼法见 [rtu_config 第 10.2 节](../../api/rtu_config/rtu_config.md#102-platform--auth联合)。
+`"doiot"` 平台只给 **度云物联（玄武）**：那是度云公司推出的物联网云平台，定位和 OneNET 一样，Broker 是 **`5giot.cn:1883`**，固件按 `S&<IMEI>&<产品编号>&<用户ID>` 拼 ClientId。完整步骤见 [MQTT 连接度云物联（玄武）](5giot.md)。把 `mqtts.doiot.cn` 配成 `"doiot"` 会连不上。OneNET 用 `"onenet"`，连上时会按平台规则强制 `clean_session=1`。更细的拼法见 [rtu_config 第 10.2 节](../../api/rtu_config/rtu_config.md#102-platform--auth联合)。
 
 ### 9.2 TLS
 
@@ -541,7 +554,8 @@ OK
 | 透传有串口数据但 broker 没有 | 发布槽主题是否为空；`DTUPSUP` 子通道是否指向有主题的槽 |
 | 订阅能在其它客户端看到，MCU 没有 | `MQTTSUB` 是否写入并已重连；`DTUPSDN` 是否指向接线 UART |
 | `1[9]` 配不上 | 路由串最多槽 8；槽 9、10 用 `MQTTSYNC` |
-| 把演示口配成 `"doiot"` 平台 | 玄武算法会改写三元组；测试口必须 `"normal"` + 用户名 `doiot` / 密码 `web` |
+| 把 `mqtts.doiot.cn` 配成 `"doiot"` 平台 | 这是普通 MQTT **测试服务器**，不是度云物联；必须 `"normal"`。云平台走 `5giot.cn` + `"doiot"`，见 [度云物联专栏](5giot.md) |
+| 把测试账号 `doiot` / `web` 拿到 `5giot.cn` | 度云物联要产品四元组，不是这组测试账 |
 | TLS 失败 | `ssl_id` 1～3、证书组、`ssl_level`，改完要重连；演示口 1883 保持 `ssl_level=0` |
 | AT 口不再认指令 | `RTUPSD` 后需 `RTULOCK` |
 
@@ -559,6 +573,7 @@ OK
 | 证书组 | [ssl.md](../manual/ssl.md) |
 | 行格式、通道编号 | [convention.md](../manual/convention.md) |
 | 同一路改成 Socket | [Socket 专栏](socket.md) |
+| 度云物联 / 玄武 | [MQTT 连接度云物联（玄武）](5giot.md) |
 | `[mqtt.N]` 全部 key | [rtu_config.cfg](../../api/rtu_config/rtu_config.md#10-mqttn) |
 
 ---
@@ -569,3 +584,5 @@ OK
 | --- | --- | --- |
 | 1.0.0 | 2026-09-19 | 首版：单通道 / 多通道 / 混合通道、透传、指令主动发送、同步与异步、平台与 TLS |
 | 1.0.1 | 2026-09-19 | 演示口统一 `mqtts.doiot.cn:1883`、平台 `normal`、ClientId `"<#IMEI>"`、账号 `doiot` / 密码 `web`；标明 `"doiot"` 平台仅玄武 |
+| 1.0.2 | 2026-09-20 | `"doiot"` 的 auth 表改为产品编号 / 认证账号 / 密码 / 用户 ID；链到 [度云物联专栏](5giot.md) |
+| 1.0.3 | 2026-09-20 | 标明 `mqtts.doiot.cn` 是通用 MQTT 测试服务器、不是度云物联；与 OneNET 同类的云平台对照表 |

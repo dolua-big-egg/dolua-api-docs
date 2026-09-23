@@ -1,0 +1,40 @@
+{
+  "id": "lvgl_ssd1306",
+  "name": "LVGL 硬件 I2C SSD1306",
+  "version": "1.0.0",
+  "category": "module",
+  "hw": "高",
+  "tags": [
+    "lcd",
+    "ssd1306",
+    "i2c",
+    "lvgl"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "lcd",
+      "lvgl",
+      "log",
+      "rt"
+    ],
+    "pins": [],
+    "peripherals": [],
+    "controllers": [
+      "I2C0"
+    ],
+    "extras": [
+      "SSD1306",
+      "LVGL"
+    ],
+    "network": false
+  },
+  "readme": "",
+  "description": "硬件 I2C0 驱动 SSD1306 128x64，再交给 lvgl.create 刷屏。脚与 iic_ssd1306 相同：Pin58 SDA、Pin57 SCL，从地址 0x3C。不要同时 i2c.new(I2C0)。背景用纯黑，字用白色：1 bit 屏上非黑即亮。\n"
+}

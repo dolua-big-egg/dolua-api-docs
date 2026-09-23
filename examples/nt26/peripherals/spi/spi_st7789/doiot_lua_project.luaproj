@@ -8,16 +8,15 @@
   "modules": [
     "st7789.lua"
   ],
-  "configs": [
-    "rtu_config.cfg"
-  ],
-  "selectedConfig": "rtu_config.cfg",
+  "configs": [],
+  "selectedConfig": null,
   "internal": [],
   "checked": [
     "main.lua",
     "st7789.lua"
   ],
   "othersOrder": [
-    "manifest.json"
+    "manifest.json",
+    "rtu_config.conf"
   ]
 }

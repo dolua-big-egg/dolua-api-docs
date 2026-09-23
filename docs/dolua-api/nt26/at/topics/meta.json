@@ -1,4 +1,4 @@
 {
   "title": "专栏",
-  "pages": ["index", "socket", "mqtt", "http", "route"]
+  "pages": ["index", "socket", "mqtt", "5giot", "http", "route"]
 }

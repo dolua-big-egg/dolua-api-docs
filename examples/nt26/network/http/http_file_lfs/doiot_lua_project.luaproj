@@ -18,16 +18,16 @@
     "mod/download.lua",
     "mod/flash.lua"
   ],
-  "configs": [
-    "config/rtu_config.cfg"
-  ],
-  "selectedConfig": "config/rtu_config.cfg",
-  "internal": [],
   "checked": [
     "main.lua",
     "mod/download.lua",
     "mod/flash.lua"
   ],
+  "configs": [
+    "config/rtu_config.conf"
+  ],
+  "selectedConfig": "config/rtu_config.conf",
+  "internal": [],
   "othersOrder": [
     "http_file_lfs-1.0.9.luapk",
     "manifest.json"

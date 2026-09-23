@@ -9,9 +9,9 @@
     "statusbar.lua"
   ],
   "configs": [
-    "rtu_config.cfg"
+    "rtu_config.conf"
   ],
-  "selectedConfig": "rtu_config.cfg",
+  "selectedConfig": "rtu_config.conf",
   "internal": [],
   "checked": [
     "main.lua",

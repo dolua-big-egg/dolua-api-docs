@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "displayName": "spi_lcd_cfg",
+  "projectInfo": {
+    "softwareVersion": "1.0.0"
+  },
+  "main": "main.lua",
+  "modules": [
+    "st7789_240x270.lua"
+  ],
+  "configs": [],
+  "selectedConfig": null,
+  "internal": [],
+  "checked": [
+    "main.lua",
+    "st7789_240x270.lua"
+  ],
+  "othersOrder": [
+    "manifest.json",
+    "rtu_config.conf"
+  ]
+}

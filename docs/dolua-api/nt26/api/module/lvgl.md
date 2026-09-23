@@ -1,6 +1,6 @@
 # lvgl
 
-**文档版本** `1.18.0`
+**文档版本** `1.18.3`
 
 把已经 `lcd.new` 好的彩屏交给图形栈：控件、主题、脏区刷新都走本模块。刷屏在独立任务里跑，脚本只要建树、改字、改样式，然后 `rt.delay` 让出即可。
 
@@ -162,7 +162,7 @@ local lvgl = require("lvgl")
 | 默认 light/dark 主题 + 样式覆盖 | 换官方主题引擎 |
 | 独立任务刷脏区 | 触摸、按键输入设备（点按要等输入，或用 `ui:click`） |
 | 按钮点击：回调按 **任务** 跑，可 `rt.delay` | 不要当 gpio 那种「立刻返回」的短回调 |
-| RGB565 屏（ST7789 GRAM）；内部也可选 RGB888 再转 565。SSD1306 先用 [`lcd`](lcd.md) 的 1 bit 画布，不要 `lvgl.create` | 用本模块当 `lcd:fill` 的替代去打点 |
+| RGB565 屏（ST7789 / TFT）。SSD1306 也可 `lvgl.create`，但没有 1 bit 色深：只认 RGB565 或 RGB888，刷到屏上再按亮度过半收成 1 bit。背景用 `0`。见 [lvgl_ssd1306](../../../../../examples/nt26/module/lvgl/lvgl_ssd1306) | 用本模块当 `lcd:fill` 的替代去打点 |
 
 ---
 
@@ -3578,7 +3578,9 @@ st:set({ text_color = 0xFFFFFF })
 | FULL（`buf_mode="full"`） | 同样整屏 × 1 | 每次全刷 |
 | PARTIAL | `buf_lines` 行 × 1 | 省 RAM |
 
-屏 GRAM 是 RGB565。`color="rgb888"` 只改内部色深，flush 仍转成 565 再发给面板。
+屏上的彩屏 GRAM 是 RGB565。`color="rgb888"` 只改内部色深，flush 仍转成 565 再发给面板。
+
+没有 1 bit 色深。SSD1306 同样只能写 `"rgb565"`（默认，其它无法识别的字符串也是它）或 `"rgb888"` / `"888"` / 数字 `24`。写成 `"i1"` 不会改成单色缓冲。内部仍是 565 或 888，送到面板时先收成 RGB565，再按亮度过半写入 1 bit 画布。128×64 整屏缓冲大约 16 KB（565）或 24 KB（888）；面板上的 1 bit 画布大约 1 KB。单色屏用 `"rgb565"` 即可。
 
 ---
 
@@ -3863,6 +3865,7 @@ VM 退出会回收还活着的 `ui`。
 | --- | --- |
 | [lvgl_demo](../../../../../examples/nt26/module/lvgl/lvgl_demo) | 标签、按钮、顶栏（`statusbar.lua`） |
 | [lvgl_btn](../../../../../examples/nt26/module/lvgl/lvgl_btn) | 按钮：`on_click`；没有触摸时 `add_state(PRESSED)` 看按下动画，再 `ui:click` |
+| [lvgl_ssd1306](../../../../../examples/nt26/module/lvgl/lvgl_ssd1306) | 硬件 I2C0 + SSD1306 128×64：可滚动列表、右侧滚动条，以及进度条 / 开关 / 复选框 / 弧进度。1 bit 亮度过半才点亮 |
 | [lvgl_arclabel](../../../../../examples/nt26/module/lvgl/lvgl_arclabel) | 弧标签：整圈居中，用 `set_angle` 起始角绕圈，再切换顺/逆时针 |
 | [lvgl_bar](../../../../../examples/nt26/module/lvgl/lvgl_bar) | 进度条：水平/垂直、范围、当前值、RANGE 起始值 |
 | [lvgl_arc](../../../../../examples/nt26/module/lvgl/lvgl_arc) | 弧进度：270° 表盘、`set_value` 扫进度，切换 NORMAL / REVERSE / SYMMETRICAL |
@@ -4131,3 +4134,6 @@ end
 | 1.16.0 | 2026-09-18 | 增加折线 `ui:line`、刻度盘 `ui:scale`；`set_points` / `set_ticks` / `set_needle` / `set_pivot`；`set_range` / `get_range` / `set_mode` / `set_angle` / `set_rotation` 适配刻度盘，`set_rotation` 并适配图片（Lua 度）；样式增加 `line_*` / `length` / `transform_*`；导出 `SCALE_MODE_*`。表盘例程改为指针+刻度 |
 | 1.17.0 | 2026-09-18 | 增加富文本 `ui:span` / `add_span` / `delete_span` 与画布 `ui:canvas`；`set_text` / `get_text` / `set_style` / `set_mode` / `set_overflow` / `set_text_align` 适配分段与组；新增 `fill` / `set_px` / `draw_rect` / `draw_line` / `draw_label`；导出 `SPAN_MODE_*` / `SPAN_OVERFLOW_*` / `RADIUS_CIRCLE`。可烧录工程 [lvgl_span](../../../../../examples/nt26/module/lvgl/lvgl_span)、[lvgl_canvas](../../../../../examples/nt26/module/lvgl/lvgl_canvas) |
 | 1.18.0 | 2026-09-18 | 增加指示灯 `ui:led` 与图表 `ui:chart`；`set_color` / `set_brightness` / `on` / `off` / `toggle`；`add_series` / `set_next` / `set_values` 等；`set_range` 适配图表 Y 轴。导出 `CHART_TYPE_*` / `CHART_UPDATE_*` / `LED_BRIGHT_*`。可烧录工程 [lvgl_led](../../../../../examples/nt26/module/lvgl/lvgl_led)、[lvgl_chart](../../../../../examples/nt26/module/lvgl/lvgl_chart) |
+| 1.18.1 | 2026-09-23 | SSD1306 可 `lvgl.create`（RGB565 刷到 1 bit，非黑即亮）。可烧录工程 [lvgl_ssd1306](../../../../../examples/nt26/module/lvgl/lvgl_ssd1306) |
+| 1.18.2 | 2026-09-23 | SSD1306 的 1 bit 改为亮度过半才点亮，白底黑字的抗锯齿边不会被当成白点 |
+| 1.18.3 | 2026-09-23 | 写明 SSD1306 的 `color` 没有 1 bit：只有 RGB565 / RGB888，888 仍先转 565 再按亮度收成 1 bit |

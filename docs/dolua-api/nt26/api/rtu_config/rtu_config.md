@@ -1,6 +1,6 @@
 # rtu_config
 
-**文档版本** `1.1.3`
+**文档版本** `1.1.4`
 
 这不是 `require("…")` 模块。它是模组开机时解析的 **声明式配置文件** `rtu_config.cfg`：只改文件里写到的段和 key，没写到的字段保持机内当前值。Lua 的 [`rtu`](../module/rtu.md)、[`uart`](../peripherals/uart.md)、[`sms`](../module/sms.md)、[`lbs`](../network/lbs.md) 等运行时模块 **读的是这份文件落盘后的业务配置**，不是另起一套通道。
 
@@ -416,7 +416,7 @@ N = 1..4。主题槽见第 11 节，不要写在本段。
 | 1 OneNET | ClientId（必填） | 产品/用户名（必填，并参与算密） | 算密用的 key | 不用 |
 | 2 DoIoT（**仅玄武平台**） | 参与生成 ClientId | Username（必填） | Password（必填） | 与 auth1 一起生成 ClientId |
 
-`auth*` 独立看只是字符串入库。连上时按 `platform` 解释；填错平台会连上失败或算错密码。公开演示 broker `mqtts.doiot.cn:1883` 用 **0 普通**（AT 写作 `"normal"`），三元组 ClientId=`<#IMEI>`、用户名 `doiot`、密码 `web`；不要写成 2 / `"doiot"`。
+`auth*` 独立看只是字符串入库。连上时按 `platform` 解释；填错平台会连上失败或算错密码。公开演示 broker `mqtts.doiot.cn:1883` 用 **0 普通**（AT 写作 `"normal"`），三元组 ClientId=`<#IMEI>`、用户名 `doiot`、密码 `web`；不要写成 2 / `"doiot"`。接度云物联（玄武）用 **2** / `"doiot"`，Broker `5giot.cn:1883`，步骤见 [专栏 · MQTT 连接度云物联](../../at/topics/5giot.md)。
 
 三元组、遗嘱、主题、发布/订阅载荷要不要做 `<#…>`，分别看 `[maping]` 的 `mqtt_triplet` / `mqtt_will` / `mqtt_topic` / `mqtt_publish` / `mqtt_subscribe`，且先过 `all`。
 
@@ -1084,3 +1084,4 @@ log_route=uart1
 | 1.1.1 | 2026-09-09 | 写明 `print_route=1` 等价 `uart1`（`2`/`3` 同理）；配置兼容整数，`sys.option` 只认字符串名 |
 | 1.1.2 | 2026-09-19 | AT Socket / 路由串链接改到 `at/manual/`，并链到 Socket 专栏 |
 | 1.1.3 | 2026-09-19 | `[mqtt.N]`：`platform=2` / `"doiot"` 标明仅玄武；演示口用 `0` / `"normal"` + `"<#IMEI>"` / `doiot` / `web` |
+| 1.1.4 | 2026-09-20 | `platform=2` 链到 [专栏 · MQTT 连接度云物联](../../at/topics/5giot.md) |

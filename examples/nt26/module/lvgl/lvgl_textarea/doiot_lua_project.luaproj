@@ -2,19 +2,29 @@
   "version": 1,
   "displayName": "lvgl_textarea",
   "projectInfo": {
-    "softwareVersion": "1.0.0"
+    "softwareVersion": "1.0.1"
+  },
+  "packageConfig": {
+    "exportPath": "d:\\307n\\now-new2\\PLAT\\dolua\\examples\\nt26\\module\\lvgl\\lvgl_textarea\\lvgl_textarea-1.0.1.luapk"
+  },
+  "scriptProcess": {
+    "usb": {},
+    "cloud": {},
+    "export": {}
   },
   "main": "main.lua",
   "modules": [],
-  "configs": [
-    "rtu_config.cfg"
-  ],
-  "selectedConfig": "rtu_config.cfg",
+  "configs": [],
+  "selectedConfig": null,
   "internal": [],
   "checked": [
     "main.lua"
   ],
   "othersOrder": [
-    "manifest.json"
+    "manifest.json",
+    "rtu_config.conf"
+  ],
+  "newFiles": [
+    "rtu_config.conf"
   ]
 }

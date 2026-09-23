@@ -1,6 +1,6 @@
 # mqtt
 
-**文档版本** `1.1.0`
+**文档版本** `1.1.2`
 
 全托管 MQTT 客户端。`create` 建实例并拉起工作线程；`open` 只把目标设成「要连上」。之后连 broker、断线重连、收报文都由内部自动跑，消息和状态用回调回来。全系统最多 4 路。
 
@@ -948,7 +948,7 @@ c:open(host, port, device_name, product_id, access_key)
 
 ## 16. 完整示例
 
-与 [examples/nt26/network/mqtt/mqtt_client](../../../../../examples/nt26/network/mqtt/mqtt_client) 一致。测试站见 [mqtts.doiot.cn](http://mqtts.doiot.cn/)，用户名 `doiot`、密码 `web`。`client_id` 用设备 IMEI；网页往 `/server/<IMEI>` 发，模组就能收到。
+与 [examples/nt26/network/mqtt/mqtt_client](../../../../../examples/nt26/network/mqtt/mqtt_client) 一致。`mqtts.doiot.cn` 是 **普通 MQTT 测试服务器**（不是度云物联云平台），用户名 `doiot`、密码 `web`，`client_id` 用设备 IMEI；网页往 `/server/<IMEI>` 发，模组就能收到。度云物联（玄武）是度云公司推出的云平台（与 OneNET 同类），Broker `5giot.cn`，请走 AT，见 [专栏 · MQTT 连接度云物联](../../at/topics/5giot.md)；脚本自己 `open` 时要手写 `S&` 三元组，不会自动按 `"doiot"` 平台拼。
 
 ```lua
 local rt   = require("rt")
@@ -1065,3 +1065,5 @@ broker 关掉连接后日志会看到 `disconnected`，然后内部自己再连�
 | 1.0.0 | 2026-09-04 | 首版 |
 | 1.0.1 | 2026-09-04 | 修正跨目录文档链接，demo 路径改为 examples/ |
 | 1.1.0 | 2026-09-05 | 补全接口 `err` 文案与回调 `ev.code` 全表，并写可能原因 |
+| 1.1.1 | 2026-09-20 | 完整示例注明度云物联走 AT 专栏；脚本 `open` 不自动拼 `"doiot"` 三元组 |
+| 1.1.2 | 2026-09-20 | 标明 `mqtts.doiot.cn` 是普通 MQTT 测试服务器，不是度云物联云平台 |

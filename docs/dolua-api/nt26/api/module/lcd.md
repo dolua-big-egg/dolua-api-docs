@@ -1,8 +1,8 @@
 # lcd
 
-**文档版本** `1.2.0`
+**文档版本** `1.4.3`
 
-对象化显示面板。`lcd.new(cfg)` 打开一路总线并初始化面板，之后在对象上填色、打点、刷一块像素。彩屏（ST7789）是 RGB565；单色 OLED（SSD1306）是模块内 1 bit 画布，由本模块按页写到屏上。
+对象化显示面板。`lcd.new(cfg)` 打开一路总线并初始化面板，之后在对象上填色、打点、刷一块像素。彩屏是 RGB565：内置上电用 `lcd.ST7789`，外部 `init` 表用 `lcd.TFT`（SPI 或 LSPI）；单色 OLED（SSD1306）是模块内 1 bit 画布，由本模块按页写到屏上。
 
 ```lua
 local lcd = require("lcd")
@@ -10,7 +10,12 @@ local lcd = require("lcd")
 
 平台预加载模块，无需额外 `.lua` 文件。
 
-**当前处于测试阶段。** 本模块用来验证总线接到面板这条路径是否通，不是完整显示栈，也不是量产 GUI。现阶段内置 **ST7789**（SPI 彩屏）和 **SSD1306**（SPI / I2C / 软件 I2C 单色 OLED）。其它控制器（ILI、GC、SH1106 等）未挂。接口、默认分辨率、脚位写法都可能随测试调整，不要当长期稳定契约依赖。
+**当前处于测试阶段。** 本模块用来验证总线接到面板这条路径是否通，不是完整显示栈，也不是量产 GUI。彩屏两条族名，刷屏都是 4 线 SPI/LSPI、RGB565、开窗写 RAM：
+
+- **`lcd.ST7789`**：固件内置上电表。默认 240×280、`y_off=20`。不写 `init`。
+- **`lcd.TFT`**：必须带 `init`。ST7735 / GC9A01 / ILI9341 / ILI9486（16bit）/ NV3037 以及另一块 ST7789 都用这个族名，差别写在 `init` / `offset` / `madctl`。默认 240×240、偏移 0。
+
+单色 OLED 仍是 **SSD1306**。QSPI / 8080 / 18bit 未接。接口、默认分辨率、脚位写法都可能随测试调整，不要当长期稳定契约依赖。
 
 ---
 
@@ -57,8 +62,8 @@ local lcd = require("lcd")
 | 项 | 现状 |
 | --- | --- |
 | 用途 | 验证总线能否把像素送到屏 |
-| 面板 | **ST7789** 或 **SSD1306**。`driver` 省略时默认 ST7789 |
-| 其它屏 | 未内置。有客户需求再加对应库 |
+| 面板 | **ST7789**（内置上电）、**TFT**（外部 `init`，必填）、或 **SSD1306**。`driver` 省略时默认 ST7789 |
+| 其它屏 | 同刷屏路径用 `lcd.TFT` + `init`。QSPI、18bit、SH1106 未接 |
 | GUI | 本模块只做同步填色/刷块。若后续把同一块屏交给图形栈占用，Lua 侧 `fill`/`full` 等会失败，文案为 `lcd bound to lvgl` |
 
 不要用本模块当字体、窗口、图层引擎。整屏 `pixel` 循环会极慢，只适合打几个点确认坐标。SSD1306 的 `pixel` 每次都会把整块 1 bit 画布刷出去，更不要用来扫全屏。
@@ -153,7 +158,7 @@ lcd.full(lcd.RED)         -- 把颜色当成了对象
 
 `backlight` 的开关走 **真假语义**：`false` / `nil` 为假，**数字 `0` 为真**。请写 `true` / `false`，不要传 `0` / `1`。
 
-配置里的 `bl_active_high` **只认布尔**。传数字会被忽略，保持默认「高电平点亮」。
+配置里的 `bl_active_high`、`bgr`、`invert` **只认布尔**。传数字会被忽略：背光保持默认高电平点亮；`bgr`/`invert` 当作没写。
 
 ---
 
@@ -165,7 +170,8 @@ lcd.full(lcd.RED)         -- 把颜色当成了对象
 
 | 符号 | 值 | 含义 | 用在哪个参数 |
 | --- | --- | --- | --- |
-| `lcd.ST7789` | `"st7789"` | SPI 彩屏（默认） | `cfg.driver` |
+| `lcd.ST7789` | `"st7789"` | 彩屏，固件内置上电。默认 240×280 | `cfg.driver` |
+| `lcd.TFT` | `"tft"` | 彩屏，必须带 `init`。GC9A01 / ILI9341 等用这个 | `cfg.driver` |
 | `lcd.SSD1306` | `"ssd1306"` | 单色 OLED，1 bit 画布 | `cfg.driver` |
 | `lcd.SPI0` | `"spi0"` | 通用 SPI 控制器 0 | `cfg.bus` |
 | `lcd.SPI1` | `"spi1"` | 通用 SPI 控制器 1 | `cfg.bus` |
@@ -175,13 +181,13 @@ lcd.full(lcd.RED)         -- 把颜色当成了对象
 
 `spi0` / `spi1`：命令/数据脚 **必须** 提供 `dc`；`cs` 建议提供；`rst` / `bl` 可选。SSD1306 走 SPI 时同样要 `dc`。
 
-`lspi0`：只给 ST7789。DC、CS 由硬件脚承担；`rst` / `bl` 仍可按 GPIO 配。SSD1306 配 `lspi0` 会初始化失败。
+`lspi0`：只给 `ST7789` / `TFT`。DC、CS 由硬件脚承担；`rst` / `bl` 仍可按 GPIO 配。SSD1306 配 `lspi0` 会初始化失败。
 
 `i2c0`：从地址默认 `0x3C`（`addr` 可改）。可选 `rst`。不要同时 `i2c.new` 占用 I2C0。
 
 `soft_i2c`：**必须** 提供 `sda` 和 `scl`（写法与 `dc` 相同），且两脚编号类型一致（都是 GPIO 或都是模块 pin）。可选 `rst`、`addr`。
 
-未导出的总线名初始化失败。未内置的 `driver` 同样失败。
+未导出的总线名初始化失败。`driver` 只认 `"st7789"` / `"tft"` / `"ssd1306"`。ILI9341 等不要写成 driver 名，用 `lcd.TFT` 加 `init`。
 
 ### 4.2 旋转
 
@@ -213,7 +219,7 @@ lcd.full(lcd.RED)         -- 把颜色当成了对象
 | `lcd.CYAN` | `0x07FF` | 青 |
 | `lcd.MAGENTA` | `0xF81F` | 品红 |
 
-**SSD1306**：仍传这些整数，模块按 1 bit 解释：`0`（`lcd.BLACK`）灭，**非 0** 点亮。`lcd.WHITE` / `lcd.RED` 效果相同。
+**SSD1306**：仍传这些 RGB565 整数，按亮度取半。过半点亮，否则灭。`lcd.BLACK` 灭，`lcd.WHITE` 亮。纯红、纯绿、纯蓝偏暗，会灭；黄、青、品红会亮。不再是「非 0 就亮」。
 
 ### 4.4 控制脚编号类型
 
@@ -274,6 +280,8 @@ lcd.new(cfg)
 | 常见 `err` | 原因 |
 | --- | --- |
 | `"invalid lcd config"` | 表字段不合法、脚描述冲突、名字超过 15 字符、空字符串 |
+| `"init must be a table"` 等 | `init` / `offset` / `madctl` / `reset` 形态不对，或 `init` 超过 128 条、单条数据超过 16 字节、`0x3A` 不是 16bit |
+| `"tft requires init"` | `driver = lcd.TFT` 但没给 `init` |
 | `"lcd already in use"` | 已有对象未释放 |
 | `"lcd init failed: invalid parameter (…)"` | 未知 `driver` / 未知 `bus` / `spi0`·`spi1` 没配 `dc` / `soft_i2c` 没配 `sda`+`scl` |
 | `"lcd init failed: driver error (…)"` | 总线或面板初始化失败 |
@@ -291,6 +299,15 @@ ST7789（`driver` 省略也是它）：
 | `x_off` / `y_off` | `0` / `20` |
 | `hz` | `0`（SPI 约 20 MHz，LSPI 约 40 MHz） |
 
+TFT（`lcd.TFT`，**必须**写 `init`）：
+
+| 键 | 默认 |
+| --- | --- |
+| `bus` | `"spi0"` |
+| `width` / `height` | `240` / `240` |
+| `x_off` / `y_off` | `0` / `0` |
+| `hz` | 同 ST7789 |
+
 SSD1306：
 
 | 键 | 默认 |
@@ -301,9 +318,20 @@ SSD1306：
 | `addr` | `0x3C`（7bit；写成 `0x78` 也会当成 8bit 写地址并右移） |
 | `hz` | `0`（硬件 I2C 约 100 kHz；`soft_i2c` 约 100 kHz） |
 
-两种面板共用：`rotate` 默认 0，`bl_active_high` 默认 `true`，脚默认未用。
+三种面板共用：`rotate` 默认 0，`bl_active_high` 默认 `true`，脚默认未用。`ST7789` 不写 `init` 用固件内置表；`TFT` 不写 `init` 会 `tft requires init`。
 
 `spi0` / `spi1` 至少要有 `dc`。`soft_i2c` 必须有 `sda` 和 `scl`。完整字段见 [第 8 节](#8-new-配置表)。
+
+可以整张表写进 `new`，也可以 `require` 一份只含面板参数的模块，再补 `bus` 和脚：
+
+```lua
+local cfg = require("st7789_240x270")
+cfg.bus = lcd.SPI0
+cfg.dc, cfg.cs, cfg.rst, cfg.bl = 31, 8, 30, 32
+local panel, err = lcd.new(cfg)
+```
+
+模块不会按文件名自动加载，必须你自己 `require` 后传给 `new`。
 
 ```lua
 local panel, err = lcd.new({
@@ -545,7 +573,7 @@ obj:info()
 
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
-| `driver` | string | 打开时的面板名，目前为 `"st7789"` |
+| `driver` | string | 打开时的面板名：`"st7789"` / `"tft"` / `"ssd1306"` |
 | `bus` | string | `"spi0"` / `"spi1"` / `"lspi0"` / `"i2c0"` / `"soft_i2c"` |
 | `inited` | boolean | 是否仍持有总线 |
 | `mode` | integer | `MODE_DIRECT` / `MODE_OWNED` |
@@ -569,13 +597,19 @@ local inf = obj:info()
 
 | 键 | 类型 | 默认 | 说明 |
 | --- | --- | --- | --- |
-| `driver` | string | `"st7789"` | `"st7789"` 或 `"ssd1306"` |
-| `bus` | string | 随驱动 | ST7789 默认 `"spi0"`；SSD1306 默认 `"i2c0"`。可选 `spi1` / `lspi0`（仅彩屏）/ `soft_i2c` |
+| `driver` | string | `"st7789"` | `"st7789"`（内置上电）、`"tft"`（必须 `init`）、`"ssd1306"` |
+| `bus` | string | 随驱动 | ST7789 默认 `"spi0"`；SSD1306 默认 `"i2c0"`。彩屏还可 `spi1` / `lspi0` |
 | `width` | integer | 随驱动 | ST7789 `240`；SSD1306 `128`（最大 128） |
 | `height` | integer | 随驱动 | ST7789 `280`；SSD1306 `64`（最大 64，须为 8 的倍数） |
-| `x_off` | integer | `0` | ST7789：列 GRAM 偏移。SSD1306：列起始偏移（部分模组要 2） |
-| `y_off` | integer | 随驱动 | ST7789 常见 240×280 为 `20`；SSD1306 为显示偏移，默认 `0` |
+| `x_off` | integer | `0` | 四向共用的列 GRAM 偏移。有 `offset` 表时被对应方向覆盖 |
+| `y_off` | integer | 随驱动 | ST7789 常见 240×280 为 `20`；SSD1306 默认 `0` |
+| `offset` | table | 无 | 按方向给 `{x,y}`。键用 `0`～`3`（`lcd.ROTATE_*`）或 `90`/`180`/`270` |
 | `rotate` | integer | `0` | 初始方向 |
+| `bgr` | boolean | 不设 | 只认 `true`/`false`。为真时给默认 MADCTL 或上 `0x08`。写了 `madctl` 某向则以该向原值为准 |
+| `madctl` | table | 族默认 | 每向一个 `0x36` 字节。默认 `0x00/0x60/0xC0/0xA0`。键规则同 `offset` |
+| `invert` | boolean | 不额外发 | 只认 `true`/`false`。表放完后发 `0x21` / `0x20`。不写则尊重 `init` 里已有的反色命令 |
+| `reset` | table | `10/10/10` | `{high_ms, low_ms, wait_ms}`，毫秒。没接 `rst` 脚则只做 `wait_ms` |
+| `init` | table | 固件内置表 | 上电命令流，`new` 时拍进 C，之后不再读 Lua。见下 |
 | `hz` | integer | `0` | 时钟。`0` = 该总线默认 |
 | `addr` | integer | `0x3C` | 仅 I2C / soft_i2c。7bit 从地址；`>0x7F` 按 8bit 写地址右移 1 位 |
 | `bl_active_high` | boolean | `true` | 背光有效电平。只认 `true`/`false`。OLED 通常不接 `bl` |
@@ -586,9 +620,33 @@ local inf = obj:info()
 | `sda` | 脚 | 未用 | `soft_i2c` **必填** |
 | `scl` | 脚 | 未用 | `soft_i2c` **必填**，与 `sda` 同一套编号类型 |
 
-`driver` 可用 `lcd.ST7789` / `lcd.SSD1306` 或对应字符串。其它字符串会 `lcd init failed: invalid parameter`。
+`driver` 可用 `lcd.ST7789` / `lcd.TFT` / `lcd.SSD1306` 或对应字符串。其它字符串会 `lcd init failed: invalid parameter`。
 
-ST7789 的 `y_off` 必须和模组一致。SSD1306 高度须是 8 的倍数。
+`init` 是数组，每项一张表。两种形态：
+
+```lua
+{0x11}                          -- 只有命令
+{0x3A, 0x05}                    -- 命令 + 最多 16 字节参数
+{0xB2, 0x0C, 0x0C, 0x00, 0x33, 0x33}
+{delay = 120}                   -- 毫秒；不要用命令 0xFF 表示延时
+```
+
+最多 **128** 条。`0x3A` 只允许 `0x05` 或 `0x55`（16bit）。表放完后固件仍按当前方向写 `0x36`，所以 `init` 里的 MADCTL 会被覆盖，镜像和 BGR 请用 `madctl` / `bgr`。
+
+`offset` 示例：
+
+```lua
+offset = {
+    [lcd.ROTATE_0]   = { x = 0,  y = 20 },
+    [lcd.ROTATE_90]  = { x = 20, y = 0  },
+    [lcd.ROTATE_180] = { x = 0,  y = 20 },
+    [lcd.ROTATE_270] = { x = 20, y = 0  },
+}
+```
+
+值也可 `{ x_off = 0, y_off = 20 }`。有 `offset` 的方向不再用顶层 `x_off`/`y_off`。
+
+`name` 等未列出的键会被忽略。
 
 ---
 
@@ -647,7 +705,7 @@ ST7789 颜色参数是 **RGB565 整数**。纯色填充由模块送到屏上。
 - 总长度必须等于 `w * h * 2`。
 - 不要传字节表。
 
-SSD1306 内部是 1 bit 画布（128×64 约 1 KB）。`full` / `fill(color)` / `pixel` 把颜色收成灭/亮后写入这块画布再按页刷出。若仍传 RGB565 `buf`，每个像素按「两字节是否全 0」阈值成 1 bit，**不是**打包点阵格式。
+SSD1306 内部是 1 bit 画布（128×64 约 1 KB）。`full` / `fill(color)` / `pixel` 按 RGB565 亮度取半后写入这块画布再按页刷出。若仍传 RGB565 `buf`，每个像素同样按亮度收成 1 bit，**不是**打包点阵，也不是「两字节非 0 就亮」。接 [`lvgl`](lvgl.md) 时没有 1 bit 色深，绘图缓冲仍是 RGB565 或 RGB888。
 
 坐标原点在旋转后的逻辑左上。`size()` 给出可画范围；`x + w`、`y + h` 不能超出。`info().fmt` 为 `"rgb565"` 或 `"i1"`。
 
@@ -678,7 +736,12 @@ SSD1306 内部是 1 bit 画布（128×64 约 1 KB）。`full` / `fill(color)` / 
 | `err` | 可能原因 |
 | --- | --- |
 | `mutex init failed` | `new` 时系统互斥量失败 |
-| `invalid lcd config` | cfg 缺关键项或 driver/bus 无法识别 |
+| `invalid lcd config` | cfg 缺关键项或脚/名字不合法 |
+| `init must be a table` / `init too long (max 128)` / `init cmd data too long (max 16)` | 上电表形态或长度不对 |
+| `colmod must be 16bit (0x05 or 0x55)` | `init` 里 `0x3A` 不是 16bit |
+| `offset must be a table` / `invalid offset entry` | `offset` 不对 |
+| `madctl must be a table` / `invalid madctl entry` | `madctl` 不对 |
+| `tft requires init` | `lcd.TFT` 没给上电表 |
 | `lcd already in use` | 已有一块屏未 `deinit` |
 | `lcd init failed: … (N)` | 面板初始化，N 见上表 |
 | `lcd not initialized` | 对象已 deinit 或从未 new 成功 |
@@ -696,13 +759,14 @@ SSD1306 内部是 1 bit 画布（128×64 约 1 KB）。`full` / `fill(color)` / 
 | 项 | 上限 / 说明 |
 | --- | --- |
 | 实例 | **整机 1 块屏** |
-| 面板库 | ST7789、SSD1306 |
+| 面板库 | 族：ST7789（内置上电）、TFT（外部 `init`）、SSD1306 |
+| `init` | 最多 128 条，每条数据最多 16 字节；`new` 时拍进 C |
 | 总线 | `spi0` / `spi1` / `lspi0` / `i2c0` / `soft_i2c` |
 | 名字 | `driver`、`bus` 各最多 15 字符 |
 | 脚编号 | 0～255 |
 | ST7789 像素 | RGB565，16 bpp |
 | SSD1306 像素 | 1 bpp 画布，宽≤128、高≤64 且为 8 的倍数 |
-| `new` 默认分辨率 | ST7789：240×280，`y_off=20`；SSD1306：128×64 |
+| `new` 默认分辨率 | ST7789：240×280，`y_off=20`；TFT：240×240，偏移 0；SSD1306：128×64 |
 | 刷写 | 同步。彩屏 SPI 大块可走 DMA；I2C / 软件 I2C 直接写 |
 | `deinit` | 最多再等约 3 秒刷写收尾 |
 | 回调 | 无 |
@@ -717,13 +781,14 @@ SSD1306 内部是 1 bit 画布（128×64 约 1 KB）。`full` / `fill(color)` / 
 
 | 需求 | 做法 |
 | --- | --- |
-| 验证 SPI 彩屏 | 本模块 + ST7789，`full` 几种颜色 |
+| 验证 SPI / LSPI 彩屏 | 本模块 + `lcd.ST7789`，可不写 `init` |
+| 换 ST7735 / GC9A01 / ILI9341 等 | `driver = lcd.TFT`，必填 `init`/`offset`。见 [`spi_lcd_cfg`](../../../../examples/nt26/peripherals/spi/spi_lcd_cfg) |
 | 验证 SSD1306 | 本模块 + `lcd.SSD1306`，总线 `i2c0` / `spi0` / `soft_i2c` |
-| 其它 LCD 控制器 | **现在没有。** 提需求后再加库，不要改 `driver` 硬试 |
+| QSPI / 18bit / SH1106 | **没有。** 不要改 `driver` 硬试 |
 | 普通 SPI 外设 | 不要占用 LCD 已 `new` 的那一路 SPI |
 | 同一条 I2C 上的传感器 | **先不要。** `i2c0` 被本模块占用时不要再 `i2c.new(I2C0)` |
 | GPIO 指示灯 | [`gpio`](../peripherals/gpio.md) |
-| 图形界面 / 控件 | [`lvgl`](lvgl.md)：当前 `create` 仍按 RGB565 刷屏，SSD1306 上不要接 LVGL；用本模块 `fill`/`full` |
+| 图形界面 / 控件 | [`lvgl`](lvgl.md)。彩屏直接 `create`。SSD1306 仍按 RGB565 画，刷到 1 bit 时亮度过半才点亮，背景用 `0`。见 [`lvgl_ssd1306`](../../../../examples/nt26/module/lvgl/lvgl_ssd1306) |
 
 ---
 
@@ -737,8 +802,8 @@ local rt  = require("rt")
 local log = require("log")
 
 local panel, err = lcd.new({
-    driver = lcd.ST7789,   -- 目前只能是它
-    bus    = lcd.SPI0,     -- 验证通用 SPI；LCD 专用口用 lcd.LSPI0
+    driver = lcd.ST7789,
+    bus    = lcd.SPI0,     -- LCD 专用口用 lcd.LSPI0
     width  = 240,
     height = 280,
     x_off  = 0,
@@ -772,7 +837,9 @@ log.info("driver=%s bus=%s", inf.driver, inf.bus)
 -- panel:deinit()
 ```
 
-换 240×240 模组时通常把 `height` 改成 `240`、`y_off` 改成 `0`，仍用 `lcd.ST7789`。
+换 240×240 模组：`lcd.TFT` + `height=240`、偏移 0，并给出该模组的 `init`。
+
+可烧录工程：[`spi_lcd`](../../../../examples/nt26/peripherals/spi/spi_lcd) 用 `lcd.ST7789` 内置上电；[`spi_lcd_cfg`](../../../../examples/nt26/peripherals/spi/spi_lcd_cfg) 用 `lcd.TFT` + 外部 `init` 驱动 240×270。
 
 SSD1306 三条总线（脚号按板子改）：
 
@@ -823,3 +890,9 @@ oled:pixel(0, 0, lcd.WHITE)
 | 1.1.0 | 2026-09-05 | 补全固定 err 文本与可能原因 |
 | 1.1.1 | 2026-09-09 | 管脚 `pin` 编号对照改为 `gpio.BY_PINNO` |
 | 1.2.0 | 2026-09-15 | 增加 SSD1306：1 bit 画布；总线 `spi0`/`i2c0`/`soft_i2c`（后者必填 `sda`/`scl`）；`addr`；`info().fmt` |
+| 1.3.0 | 2026-09-22 | `lcd.new` 可传入 `init`/`offset`/`madctl`/`bgr`/`invert`/`reset`；`new` 时拍成 C 缓存。彩屏族仍名 `st7789`，SPI 与 LSPI；QSPI 未接。面板表允许 `require` 后再补脚 |
+| 1.3.1 | 2026-09-22 | 补外部 `init` 例程 `spi_lcd_cfg`（ST7789 240×270） |
+| 1.4.0 | 2026-09-22 | 外部上电单独族名 `lcd.TFT`（必须 `init`）；`lcd.ST7789` 只表示固件内置表 |
+| 1.4.1 | 2026-09-23 | SSD1306 可接 LVGL：RGB565 刷到 1 bit，非黑即亮。例程 `lvgl_ssd1306` |
+| 1.4.2 | 2026-09-23 | SSD1306 的 1 bit 改为亮度过半才点亮，白底上的灰边不再整点变白 |
+| 1.4.3 | 2026-09-23 | SSD1306 颜色改为亮度取半：纯红/绿/蓝会灭，白和黄/青/品红会亮。`buf` 不再按「非 0 即亮」 |

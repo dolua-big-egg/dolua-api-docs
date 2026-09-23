@@ -7,12 +7,24 @@
   "main": "main.lua",
   "modules": [],
   "configs": [
-    "rtu_config.cfg"
+    "rtu_config.conf"
   ],
-  "selectedConfig": "rtu_config.cfg",
-  "internal": [],
+  "selectedConfig": "rtu_config.conf",
+  "internal": [
+    "hour.bin",
+    "minute.bin",
+    "second.bin"
+  ],
+  "internalStorage": {
+    "hour.bin": "blob",
+    "minute.bin": "blob",
+    "second.bin": "blob"
+  },
   "checked": [
-    "main.lua"
+    "main.lua",
+    "hour.bin",
+    "minute.bin",
+    "second.bin"
   ],
   "othersOrder": [
     "manifest.json"

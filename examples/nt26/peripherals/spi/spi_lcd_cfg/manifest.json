@@ -1,0 +1,38 @@
+{
+  "id": "spi_lcd_cfg",
+  "name": "LCD 外部配置驱动 ST7789",
+  "version": "1.0.0",
+  "category": "peripherals",
+  "hw": "高",
+  "tags": [
+    "spi",
+    "lcd",
+    "st7789",
+    "init"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "lcd",
+      "log",
+      "rt"
+    ],
+    "pins": [],
+    "peripherals": [],
+    "controllers": [
+      "SPI0"
+    ],
+    "extras": [
+      "ST7789"
+    ],
+    "network": false
+  },
+  "readme": "",
+  "description": "lcd.new 使用族名 lcd.TFT，上电序列来自外部 init 表，不走固件内置 ST7789。分辨率 240x270。脚与 spi_lcd 相同：CS=GPIO8，BL/DC/RST=GPIO32/31/30。必须把 UART2 挪开。\n"
+}

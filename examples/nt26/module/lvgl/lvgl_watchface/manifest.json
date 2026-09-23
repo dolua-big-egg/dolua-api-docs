@@ -26,7 +26,8 @@
       "rt",
       "info",
       "lp",
-      "ntp"
+      "ntp",
+      "ublob"
     ],
     "pins": [],
     "peripherals": [],
@@ -40,5 +41,5 @@
     "network": true
   },
   "readme": "",
-  "description": "与 lvgl_demo 同一套 ST7789/SPI0 接线。Apple Watch 风格三环表盘：秒/分/时环 + 中间实时 HH:MM。须使用已编入 arc 的 AP 固件。UART2 必须 pin_map=1。有网时会 NTP 授时。\n"
+  "description": "与 lvgl_demo 同一套 ST7789/SPI0 接线。黑底无刻度指针表盘：时/分用 hour.bin、minute.bin（blob），秒针用折线。须使用已编入 SCALE 与图片旋转的 AP 固件。UART2 必须 pin_map=1。有网时会 NTP 授时。\n"
 }

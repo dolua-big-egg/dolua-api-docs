@@ -1,12 +1,12 @@
 #  MQTT
 
-**文档版本** `1.0.2`
+**文档版本** `1.0.4`
 
 配置并收发模组上的 **4 路 MQTT 通道**。指令走应用 AT 口（主串口 / USB AT 等），与 [`rtu_config.cfg` 的 `[mqtt.N]`](../../api/rtu_config/rtu_config.md#10-mqttn) 以及主题槽 [`[mqtt.N.subscribe.M]` / `[mqtt.N.publish.M]`](../../api/rtu_config/rtu_config.md#11-mqttnsubscribem--mqttnpublishm) 读写**同一份持久化配置**。通道号一律 **1～4**，与配置段 `[mqtt.1]`～`[mqtt.4]` 对应。
 
 MQTT 的 N 与 Socket / RTU 任务是**同一路**；HTTP 是另一套 1～5。换入口不换编号，见 [convention.md 第 4 节](convention.md#4-通道编号)。
 
-单通道 / 多通道 / 混合 / 透传 / 同步异步的场景流程见 [专栏 · MQTT 连接](../topics/mqtt.md)。本篇按常用模组 AT 手册体例写：先约定，再逐条给出测试命令、查询、设置、参数表、应答、错误码和可抄示例。行格式与失败风格见 [convention.md](convention.md)。Lua `require("mqtt")` 见 [mqtt API](../../api/network/mqtt.md)。
+单通道 / 多通道 / 混合 / 透传 / 同步异步的场景流程见 [专栏 · MQTT 连接](../topics/mqtt.md)（普通 MQTT；测试服务器 `mqtts.doiot.cn` **不是**度云物联）。接度云物联（玄武，与 OneNET 同类的云平台）见 [专栏 · MQTT 连接度云物联](../topics/5giot.md)。本篇按常用模组 AT 手册体例写：先约定，再逐条给出测试命令、查询、设置、参数表、应答、错误码和可抄示例。行格式与失败风格见 [convention.md](convention.md)。Lua `require("mqtt")` 见 [mqtt API](../../api/network/mqtt.md)。
 
 ---
 
@@ -445,7 +445,7 @@ AT+MQTTAUTH=<id>,<auth1>[,<auth2>[,<auth3>[,<auth4>]]]
 
 ### 6.4 示例
 
-公开演示口 `mqtts.doiot.cn:1883`（平台必须 `"normal"`）用本机 IMEI 当 ClientId：
+公开演示口 `mqtts.doiot.cn:1883` 是 **普通 MQTT 测试服务器**（**不是**度云物联云平台），平台必须 `"normal"`，用本机 IMEI 当 ClientId：
 
 ```lua
 AT+MQTTAUTH=1,"<#IMEI>","doiot","web",""
@@ -460,6 +460,15 @@ OK
 ```
 
 连上时 `"<#IMEI>"` 按 `[maping]` 展开。自建 broker 把三段换成自己的 ClientId / 用户名 / 密码即可。
+
+度云物联（玄武）是度云公司推出的云平台，和 OneNET 同类，Broker 是 `5giot.cn`，四段含义不同，平台必须先写成 `"doiot"`，完整步骤见 [专栏](../topics/5giot.md)：
+
+```lua
+AT+MQTTAUTH=1,"<产品编号>","<认证账号>","<认证密码>","<用户ID>"
++MQTTAUTH: 1,"<产品编号>","<认证账号>","<认证密码>","<用户ID>"
+
+OK
+```
 
 ---
 
@@ -504,9 +513,9 @@ AT+MQTTPLATFORM=<id>,"<platform>"
 | 参数 | 类型 | 范围 | 说明 |
 | --- | --- | --- | --- |
 | `<id>` | 整数 | 1～4 | 通道 |
-| `<platform>` | 字符串 | `normal` / `onenet` / `doiot` | **大小写不敏感**。`doiot` **只给玄武平台**；公开演示口用 `normal` |
+| `<platform>` | 字符串 | `normal` / `onenet` / `doiot` | **大小写不敏感**。`normal` = 普通 MQTT（含测试服务器 `mqtts.doiot.cn`）；`onenet` = 移动 OneNET；`doiot` = 度云物联（玄武）云平台 |
 
-其它拼写 → `"error platform"`。必须是字符串类型，写 `0` 当数字会 `param`。把测试口写成 `"doiot"` 会按玄武规则改写三元组，连不上。
+其它拼写 → `"error platform"`。必须是字符串类型，写 `0` 当数字会 `param`。把 `mqtts.doiot.cn` 写成 `"doiot"` 会按云平台规则改写三元组，连不上。
 
 **应答（成功）** 回显规范化小写名，与查询同形。
 
@@ -526,7 +535,7 @@ AT+MQTTPLATFORM=1?
 OK
 ```
 
-OneNET 写成 `"onenet"`。玄武平台才写 `"doiot"`。
+OneNET 写成 `"onenet"`。度云物联（玄武，与 OneNET 同类的云平台）才写 `"doiot"`，主机是 `5giot.cn`，不是 `mqtts.doiot.cn`。
 
 ---
 
@@ -1000,18 +1009,18 @@ OK
 
 ## 15. 联调顺序
 
-公开演示口（**明文 1883**，不要开 TLS，平台必须 `"normal"`）：
+公开测试服务器 `mqtts.doiot.cn`（**普通 MQTT**，不是度云物联；明文 1883，不要开 TLS，平台必须 `"normal"`）：
 
 1. 驻网完成（CSQ / CEREG 正常，或 `AT+ISLINK` 回 `1`）。
 2. `AT+MQTT=1,"mqtts.doiot.cn",1883` 配主机端口并 `enable=1`。
-3. `AT+MQTTPLATFORM=1,"normal"`，再 `AT+MQTTAUTH=1,"<#IMEI>","doiot","web",""`。**不要**写成 `"doiot"` 平台——那只给玄武。
-4. 演示口保持 `ssl_level=0`。自建 TLS：先按 [ssl.md](ssl.md) 写入证书组，再 `AT+MQTTCFG=1,"ssl_id",1` 与 `AT+MQTTCFG=1,"ssl_level",2`。
+3. `AT+MQTTPLATFORM=1,"normal"`，再 `AT+MQTTAUTH=1,"<#IMEI>","doiot","web",""`。**不要**写成 `"doiot"` 平台——那是度云物联云平台，主机应是 `5giot.cn`。
+4. 测试口保持 `ssl_level=0`。自建 TLS：先按 [ssl.md](ssl.md) 写入证书组，再 `AT+MQTTCFG=1,"ssl_id",1` 与 `AT+MQTTCFG=1,"ssl_level",2`。
 5. `AT+MQTTSUB=1,1,"/server/<#IMEI>",0`，`AT+MQTTPUB=1,1,"/device/<#IMEI>",0,0`。需要遗嘱则 `AT+MQTTWILL`。
 6. 确认 RTU 任务该路已使能且 `task_id` 指向 MQTT。按产品流程 `AT+RESET` 后等通道起来。
 7. `AT+MQTTSYNC=1,"/device/<#IMEI>",0,0,1,ping` 看是否 `OK` 且 `<len>` 合理。
 8. 改地址后若仍连旧 broker：先按产品流程重启该通道或复位，再发。
 
-场景抄写见 [专栏 · MQTT 连接](../topics/mqtt.md)。
+场景抄写见 [专栏 · MQTT 连接](../topics/mqtt.md)。度云物联（玄武，与 OneNET 同类）走 `5giot.cn` + 平台 `"doiot"`，见 [专栏 · MQTT 连接度云物联（玄武）](../topics/5giot.md)。两套服务器不要混。
 
 完整细项用 `AT+MQTTCFG=1?` 与 `rtu_config.cfg` 的 `[mqtt.1]` 对照。主题槽也可用 `AT+MQTTSUB=1?` / `AT+MQTTPUB=1?`。
 
@@ -1024,3 +1033,5 @@ OK
 | 1.0.0 | 2026-09-05 | 首版：MQTT / MQTTCFG / MQTTAUTH / MQTTPLATFORM / MQTTSUB / MQTTPUB / MQTTSYNC / MQTTASYNC / MQTTCLRRET / MQTTWILL 的测试、查询、设置、错误与示例 |
 | 1.0.1 | 2026-09-19 | 随目录迁到 `at/manual/`；文首链到 [专栏 · MQTT 连接](../topics/mqtt.md) |
 | 1.0.2 | 2026-09-19 | 联调示例改为演示口 `mqtts.doiot.cn:1883`、平台 `normal`、ClientId `"<#IMEI>"`、账号 `doiot` / 密码 `web`；标明 `"doiot"` 平台仅玄武 |
+| 1.0.3 | 2026-09-20 | 文首与联调链到 [专栏 · MQTT 连接度云物联（玄武）](../topics/5giot.md) |
+| 1.0.4 | 2026-09-20 | 写明 `mqtts.doiot.cn` 是普通 MQTT 测试服务器；`"doiot"` 是度云物联云平台（与 OneNET 同类），主机 `5giot.cn` |

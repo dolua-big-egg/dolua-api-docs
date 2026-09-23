@@ -5,16 +5,21 @@
     "softwareVersion": "1.0.0"
   },
   "main": "main.lua",
-  "modules": [],
-  "configs": [
-    "rtu_config.cfg"
+  "modules": [
+    "st7789_240x280.lua"
   ],
-  "selectedConfig": "rtu_config.cfg",
+  "configs": [],
+  "selectedConfig": null,
   "internal": [],
   "checked": [
-    "main.lua"
+    "main.lua",
+    "st7789_240x280.lua"
   ],
   "othersOrder": [
-    "manifest.json"
+    "manifest.json",
+    "rtu_config.conf"
+  ],
+  "newFiles": [
+    "rtu_config.conf"
   ]
 }

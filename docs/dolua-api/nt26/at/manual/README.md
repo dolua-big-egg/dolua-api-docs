@@ -2,7 +2,7 @@
 
 一篇一类业务。各篇体例：约定差异 → 指令一览 → 逐条测试/查询/设置/参数/应答/错误 → 联调。演示代码块一律标 `lua`。
 
-场景向流程见 [专栏](../topics/README.md)（Socket / MQTT / HTTP(S) / 路由），不要只靠本页拼整图。
+场景向流程见 [专栏](../topics/README.md)（Socket / MQTT / 度云物联 / HTTP(S) / 路由），不要只靠本页拼整图。
 
 先读 [convention.md](convention.md)。`1|6[1]` 一类出口写法见 [route.md](route.md)。
 

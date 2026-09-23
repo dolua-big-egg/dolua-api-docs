@@ -8,16 +8,16 @@
     "nmea.lua",
     "gps.lua"
   ],
-  "configs": [
-    "rtu_config.cfg"
-  ],
-  "selectedConfig": "rtu_config.cfg",
-  "internal": [],
   "checked": [
     "main.lua",
     "nmea.lua",
     "gps.lua"
   ],
+  "configs": [
+    "rtu_config.conf"
+  ],
+  "selectedConfig": "rtu_config.conf",
+  "internal": [],
   "othersOrder": [
     "manifest.json"
   ]

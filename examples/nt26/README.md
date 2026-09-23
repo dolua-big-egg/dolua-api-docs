@@ -29,7 +29,7 @@
 | --- | --- |
 | [gpio/normal](peripherals/gpio/normal)、[interrupt](peripherals/gpio/interrupt)、[io_task](peripherals/gpio/io_task) | [gpio](../../docs/dolua-api/nt26/api/peripherals/gpio.md) |
 | [uart/uart_normal](peripherals/uart/uart_normal)、[uart_block](peripherals/uart/uart_block) | [uart](../../docs/dolua-api/nt26/api/peripherals/uart.md) |
-| [spi/spi_api](peripherals/spi/spi_api)、[spi_lcd](peripherals/spi/spi_lcd)、[spi_st7789](peripherals/spi/spi_st7789) | [spi](../../docs/dolua-api/nt26/api/peripherals/spi.md)、[lcd](../../docs/dolua-api/nt26/api/module/lcd.md) |
+| [spi/spi_api](peripherals/spi/spi_api)、[spi_lcd](peripherals/spi/spi_lcd)、[spi_lcd_cfg](peripherals/spi/spi_lcd_cfg)、[spi_st7789](peripherals/spi/spi_st7789) | [spi](../../docs/dolua-api/nt26/api/peripherals/spi.md)、[lcd](../../docs/dolua-api/nt26/api/module/lcd.md) |
 | [iic/iic_aht20](peripherals/iic/iic_aht20) | [i2c](../../docs/dolua-api/nt26/api/peripherals/i2c.md) |
 | [iic/iic_ssd1306](peripherals/iic/iic_ssd1306) | [i2c](../../docs/dolua-api/nt26/api/peripherals/i2c.md)（纯 Lua SSD1306，不用 lcd） |
 | [iic/soft_iic_aht20](peripherals/iic/soft_iic_aht20) | [soft_i2c](../../docs/dolua-api/nt26/api/peripherals/soft_i2c.md) |
@@ -76,7 +76,7 @@
 | [rtu](module/rtu) | [rtu](../../docs/dolua-api/nt26/api/module/rtu.md) |
 | [virt](module/virt) | [virat](../../docs/dolua-api/nt26/api/module/virat.md) |
 | [charge](module/charge) | [charge](../../docs/dolua-api/nt26/api/peripherals/charge.md) |
-| [lvgl](module/lvgl)（[lvgl_demo](module/lvgl/lvgl_demo)、[lvgl_btn](module/lvgl/lvgl_btn)、[lvgl_arclabel](module/lvgl/lvgl_arclabel)、[lvgl_bar](module/lvgl/lvgl_bar)、[lvgl_arc](module/lvgl/lvgl_arc)、[lvgl_checkbox](module/lvgl/lvgl_checkbox)、[lvgl_dropdown](module/lvgl/lvgl_dropdown)、[lvgl_textarea](module/lvgl/lvgl_textarea)、[lvgl_keyboard](module/lvgl/lvgl_keyboard)、[lvgl_switch](module/lvgl/lvgl_switch)、[lvgl_spinner](module/lvgl/lvgl_spinner)、[lvgl_msgbox](module/lvgl/lvgl_msgbox)、[lvgl_watchface](module/lvgl/lvgl_watchface)、[lvgl_span](module/lvgl/lvgl_span)、[lvgl_canvas](module/lvgl/lvgl_canvas)、[lvgl_led](module/lvgl/lvgl_led)、[lvgl_chart](module/lvgl/lvgl_chart)、[lvgl_img](module/lvgl/lvgl_img)） | [lvgl](../../docs/dolua-api/nt26/api/module/lvgl.md) |
+| [lvgl](module/lvgl)（[lvgl_demo](module/lvgl/lvgl_demo)、[lvgl_btn](module/lvgl/lvgl_btn)、[lvgl_ssd1306](module/lvgl/lvgl_ssd1306)、[lvgl_arclabel](module/lvgl/lvgl_arclabel)、[lvgl_bar](module/lvgl/lvgl_bar)、[lvgl_arc](module/lvgl/lvgl_arc)、[lvgl_checkbox](module/lvgl/lvgl_checkbox)、[lvgl_dropdown](module/lvgl/lvgl_dropdown)、[lvgl_textarea](module/lvgl/lvgl_textarea)、[lvgl_keyboard](module/lvgl/lvgl_keyboard)、[lvgl_switch](module/lvgl/lvgl_switch)、[lvgl_spinner](module/lvgl/lvgl_spinner)、[lvgl_msgbox](module/lvgl/lvgl_msgbox)、[lvgl_watchface](module/lvgl/lvgl_watchface)、[lvgl_span](module/lvgl/lvgl_span)、[lvgl_canvas](module/lvgl/lvgl_canvas)、[lvgl_led](module/lvgl/lvgl_led)、[lvgl_chart](module/lvgl/lvgl_chart)、[lvgl_img](module/lvgl/lvgl_img)） | [lvgl](../../docs/dolua-api/nt26/api/module/lvgl.md) |
 
 ## apps — 应用场景
 
