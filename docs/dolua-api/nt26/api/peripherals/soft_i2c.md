@@ -1,6 +1,8 @@
 # soft_i2c
 
-**文档版本** `1.2.0`
+**文档版本** `1.4.1`
+
+**对应 SDK** `NT26-PRO-RTU-D1.3.2`
 
 对象化软件 I2C 主机。用两根普通 GPIO 模拟 SCL/SDA，不占用硬件 I2C 控制器。可同时开多路（脚不要冲突）。
 
@@ -32,6 +34,9 @@ local soft_i2c = require("soft_i2c")
   - [7.7 `obj:error`](#7-7-error)
   - [7.8 `obj:pins`](#7-8-pins)
   - [7.9 `obj:deinit`](#7-9-deinit)
+  - [7.10 `obj:disable`](#7-10-disable)
+  - [7.11 `obj:sleep_enter`](#7-11-sleep-enter)
+  - [7.12 `obj:sleep_exit`](#7-12-sleep-exit)
 - [8. 设备地址与数据](#8-设备地址与数据)
 - [9. 错误与返回约定](#9-错误与返回约定)
 - [10. 资源上限与生命周期](#10-资源上限与生命周期)
@@ -46,6 +51,7 @@ local soft_i2c = require("soft_i2c")
 1. `soft_i2c.new(sda, scl [, cfg])` 指定两根脚，得到总线对象。
 2. `write` / `read` 做主机收发。没有 `mem_write` / `mem_read`：寄存器访问自己把地址拼进 `write` 的数据里，或 `write` 完再 `read`。
 3. 调试可用 `scan`、`is_ready`、`test_hardware`。
+4. 进休眠时固件会自动把脚切成高阻，唤醒后自动恢复；对象不用重新 `new`。脚本也可以自己调 `sleep_enter` / `sleep_exit`。彻底不用了再 `disable`/`deinit`。
 
 时序在当前线程里用 GPIO 翻转 + 微秒延时模拟，**会占住 Lua 调度和 CPU**。短交易可以；不要在 UART 回调里扫整条总线。
 
@@ -76,7 +82,8 @@ SDA/SCL 需要外部上拉。`test_hardware` 只测 SCL 能否拉高/拉低。
 
 | 路径 | 调用当场做什么 | 是否让出协程 | 谁在等 |
 | --- | --- | --- | --- |
-| `new` / `deinit` | 占脚 / 放脚 | **否** | 当前协程 |
+| `new` / `deinit` / `disable` | 占脚 / 彻底放脚（高阻） | **否** | 当前协程 |
+| `sleep_enter` / `sleep_exit` | 休眠切高阻 / 唤醒恢复脚 | **否** | 当前协程 |
 | `write` / `read` / `is_ready` | 比特级时序，忙等半周期 | **否** | 整台 Lua 调度 |
 | `scan` | `0x08`～`0x77` 逐个探测 | **否** | 较久 |
 | `test_hardware` | 拉 SCL 看能否高低 | **否** | 当前协程 |
@@ -93,7 +100,7 @@ SDA/SCL 需要外部上拉。`test_hardware` 只测 SCL 能否拉高/拉低。
 
 没有按真假解释的布尔开关。`input` 必须是 `INPUT_GPIO` / `INPUT_PINNO` 整数，写错 **抛** `"invalid input, expect INPUT_GPIO/INPUT_PINNO"`。
 
-脚本须持有引用。`deinit` 或对象回收释放这两根脚。
+脚本须持有引用。进休眠时固件会暂时把脚切高阻，唤醒后恢复，**对象仍可继续 `write`/`read`**。`disable` / `deinit` 或对象回收才真正释放这两根脚；之后要再用必须再 `new`。
 
 可同时多个对象；不要两路点同一对脚。
 
@@ -322,10 +329,48 @@ local sda, scl = bus:pins()
 
 ### 7.9 `obj:deinit()` {#7-9-deinit}
 
-释放两根脚。始终 `true`。对象回收同样清理。
+释放两根脚：关掉输出、切断输入缓冲、关掉内部上下拉，脚进入高阻。始终 `true`。对象回收同样清理。
+
+释放后对象不能再读写；同一对脚要再用，必须再 `new`。与 `disable` 是同一套清理。
 
 ```lua
 obj:deinit()
+```
+
+---
+
+### 7.10 `obj:disable()` {#7-10-disable}
+
+失能软件 I2C。语义与 `deinit` 完全相同。始终 `true`。已关闭再调一次仍是 `true`。
+
+这是**彻底关掉**这条总线。休眠省电不需要调它：进睡前固件会走 `sleep_enter`，唤醒走 `sleep_exit`。
+
+```lua
+obj:disable()
+```
+
+---
+
+### 7.11 `obj:sleep_enter()` {#7-11-sleep-enter}
+
+休眠前处理：SDA/SCL 切成高阻（关输出、关输入缓冲、关内部上下拉），**对象和配置保留**。始终尽量 `true`；对象已 `disable` 也是 `true`。
+
+脚本一般不必调。进入 Sleep1 / Sleep2 / Hibernate 时固件会对所有已打开实例自动调用。
+
+```lua
+obj:sleep_enter()
+```
+
+---
+
+### 7.12 `obj:sleep_exit()` {#7-12-sleep-exit}
+
+休眠后处理：按 `new` 时的脚和速率把 SDA/SCL 配回总线，随后可继续 `write`/`read`。成功 `true`，恢复脚失败 `false`。对象已 `disable` 为 `true`。
+
+脚本一般不必调。从上述休眠档唤醒时固件会自动调用。若唤醒后立刻读写、而恢复尚未完成，第一次收发也会先把脚拉起来。
+
+```lua
+obj:sleep_exit()
 ```
 
 ---
@@ -357,7 +402,9 @@ obj:deinit()
 | `scan` | table（可空） | 空表（未初始化也是空表，**无**错误串） |
 | `state` / `error` | integer | — |
 | `pins` | 两个 integer | — |
-| `deinit` | `true` | 不失败 |
+| `deinit` / `disable` | `true` | 不失败 |
+| `sleep_enter` | `true` | 不失败 |
+| `sleep_exit` | `true` | 只 `false`（脚恢复失败） |
 
 `sda`/`scl` 不是整数、`data` 不是字符串、缺对象：标准 Lua 参数错。需要收 `new` 时用 `pcall`。
 
@@ -381,7 +428,7 @@ obj:deinit()
 | `-7` | SDA 打开失败 | 脚无效、已被占用，或配置过后仍打不开 |
 | `-8` | SCL 打开失败 | 同上，换 SCL |
 
-读写 / `is_ready` / `test_hardware` 失败没有文案：对象已 `deinit`、从设备无应答、超时、或接线错误都会变成 `false`/`nil`。`error()` 只给整数状态，没有对应英文短句表。先 `test_hardware` 再 `scan`。
+读写 / `is_ready` / `test_hardware` 失败没有文案：对象已 `disable`/`deinit`、从设备无应答、超时、或接线错误都会变成 `false`/`nil`。`error()` 只给整数状态，没有对应英文短句表。先 `test_hardware` 再 `scan`。
 
 ---
 
@@ -389,11 +436,11 @@ obj:deinit()
 
 | 资源 | 说明 |
 | --- | --- |
-| 实例数 | Lua 侧无固定槽位，受脚和内存限制 |
+| 实例数 | Lua 侧无固定槽位，受脚和内存限制。自动休眠处理最多同时照顾 8 路已打开实例 |
 | `scan` | `0x08`～`0x77`，每地址超时 50 ms |
 | `clock_speed` | Hz；过快半周期会收到 1 µs 下限，实际达不到标称 |
 
-`new` 占两根脚；`deinit` / `__gc` 释放。没有 VM 退出专用清扫以外的全局表：对象被回收即可。
+`new` 占两根脚。进 Sleep1 / Sleep2 / Hibernate 前固件自动 `sleep_enter`（高阻），唤醒后自动 `sleep_exit`（恢复总线），**不必**再 `new`。`disable` / `deinit` / `__gc` 才彻底释放脚。没有 VM 退出专用清扫以外的全局表：对象被回收即可。
 
 ---
 
@@ -445,3 +492,6 @@ local raw = bus:read(ADDR, 7)
 | 1.1.0 | 2026-09-05 | 补全错误文案/错误码与可能原因 |
 | 1.1.1 | 2026-09-09 | 与 gpio 编号对照改为 `gpio.BY_GPIO` |
 | 1.2.0 | 2026-09-18 | `new` 抛错 `soft_i2c init failed: N` 按失败点列出 `N`（解析 / 配置 / 打开，分 SDA、SCL） |
+| 1.3.0 | 2026-09-28 | 新增 `obj:disable()`；`disable`/`deinit` 把 SDA/SCL 切成高阻（关输出、关输入缓冲、关内部上下拉）。休眠前由脚本关闭，唤醒后必须再 `new` |
+| 1.4.0 | 2026-09-28 | 新增 `sleep_enter` / `sleep_exit`。进休眠时固件自动把脚切高阻，唤醒后自动恢复总线，对象不用重新 `new`。`disable` 仍表示彻底关掉 |
+| 1.4.1 | 2026-09-28 | 文首标注 `disable` / `sleep_enter` / `sleep_exit` 对应 SDK `NT26-PRO-RTU-D1.3.2` |
