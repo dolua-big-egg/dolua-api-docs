@@ -27,6 +27,7 @@
 | lbs | [lbs.md](network/lbs.md) | [lbs_api](../../../../examples/nt26/network/lbs/lbs_api) |
 | rndis | [rndis.md](network/rndis.md) | [rndis_api](../../../../examples/nt26/network/rndis/rndis_api) |
 | wifiscan | [wifiscan.md](network/wifiscan.md) | [wifiscan_api](../../../../examples/nt26/network/wifiscan/wifiscan_api) |
+| smtp | [smtp.md](network/smtp.md) | [smtp_starttls](../../../../examples/nt26/network/smtp/smtp_starttls)、[smtp_implicit](../../../../examples/nt26/network/smtp/smtp_implicit)（固件 `NT26-PRO-RTU-D1.3.2` 起） |
 
 短信文档在 `module/`：[sms.md](module/sms.md) → [sms_api](../../../../examples/nt26/network/sms/sms_api)、[sms_cmd](../../../../examples/nt26/network/sms/sms_cmd)、[sms_forward](../../../../examples/nt26/apps/sms/sms_forward)。
 

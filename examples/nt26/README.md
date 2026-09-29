@@ -48,6 +48,7 @@
 | [sms](network/sms) | [sms](../../docs/dolua-api/nt26/api/module/sms.md) |
 | [rndis](network/rndis) | [rndis](../../docs/dolua-api/nt26/api/network/rndis.md) |
 | [wifiscan](network/wifiscan) | [wifiscan](../../docs/dolua-api/nt26/api/network/wifiscan.md) |
+| [smtp](network/smtp)（[smtp_starttls](network/smtp/smtp_starttls)、[smtp_implicit](network/smtp/smtp_implicit)） | [smtp](../../docs/dolua-api/nt26/api/network/smtp.md)（固件 `NT26-PRO-RTU-D1.3.2` 起） |
 
 ## storage — 存储
 
