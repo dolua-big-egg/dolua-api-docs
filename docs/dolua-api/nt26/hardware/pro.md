@@ -1,6 +1,6 @@
 # NT26-PRO 全 IO 表（F6E0 / F6D0）
 
-**文档版本** `1.2.1`
+**文档版本** `1.6.1`
 
 **NT26-PRO** 使用 **F6E0** 与 **F6D0**。两款封装共用下表：模块 PIN、PDDR、默认功能、复用名称一致。F6D0 多几颗脚，表中标 **仅 F6D0**；F6E0 不要按这些脚布线。
 
@@ -69,12 +69,12 @@
 | MAIN_RTS | 22 | 16 | GPIO1 | | 1 | NI&NP | USP2_LSPI_D3, UART1_DCDn, UART1_RTSn, PWM1n, PWM0, KPC_R3 | |
 | MAIN_CTS | 23 | 17 | GPIO2 | | 2 | NI&NP | USP2_LSPI_D2, UART1_DTRn, UART1_CTSn, ONEW, PWM1, KPC_R2, USP2_LSPI_TE | |
 | CAM_MCLK | 54 | 18 | GPIO3 | | 3 | NI&NP | USP1_MCLK, USP1_DCX, USP2_LSPI_RCLK, ONEW, PWM2, KPC_C4, CSPI_MCLK | |
-| CAM_SPI_CLK | 80 | 19 | GPIO4 | | 4 | NI&NP | USP1_BCLK, I2C1_SDA, UART1_RTSn, USIM1_URSTn, USP2_LSPI_D4, KPC_R1, CSPI_BCLK | 固件表 I2C1 SDA（控制器当前未开） |
-| CAM_PWDN | 81 | 20 | GPIO5 | | 5 | NI&NP | USP1_LRCK, I2C1_SCL, UART1_CTSn, USIM1_UCLK, USP2_LSPI_D5, KPC_R0, CAM-PD | 固件表 I2C1 SCL（控制器当前未开） |
+| CAM_SPI_CLK | 80 | 19 | GPIO4 | | 4 | NI&NP | USP1_BCLK, I2C1_SDA, UART1_RTSn, USIM1_URSTn, USP2_LSPI_D4, KPC_R1, CSPI_BCLK | I2C1 `sda_pin_map=1` |
+| CAM_PWDN | 81 | 20 | GPIO5 | | 5 | NI&NP | USP1_LRCK, I2C1_SCL, UART1_CTSn, USIM1_UCLK, USP2_LSPI_D5, KPC_R0, CAM-PD | I2C1 `scl_pin_map=1` |
 | CAM_SPI_DATA0 | 55 | 21 | GPIO6 | | 6 | NI&NP | USP1_DIN, UART2_RXD, UART1_RTSn, USIM1_UIO, USP2_LSPI_D6, KPC_C3, CSPI_RX0 | UART2 `pin_map=1` 的 RX |
 | CAM_SPI_DATA1 | 56 | 22 | GPIO7 | | 7 | NI&NP | USP1_DOUT, UART2_TXD, UART1_CTSn, ONEW, USP2_LSPI_D7, KPC_C2, CSPI_RX1 | UART2 `pin_map=1` 的 TX |
-| I2C1_SDA | 66 | 23 | GPIO8 | | 8 | NI&NP | SPI0_SSn0, I2C1_SDA, UART2_RTSn, UART0_RTSn | 固件 SPI0 常用软件片选（脚本 GPIO8） |
-| I2C1_SCL | 67 | 24 | GPIO9 | | 9 | NI&NP | SPI0_MOSI, I2C1_SCL, UART2_CTSn, UART0_CTSn | 固件 SPI0 MOSI |
+| I2C1_SDA | 66 | 23 | GPIO8 | | 8 | NI&NP | SPI0_SSn0, I2C1_SDA, UART2_RTSn, UART0_RTSn | 固件 I2C1 SDA。也是 SPI0 常用软件片选（脚本 GPIO8） |
+| I2C1_SCL | 67 | 24 | GPIO9 | | 9 | NI&NP | SPI0_MOSI, I2C1_SCL, UART2_CTSn, UART0_CTSn | 固件 I2C1 SCL。也是 SPI0 MOSI |
 | AUX_RXD | 28 | 25 | UART2_RXD | GPIO10（指令复用） | 10 | NI&NP | SPI0_MISO, UART2_RXD | UART2 **出厂** `pin_map=2` 的 RX；亦是 SPI0 MISO |
 | AUX_TXD | 29 | 26 | UART2_TXD | GPIO11（指令复用） | 11 | NI&NP | SPI0_SCLK, SPI1_SSn1, UART2_TXD | UART2 **出厂** `pin_map=2` 的 TX；亦是 SPI0 SCLK |
 | USIM2_DATA | 64 | 27 | USIM2_DATA | | — | NI&NP | GPIO12, SPI1_SSn0, UART1_RTSn, UART2_RXD, USIM1_UIO, UART3_RTSn, KPC_C1, CAN_RXD | UART2 `pin_map=0` 的 RX。脚本 GPIO12 未导出 |
@@ -122,7 +122,7 @@
 
 下面只写**当前固件已经登记并按组落地**的脚。GPIO 是脚本能 `open` 的固定绑定；UART 多组全部列出。未写进本组的焊盘即使总表里能复用，SDK 也选不到。
 
-GPIO 当前**不能改绑**。Lua `uart.config` **改不了** `pin_map`，只能在 `rtu_config.cfg` 的 `[uart.N]` 里写，下次加载生效。I2C / SPI 没有 `pin_map`，脚固定。
+GPIO 当前**不能改绑**。Lua `uart.config` **改不了** `pin_map`，只能在 `rtu_config.cfg` 的 `[uart.N]` 里写，下次加载生效。I2C 的 `scl_pin_map` / `sda_pin_map` 在 `i2c.new` 或 `lcd.new` 的 `cfg` 里分开传入，脚本跑起来再选脚，不读 `rtu_config`。SPI 没有 `pin_map`，脚固定。
 
 ### 4.1 GPIO {#41-gpio}
 
@@ -133,12 +133,12 @@ GPIO 当前**不能改绑**。Lua `uart.config` **改不了** `pin_map`，只能
 | 1 | 22 | 16 | 否 | MAIN_RTS | |
 | 2 | 23 | 17 | 否 | MAIN_CTS | |
 | 3 | 54 | 18 | 否 | CAM_MCLK | |
-| 4 | 80 | 19 | 否 | CAM_SPI_CLK | 固件表 I2C1 SDA（控制器未开） |
-| 5 | 81 | 20 | 否 | CAM_PWDN | 固件表 I2C1 SCL（控制器未开） |
+| 4 | 80 | 19 | 否 | CAM_SPI_CLK | I2C1 `sda_pin_map=1` |
+| 5 | 81 | 20 | 否 | CAM_PWDN | I2C1 `scl_pin_map=1` |
 | 6 | 55 | 21 | 否 | CAM_SPI_DATA0 | UART2 `pin_map=1` RX |
 | 7 | 56 | 22 | 否 | CAM_SPI_DATA1 | UART2 `pin_map=1` TX |
-| 8 | 66 | 23 | 否 | I2C1_SDA | SPI0 常用软件片选 |
-| 9 | 67 | 24 | 否 | I2C1_SCL | SPI0 MOSI |
+| 8 | 66 | 23 | 否 | I2C1_SDA | 固件 I2C1 SDA；也是 SPI0 常用软件片选 |
+| 9 | 67 | 24 | 否 | I2C1_SCL | 固件 I2C1 SCL；也是 SPI0 MOSI |
 | 10 | 28 | 25 | 否 | AUX_RXD | UART2 出厂 RX；SPI0 MISO |
 | 11 | 29 | 26 | 否 | AUX_TXD | UART2 出厂 TX；SPI0 SCLK |
 | 15 | 49 | 30 | 否 | LCD_RST | UART3 `pin_map=1` TX |
@@ -185,14 +185,29 @@ GPIO 当前**不能改绑**。Lua `uart.config` **改不了** `pin_map`，只能
 
 ### 4.3 I2C {#42-i2c}
 
-硬件 I2C 不经 `gpio` 打开，按 PDDR 配复用。任意脚模拟见 [`soft_i2c`](../api/peripherals/soft_i2c.md)。
+硬件 I2C 不经 `gpio` 打开。`scl_pin_map` 和 `sda_pin_map` 分开选下表里的一档，可以交叉。不写的那一根仍是改前固定脚：I2C0 为 PDDR 13/14、两根 ALT2；I2C1 为 PDDR 24/23、两根 ALT2。编号 `0` 与这套相同。没有列出的编号无效。`i2c.new` 与走硬件 I2C 的 `lcd.new` 用同一套编号。任意脚模拟见 [`soft_i2c`](../api/peripherals/soft_i2c.md)。接口见 [`i2c`](../api/peripherals/i2c.md)、[`lcd`](../api/module/lcd.md)。
 
-| 路 | SCL PIN | SCL PDDR | SDA PIN | SDA PDDR | 当前镜像 |
-| --- | ---: | ---: | ---: | ---: | --- |
-| I2C0 | 57 | 13 | 58 | 14 | **落地**。`i2c.new(i2c.I2C0)` |
-| I2C1 | 81 | 20 | 80 | 19 | 固件已登记 PAD；**当前镜像未打开该控制器**，`i2c.I2C1` 不要当可用总线 |
+**I2C0**
 
-I2C0 的 PIN 57 / 58 不在脚本 GPIO 表里。
+| 编号 | SCL PIN | SCL PDDR | SDA PIN | SDA PDDR | 丝印 |
+| ---: | ---: | ---: | ---: | ---: | --- |
+| 0 | 57 | 13 | 58 | 14 | CAM。两根 ALT2，与不传相同 |
+| 1 | 49 | 30 | 62 | 29 | LCD_RST / USIM2_CLK |
+| 2 | 39 | 32 | 38 | 31 | DBG。与 UART0 日志口重叠 |
+| 3 | 52 | 41 | 53 | 40 | LCD_CS / LCD_CLK |
+
+同一行只是挨着的两档，SCL 的编号和 SDA 的编号各自传入。PIN 57 / 58 不在脚本 GPIO 表里。
+
+**I2C1**
+
+| 编号 | SCL PIN | SCL PDDR | SDA PIN | SDA PDDR | 丝印 |
+| ---: | ---: | ---: | ---: | ---: | --- |
+| 0 | 67 | 24 | 66 | 23 | 出厂。与 SPI0 MOSI、软件片选重叠 |
+| 1 | 81 | 20 | 80 | 19 | CAM_PWDN / CAM_SPI_CLK |
+| 2 | 78 | 42 | 50 | 43 | LCD_TE / LCD_SIO |
+| 3 | 57 | 13 | 58 | 14 | CAM 上的 I2C1，ALT3。与 I2C0 编号 `0` 同一对焊盘 |
+
+I2C1 的 `0` 不要和 `spi.SPI0` 同时开。I2C0 的 `0` 与 I2C1 的 `3` 不要同时用。
 
 ### 4.4 SPI {#43-spi}
 
@@ -201,9 +216,9 @@ I2C0 的 PIN 57 / 58 不在脚本 GPIO 表里。
 | 路 | 信号 | PIN | PDDR | 当前镜像 |
 | --- | --- | ---: | ---: | --- |
 | SPI0 | SCLK | 29 | 26 | **落地**。`spi.new(spi.SPI0)` |
-| SPI0 | MOSI | 67 | 24 | 落地 |
+| SPI0 | MOSI | 67 | 24 | 落地。与 I2C1 SCL 同一焊盘 |
 | SPI0 | MISO | 28 | 25 | 落地（半双工可不占） |
-| SPI0 | 片选（常用） | 66 | 23 | 脚本 GPIO8；demo 多用这脚做 CS |
+| SPI0 | 片选（常用） | 66 | 23 | 脚本 GPIO8；demo 多用这脚做 CS。与 I2C1 SDA 同一焊盘 |
 | SPI1 | SCLK | 49 | 30 | 固件已登记 PAD；**当前镜像未打开该控制器** |
 | SPI1 | MOSI | 63 | 28 | 同上 |
 | SPI1 | MISO | 62 | 29 | 同上 |
@@ -236,3 +251,10 @@ SPI0 的 SCLK / MISO 就是 UART2 **出厂组**（`pin_map=2`）的 TX / RX。�
 | 1.1.0 | 2026-09-05 | 区分能力总表与 SDK 落盘；总表加 PDDR；写入 UART 全部 pin_map 及 I2C / SPI 实际 PIN、PDDR |
 | 1.2.0 | 2026-09-05 | 落盘区补固件 GPIO 绑定（GPIO / PIN / PDDR） |
 | 1.2.1 | 2026-09-09 | `gpio.open` 编号类型改为推荐名 `BY_GPIO` / `BY_PINNO`（旧名 `INPUT_GPIO` / `INPUT_PINNO` 仍可用） |
+| 1.2.2 | 2026-09-24 | I2C1 落地到 PIN 66/67（SDA PDDR 23、SCL PDDR 24），不再占用 CAM 的 PDDR 19/20 |
+| 1.3.0 | 2026-09-29 | I2C0 / I2C1 各 4 个 SCL 与 4 个 SDA，`pin_map = scl_sel * 4 + sda_sel`（0～15）。组 0 仍是出厂脚 |
+| 1.4.0 | 2026-09-29 | I2C `pin_map` 改为仅相邻成对，每路 `0`～`3` |
+| 1.5.0 | 2026-09-29 | 不传 `pin_map` 仍用改前固定脚；显式组 0 的 I2C0 SCL 为 ALT3 |
+| 1.5.1 | 2026-09-29 | 更正 I2C0 组 0：SCL 为 ALT2。I2C1 落在同一对 CAM 脚时 SCL 为 ALT3 |
+| 1.6.0 | 2026-09-29 | I2C 的 SCL、SDA 改为各自编号，`scl_pin_map` 与 `sda_pin_map` 分开传 |
+| 1.6.1 | 2026-09-29 | 写明 `lcd.new` 的硬件 I2C 使用同一套 SCL / SDA 编号 |

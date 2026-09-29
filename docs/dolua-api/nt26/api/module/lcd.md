@@ -1,6 +1,6 @@
 # lcd
 
-**文档版本** `1.4.3`
+**文档版本** `1.5.0`
 
 对象化显示面板。`lcd.new(cfg)` 打开一路总线并初始化面板，之后在对象上填色、打点、刷一块像素。彩屏是 RGB565：内置上电用 `lcd.ST7789`，外部 `init` 表用 `lcd.TFT`（SPI 或 LSPI）；单色 OLED（SSD1306）是模块内 1 bit 画布，由本模块按页写到屏上。
 
@@ -90,7 +90,7 @@ local lcd = require("lcd")
 ┌─────────────────────┐          ┌─────────────────────┐
 │  总线                │          │  面板驱动            │
 │  spi0 / spi1 / lspi0 │          │  ST7789：开窗 RGB565 │
-│  i2c0 / soft_i2c     │          │  SSD1306：1bit 画布  │
+│  i2c0 / i2c1 / soft_i2c │       │  SSD1306：1bit 画布  │
 └─────────────────────┘          └─────────────────────┘
 ```
 
@@ -102,7 +102,7 @@ local lcd = require("lcd")
 | `rotate` / `backlight` / `info` / `size` | 改方向、背光或读状态 | **否** |
 | `deinit` | 等未完成的刷写（最多约 3 秒）再关总线 | **否** |
 
-`new` 会占用所选总线。`spi0`/`spi1`/`lspi0` 同一路不要再给别的脚本当普通 SPI 用。`i2c0` 期间不要再 `i2c.new(i2c.I2C0)`（本模块独占该控制器）。`soft_i2c` 只占用你配的那对 GPIO。
+`new` 会占用所选总线。`spi0`/`spi1`/`lspi0` 同一路不要再给别的脚本当普通 SPI 用。`i2c0` / `i2c1` 期间不要再 `i2c.new` 占用同一路（本模块独占该控制器）。`soft_i2c` 只占用你配的那对 GPIO。
 
 ---
 
@@ -177,13 +177,14 @@ lcd.full(lcd.RED)         -- 把颜色当成了对象
 | `lcd.SPI1` | `"spi1"` | 通用 SPI 控制器 1 | `cfg.bus` |
 | `lcd.LSPI0` | `"lspi0"` | LCD 专用 SPI（仅 ST7789） | `cfg.bus` |
 | `lcd.I2C0` | `"i2c0"` | 硬件 I2C0（SSD1306） | `cfg.bus` |
+| `lcd.I2C1` | `"i2c1"` | 硬件 I2C1（SSD1306）。默认 SCL PIN 67、SDA PIN 66 | `cfg.bus` |
 | `lcd.SOFT_I2C` | `"soft_i2c"` | 软件 I2C，必须配 `sda`/`scl` | `cfg.bus` |
 
 `spi0` / `spi1`：命令/数据脚 **必须** 提供 `dc`；`cs` 建议提供；`rst` / `bl` 可选。SSD1306 走 SPI 时同样要 `dc`。
 
 `lspi0`：只给 `ST7789` / `TFT`。DC、CS 由硬件脚承担；`rst` / `bl` 仍可按 GPIO 配。SSD1306 配 `lspi0` 会初始化失败。
 
-`i2c0`：从地址默认 `0x3C`（`addr` 可改）。可选 `rst`。不要同时 `i2c.new` 占用 I2C0。
+`i2c0` / `i2c1`：从地址默认 `0x3C`（`addr` 可改）。可选 `rst`。`scl_pin_map`、`sda_pin_map` 与 [`i2c.new`](../peripherals/i2c.md) 同一套编号，各 `0`～`3`，可以交叉；不写的那一根用出厂脚。脚表见 [i2c 4.3](../peripherals/i2c.md) 与 [硬件表 4.3](../../hardware/pro.md#42-i2c)。不要再 `i2c.new` 占用同一路。I2C1 默认脚与 SPI0 的软件片选、MOSI 重叠。
 
 `soft_i2c`：**必须** 提供 `sda` 和 `scl`（写法与 `dc` 相同），且两脚编号类型一致（都是 GPIO 或都是模块 pin）。可选 `rst`、`addr`。
 
@@ -283,6 +284,8 @@ lcd.new(cfg)
 | `"init must be a table"` 等 | `init` / `offset` / `madctl` / `reset` 形态不对，或 `init` 超过 128 条、单条数据超过 16 字节、`0x3A` 不是 16bit |
 | `"tft requires init"` | `driver = lcd.TFT` 但没给 `init` |
 | `"lcd already in use"` | 已有对象未释放 |
+| `"use scl_pin_map and sda_pin_map"` | 硬件 I2C 仍写了旧的单个 `pin_map` |
+| `"invalid i2c pin map"` | `scl_pin_map` / `sda_pin_map` 不是整数，或不在 `0`～`3` |
 | `"lcd init failed: invalid parameter (…)"` | 未知 `driver` / 未知 `bus` / `spi0`·`spi1` 没配 `dc` / `soft_i2c` 没配 `sda`+`scl` |
 | `"lcd init failed: driver error (…)"` | 总线或面板初始化失败 |
 | `"mutex init failed"` | 同步资源创建失败 |
@@ -574,7 +577,7 @@ obj:info()
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
 | `driver` | string | 打开时的面板名：`"st7789"` / `"tft"` / `"ssd1306"` |
-| `bus` | string | `"spi0"` / `"spi1"` / `"lspi0"` / `"i2c0"` / `"soft_i2c"` |
+| `bus` | string | `"spi0"` / `"spi1"` / `"lspi0"` / `"i2c0"` / `"i2c1"` / `"soft_i2c"` |
 | `inited` | boolean | 是否仍持有总线 |
 | `mode` | integer | `MODE_DIRECT` / `MODE_OWNED` |
 | `width` | integer | 逻辑宽 |
@@ -598,7 +601,7 @@ local inf = obj:info()
 | 键 | 类型 | 默认 | 说明 |
 | --- | --- | --- | --- |
 | `driver` | string | `"st7789"` | `"st7789"`（内置上电）、`"tft"`（必须 `init`）、`"ssd1306"` |
-| `bus` | string | 随驱动 | ST7789 默认 `"spi0"`；SSD1306 默认 `"i2c0"`。彩屏还可 `spi1` / `lspi0` |
+| `bus` | string | 随驱动 | ST7789 默认 `"spi0"`；SSD1306 默认 `"i2c0"`。彩屏还可 `spi1` / `lspi0`；SSD1306 还可 `i2c1` |
 | `width` | integer | 随驱动 | ST7789 `240`；SSD1306 `128`（最大 128） |
 | `height` | integer | 随驱动 | ST7789 `280`；SSD1306 `64`（最大 64，须为 8 的倍数） |
 | `x_off` | integer | `0` | 四向共用的列 GRAM 偏移。有 `offset` 表时被对应方向覆盖 |
@@ -612,6 +615,8 @@ local inf = obj:info()
 | `init` | table | 固件内置表 | 上电命令流，`new` 时拍进 C，之后不再读 Lua。见下 |
 | `hz` | integer | `0` | 时钟。`0` = 该总线默认 |
 | `addr` | integer | `0x3C` | 仅 I2C / soft_i2c。7bit 从地址；`>0x7F` 按 8bit 写地址右移 1 位 |
+| `scl_pin_map` | integer | 不传 | 仅 `i2c0` / `i2c1`。SCL 编号 `0`～`3`，与 `i2c.new` 相同。不传用出厂脚 |
+| `sda_pin_map` | integer | 不传 | 仅 `i2c0` / `i2c1`。SDA 编号 `0`～`3`。不传用出厂脚 |
 | `bl_active_high` | boolean | `true` | 背光有效电平。只认 `true`/`false`。OLED 通常不接 `bl` |
 | `dc` | 脚 | 未用 | 命令/数据。`spi0`/`spi1` **必填** |
 | `cs` | 脚 | 未用 | 片选。普通 SPI 建议填 |
@@ -737,6 +742,8 @@ SSD1306 内部是 1 bit 画布（128×64 约 1 KB）。`full` / `fill(color)` / 
 | --- | --- |
 | `mutex init failed` | `new` 时系统互斥量失败 |
 | `invalid lcd config` | cfg 缺关键项或脚/名字不合法 |
+| `use scl_pin_map and sda_pin_map` | 硬件 I2C 仍写了旧的单个 `pin_map` |
+| `invalid i2c pin map` | `scl_pin_map` / `sda_pin_map` 不是 `0`～`3` 的整数 |
 | `init must be a table` / `init too long (max 128)` / `init cmd data too long (max 16)` | 上电表形态或长度不对 |
 | `colmod must be 16bit (0x05 or 0x55)` | `init` 里 `0x3A` 不是 16bit |
 | `offset must be a table` / `invalid offset entry` | `offset` 不对 |
@@ -761,7 +768,7 @@ SSD1306 内部是 1 bit 画布（128×64 约 1 KB）。`full` / `fill(color)` / 
 | 实例 | **整机 1 块屏** |
 | 面板库 | 族：ST7789（内置上电）、TFT（外部 `init`）、SSD1306 |
 | `init` | 最多 128 条，每条数据最多 16 字节；`new` 时拍进 C |
-| 总线 | `spi0` / `spi1` / `lspi0` / `i2c0` / `soft_i2c` |
+| 总线 | `spi0` / `spi1` / `lspi0` / `i2c0` / `i2c1` / `soft_i2c` |
 | 名字 | `driver`、`bus` 各最多 15 字符 |
 | 脚编号 | 0～255 |
 | ST7789 像素 | RGB565，16 bpp |
@@ -783,10 +790,10 @@ SSD1306 内部是 1 bit 画布（128×64 约 1 KB）。`full` / `fill(color)` / 
 | --- | --- |
 | 验证 SPI / LSPI 彩屏 | 本模块 + `lcd.ST7789`，可不写 `init` |
 | 换 ST7735 / GC9A01 / ILI9341 等 | `driver = lcd.TFT`，必填 `init`/`offset`。见 [`spi_lcd_cfg`](../../../../examples/nt26/peripherals/spi/spi_lcd_cfg) |
-| 验证 SSD1306 | 本模块 + `lcd.SSD1306`，总线 `i2c0` / `spi0` / `soft_i2c` |
+| 验证 SSD1306 | 本模块 + `lcd.SSD1306`，总线 `i2c0` / `i2c1` / `spi0` / `soft_i2c`。硬件 I2C 换脚用 `scl_pin_map` / `sda_pin_map` |
 | QSPI / 18bit / SH1106 | **没有。** 不要改 `driver` 硬试 |
 | 普通 SPI 外设 | 不要占用 LCD 已 `new` 的那一路 SPI |
-| 同一条 I2C 上的传感器 | **先不要。** `i2c0` 被本模块占用时不要再 `i2c.new(I2C0)` |
+| 同一条 I2C 上的传感器 | **先不要。** `i2c0` / `i2c1` 被本模块占用时不要再 `i2c.new` 同一路 |
 | GPIO 指示灯 | [`gpio`](../peripherals/gpio.md) |
 | 图形界面 / 控件 | [`lvgl`](lvgl.md)。彩屏直接 `create`。SSD1306 仍按 RGB565 画，刷到 1 bit 时亮度过半才点亮，背景用 `0`。见 [`lvgl_ssd1306`](../../../../examples/nt26/module/lvgl/lvgl_ssd1306) |
 
@@ -844,11 +851,20 @@ log.info("driver=%s bus=%s", inf.driver, inf.bus)
 SSD1306 三条总线（脚号按板子改）：
 
 ```lua
--- 硬件 I2C0，从地址 0x3C
+-- 硬件 I2C0，从地址 0x3C。不写脚号就用出厂脚
 local oled, err = lcd.new({
     driver = lcd.SSD1306,
     bus    = lcd.I2C0,
     rst    = 9,
+})
+
+-- 硬件 I2C1，两根各自选脚。这里 SCL=3 是 PIN 57，SDA=0 是 PIN 66
+oled, err = lcd.new({
+    driver = lcd.SSD1306,
+    bus = lcd.I2C1,
+    scl_pin_map = 3,
+    sda_pin_map = 0,
+    addr = 0x3C,
 })
 
 -- 4 线 SPI
@@ -896,3 +912,5 @@ oled:pixel(0, 0, lcd.WHITE)
 | 1.4.1 | 2026-09-23 | SSD1306 可接 LVGL：RGB565 刷到 1 bit，非黑即亮。例程 `lvgl_ssd1306` |
 | 1.4.2 | 2026-09-23 | SSD1306 的 1 bit 改为亮度过半才点亮，白底上的灰边不再整点变白 |
 | 1.4.3 | 2026-09-23 | SSD1306 颜色改为亮度取半：纯红/绿/蓝会灭，白和黄/青/品红会亮。`buf` 不再按「非 0 即亮」 |
+| 1.4.4 | 2026-09-24 | SSD1306 可走硬件 I2C1：`lcd.I2C1` / `"i2c1"` |
+| 1.5.0 | 2026-09-29 | 硬件 I2C 的 `lcd.new` 增加 `scl_pin_map` / `sda_pin_map`，与 `i2c.new` 同一套编号 |

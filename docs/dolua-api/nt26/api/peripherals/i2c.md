@@ -1,6 +1,6 @@
 # i2c
 
-**文档版本** `1.1.2`
+**文档版本** `1.5.1`
 
 对象化硬件 I2C 主机。按控制器编号打开一路，再 `write` / `read` / 寄存器读写。每路同时只能有一个实例。
 
@@ -10,7 +10,7 @@ local i2c = require("i2c")
 
 平台预加载模块，无需额外 `.lua` 文件。
 
-任意脚位的软件模拟见 [`soft_i2c`](soft_i2c.md)。本模块走芯片 I2C 控制器，脚由机型固定（PIN + PDDR，不经 `gpio`），Lua 只选 `I2C0` / `I2C1`。NT26-PRO 落盘见 [硬件表 4.2](../../hardware/pro.md#42-i2c)：当前镜像只有 I2C0（PIN 57/58，PDDR 13/14）。
+任意脚位的软件模拟见 [`soft_i2c`](soft_i2c.md)。本模块走芯片 I2C 控制器，脚不经 `gpio`。`i2c.new` 用 `cfg.scl_pin_map` 和 `cfg.sda_pin_map` 各自选脚，打开时生效，不读 `rtu_config`。两根编号互不绑定，可以交叉。不写的那一根走改表之前的固定脚。SSD1306 走 [`lcd.new`](../module/lcd.md) 时用同样的两个键。NT26-PRO 可选脚见 [硬件表 4.3](../../hardware/pro.md#42-i2c)。I2C1 的 SCL `0`、SDA `0` 与 SPI0 的 MOSI、软件片选是同一对焊盘，两路不要同时打开。
 
 ---
 
@@ -20,6 +20,9 @@ local i2c = require("i2c")
 - [2. 框架结构](#2-框架结构)
 - [3. 对象模型](#3-对象模型)
 - [4. 常量与枚举](#4-常量与枚举)
+  - [4.1 控制器](#41-控制器)
+  - [4.2 总线速率 `bus_speed`](#42-总线速率-bus_speed)
+  - [4.3 SCL / SDA 脚号](#43-scl--sda-脚号)
 - [5. 类型约定](#5-类型约定)
 - [6. 模块函数](#6-模块函数)
 - [7. 对象方法](#7-对象方法)
@@ -72,7 +75,7 @@ local i2c = require("i2c")
                              │
                              ▼
 ┌─────────────────────────────────────────────────────────┐
-│  硬件 I2C 控制器（脚由机型固定）                          │
+│  硬件 I2C 控制器（SCL / SDA 各自选脚）                 │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -126,6 +129,39 @@ bus.write(bus, addr, data)   -- 等价
 
 省略 `cfg` 或省略该键：按标准速。传入未导出的其它整数，硬件可能 init 失败并抛 `"i2c init failed: …"`。
 
+### 4.3 SCL / SDA 脚号
+
+`cfg.scl_pin_map` 和 `cfg.sda_pin_map` 分开传，都是整数 `0`～`3`。不写成一个加起来的编号。不写某一根时，这一根不走下表，用改动前的固定脚。
+
+| 路 | 不传时 |
+| --- | --- |
+| I2C0 | SCL PDDR 13 ALT2（PIN 57），SDA PDDR 14 ALT2（PIN 58） |
+| I2C1 | SCL PDDR 24 ALT2（PIN 67），SDA PDDR 23 ALT2（PIN 66） |
+
+编号 `0` 和上面这套是同一焊盘、同一复用。两路的表各自独立。SCL 的 `1` 不必配 SDA 的 `1`。
+
+**I2C0**
+
+| 编号 | `scl_pin_map` | `sda_pin_map` |
+| ---: | --- | --- |
+| 0 | PIN 57 / PDDR 13 ALT2（CAM_I2C0_SCL） | PIN 58 / PDDR 14 ALT2（CAM_I2C0_SDA） |
+| 1 | PIN 49 / PDDR 30 ALT2（LCD_RST） | PIN 62 / PDDR 29 ALT2（USIM2_CLK） |
+| 2 | PIN 39 / PDDR 32 ALT2（DBG_TXD） | PIN 38 / PDDR 31 ALT2（DBG_RXD） |
+| 3 | PIN 52 / PDDR 41 ALT2（LCD_CS） | PIN 53 / PDDR 40 ALT2（LCD_CLK） |
+
+**I2C1**
+
+| 编号 | `scl_pin_map` | `sda_pin_map` |
+| ---: | --- | --- |
+| 0 | PIN 67 / PDDR 24 ALT2（I2C1_SCL） | PIN 66 / PDDR 23 ALT2（I2C1_SDA） |
+| 1 | PIN 81 / PDDR 20 ALT2（CAM_PWDN） | PIN 80 / PDDR 19 ALT2（CAM_SPI_CLK） |
+| 2 | PIN 78 / PDDR 42 ALT2（LCD_TE） | PIN 50 / PDDR 43 ALT2（LCD_SIO） |
+| 3 | PIN 57 / PDDR 13 ALT3（CAM_I2C0_SCL） | PIN 58 / PDDR 14 ALT3（CAM_I2C0_SDA） |
+
+`4` 及以上、或负数：**抛** `"invalid scl_pin_map N"` 或 `"invalid sda_pin_map N"`。旧的单个 `pin_map`：**抛** `"use scl_pin_map and sda_pin_map"`。
+
+同一焊盘不要同时交给别的外设。I2C1 的 `0` 与 SPI0 的 MOSI、软件片选重叠；I2C0 的 SCL `2` / SDA `2` 与 UART0 日志口重叠。I2C0 的 `0` 和 I2C1 的 `3` 是同一对 CAM 焊盘，两路不要同时用。
+
 ---
 
 ## 5. 类型约定
@@ -140,6 +176,7 @@ bus.write(bus, addr, data)   -- 等价
 | `mem_addr` | integer | 寄存器地址，大端按 `mem_addr_len` 拆字节 |
 | `mem_addr_len` | integer | `1`～`4`，默认 `1` |
 | `timeout_ms` | integer | 单次传输超时，默认 `100` |
+| `scl_pin_map` / `sda_pin_map` | integer | 各 `0`～`3`，见 4.3。不传的那一根用旧固定脚 |
 
 ---
 
@@ -167,13 +204,17 @@ i2c.new(id, cfg)
 | --- | --- | --- | --- |
 | `bus_speed` | integer | 标准速 | 见 4.2，必须是整数常量 |
 | `timeout_ms` | integer | `100` | 毫秒 |
+| `scl_pin_map` | integer | 不传 | 见 4.3。只换 SCL |
+| `sda_pin_map` | integer | 不传 | 见 4.3。只换 SDA |
 
-成功返回对象。失败 **抛错**：id 非法、该路已被占用、互斥初始化失败、硬件 init 失败。
+成功返回对象。失败 **抛错**：id 非法、脚号越界、仍写了旧的 `pin_map`、该路已被占用、互斥初始化失败、硬件 init 失败。
 
 ```lua
 local bus = i2c.new(i2c.I2C0, {
     bus_speed = i2c.BUS_SPEED_STANDARD,
     timeout_ms = 100,
+    scl_pin_map = 1,
+    sda_pin_map = 1,
 })
 ```
 
@@ -345,6 +386,8 @@ obj:deinit()
 | 摘要 | 可能原因 |
 | --- | --- |
 | `invalid i2c_id N` | `id` 不是 `i2c.I2C0`(0) / `i2c.I2C1`(1)；`N` 是传入的整数 |
+| `invalid scl_pin_map N` / `invalid sda_pin_map N` | 该脚号不是 `0`～`3` |
+| `use scl_pin_map and sda_pin_map` | 仍写了旧的单个 `pin_map` |
 | `mutex init failed` | 打开控制器时系统互斥量创建失败 |
 | `i2cN already in use` | 该路已有实例未 `deinit`（`N` 为 0 或 1） |
 | `i2c init failed: N` | 控制器没打开。`N` 是底层返回码：脚被别的外设占用、该路未编进、或硬件初始化失败 |
@@ -373,7 +416,7 @@ obj:deinit()
 
 | 需求 | 用什么 |
 | --- | --- |
-| 机型自带的 I2C 脚、要 100/400 kHz | **`i2c`** |
+| 芯片 I2C 脚、要 100/400 kHz | **`i2c`**，用 `scl_pin_map` / `sda_pin_map` 各自选脚 |
 | 任意 GPIO、或硬件口已被占用 | [`soft_i2c`](soft_i2c.md) |
 | 写命令再读（AHT20） | `write` + 延时 + `read` |
 | 寄存器/EEPROM | `mem_write` / `mem_read` |
@@ -418,3 +461,10 @@ local raw = bus:read(ADDR, 7)
 | 1.1.0 | 2026-09-05 | 补全错误文案/错误码与可能原因 |
 | 1.1.1 | 2026-09-05 | 脚位改为 PIN+PDDR，并链到硬件落盘表 |
 | 1.1.2 | 2026-09-16 | 增加纯 Lua SSD1306 例程链接 |
+| 1.1.3 | 2026-09-24 | 打开 I2C1：SDA PDDR 23、SCL PDDR 24。与 SPI0 片选 / MOSI 重叠 |
+| 1.2.0 | 2026-09-29 | `cfg.pin_map` 选择 SCL/SDA 组合（0～15）。省略仍为组 0。不经 `rtu_config` |
+| 1.3.0 | 2026-09-29 | `pin_map` 改为仅相邻成对，每路 `0`～`3`。不再允许 SCL/SDA 交叉 |
+| 1.4.0 | 2026-09-29 | 不传 `pin_map` 恢复为改前固定脚（I2C0 SCL 为 ALT2）。显式 `0` 仍是管脚表组 0（I2C0 SCL 为 ALT3） |
+| 1.4.1 | 2026-09-29 | 更正组 0：I2C0 SCL 为 ALT2，与不传 `pin_map` 相同。I2C1 组 3 的 SCL 为 ALT3 |
+| 1.5.0 | 2026-09-29 | SCL、SDA 分开传 `scl_pin_map` / `sda_pin_map`，不再用一个成对编号 |
+| 1.5.1 | 2026-09-29 | 写明 `lcd.new` 的硬件 I2C 使用同一套 `scl_pin_map` / `sda_pin_map` |
