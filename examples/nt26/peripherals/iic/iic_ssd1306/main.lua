@@ -6,8 +6,8 @@
     1) i2c.new I2C0，ssd1306 初始化
     2) 三页循环：门户 → IMEI/ICCID/CSQ 条 → 时间/LBS
     3) 读不到的字段写 loading..
-    IIC_SDA: PIN 58
-    IIC_SCL: PIN 57
+    IIC_SDA: PIN 58（sda_pin_map = 0）
+    IIC_SCL: PIN 57（scl_pin_map = 0）
 ]=]
 
 local rt = require("rt")
@@ -29,6 +29,8 @@ local PAGES = 3
 local bus = i2c.new(i2c.I2C0, {
     bus_speed = i2c.BUS_SPEED_FAST,
     timeout_ms = 100,
+    scl_pin_map = 0,--如果不知道怎么填，可以看文档，也可以直接问我们的AI dolua.cn
+    sda_pin_map = 0,--如果不知道怎么填，可以看文档，也可以直接问我们的AI dolua.cn
 })
 
 rt.delay(50)
@@ -202,8 +204,8 @@ end
   ============================================================================
   接线（NT26-PRO）
   ============================================================================
-    I2C0 SCL = PIN 57（PDDR 13）
-    I2C0 SDA = PIN 58（PDDR 14）
+    I2C0 SCL = PIN 57（PDDR 13）scl_pin_map = 0
+    I2C0 SDA = PIN 58（PDDR 14）sda_pin_map = 0
     OLED VCC / GND 按模块供电（常见 3.3V）
     7bit 地址默认 0x3C
 

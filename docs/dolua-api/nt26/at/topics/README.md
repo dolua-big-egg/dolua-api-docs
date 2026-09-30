@@ -11,5 +11,6 @@ Socket / MQTT 覆盖：单通道、多通道、混合（SOCK + MQTT）、串口�
 | [MQTT 连接度云物联（玄武）](5giot.md) | 度云公司物联网云平台（与 OneNET 同类）：`5giot.cn` + 平台 `"doiot"` |
 | [HTTP / HTTPS](http.md) | 按需 HTTP(S)：自由请求、五路通道、证书组、响应打到哪 |
 | [路由](route.md) | 上行（输入是串口）和下行（输入是四路通道）怎么配出口 |
+| [CME ERROR](cme.md) | 一条 `+CME ERROR` 背后的两个码段：AT 引擎 `0`～`8`、自定义业务 `101`～`156` |
 
 行格式、通道编号先看 [通用约定](../manual/convention.md)。

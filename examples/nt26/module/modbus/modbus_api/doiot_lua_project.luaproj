@@ -5,14 +5,14 @@
   },
   "main": "main.lua",
   "modules": [],
-  "checked": [
-    "main.lua"
-  ],
   "configs": [
     "rtu_config.conf"
   ],
   "selectedConfig": "rtu_config.conf",
   "internal": [],
+  "checked": [
+    "main.lua"
+  ],
   "othersOrder": [
     "manifest.json"
   ]

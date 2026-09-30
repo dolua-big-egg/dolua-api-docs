@@ -1,0 +1,40 @@
+{
+  "id": "es8311_amr_record",
+  "name": "ES8311 录 AMR 到 ublob",
+  "version": "1.0.0",
+  "category": "module",
+  "hw": "中",
+  "tags": [
+    "audio",
+    "es8311",
+    "amr",
+    "ublob"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "audio",
+      "ublob",
+      "log",
+      "rt"
+    ],
+    "pins": [],
+    "peripherals": [
+      "i2c0",
+      "i2s"
+    ],
+    "controllers": [],
+    "extras": [
+      "es8311"
+    ],
+    "network": false
+  },
+  "readme": "",
+  "description": "ES8311 走硬件 I2C0 配寄存器，录 10 秒 AMR-NB（8 kHz，带 AMR 文件头）写入 ublob rec.amr。\n"
+}

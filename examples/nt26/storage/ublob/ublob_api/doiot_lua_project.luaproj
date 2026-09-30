@@ -3,16 +3,33 @@
   "projectInfo": {
     "softwareVersion": "1.0.0"
   },
+  "packageConfig": {
+    "exportPath": "d:\\307n\\now-new2\\PLAT\\dolua\\examples\\nt26\\storage\\ublob\\ublob_api\\ublob_api-1.0.1.luapk",
+    "checkCode": true
+  },
+  "scriptProcess": {
+    "usb": {
+      "checkCode": true,
+      "stripComments": true,
+      "minifyToSingleLine": true
+    },
+    "cloud": {
+      "checkCode": true
+    },
+    "export": {
+      "checkCode": true
+    }
+  },
   "main": "main.lua",
   "modules": [],
-  "checked": [
-    "main.lua"
-  ],
   "configs": [
     "rtu_config.conf"
   ],
   "selectedConfig": "rtu_config.conf",
   "internal": [],
+  "checked": [
+    "main.lua"
+  ],
   "othersOrder": [
     "manifest.json"
   ]

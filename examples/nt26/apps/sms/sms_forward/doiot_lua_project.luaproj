@@ -7,15 +7,15 @@
   "modules": [
     "config.lua"
   ],
-  "checked": [
-    "config.lua",
-    "sms_forward.lua"
-  ],
   "configs": [
     "rtu_config.conf"
   ],
   "selectedConfig": "rtu_config.conf",
   "internal": [],
+  "checked": [
+    "config.lua",
+    "sms_forward.lua"
+  ],
   "othersOrder": [
     "pc_tool/config_editor.py",
     "pc_tool/NT26ConfigEditor.spec",

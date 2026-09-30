@@ -8,16 +8,16 @@
     "ssd1306.lua",
     "ssd1306_font.lua"
   ],
-  "checked": [
-    "main.lua",
-    "ssd1306.lua",
-    "ssd1306_font.lua"
-  ],
   "configs": [
     "rtu_config.conf"
   ],
   "selectedConfig": "rtu_config.conf",
   "internal": [],
+  "checked": [
+    "main.lua",
+    "ssd1306.lua",
+    "ssd1306_font.lua"
+  ],
   "othersOrder": [
     "manifest.json"
   ]

@@ -21,9 +21,10 @@
 - [9. AT+UTC / AT+TIMEZONE / AT+TIME](#9-atutc--attimezone--attime)
 - [10. AT+NTS](#10-atnts)
 - [11. AT+RESET](#11-atreset)
-- [12. AT+CFUN](#12-atcfun)
-- [13. 错误一览](#13-错误一览)
-- [14. 联调顺序](#14-联调顺序)
+- [12. AT+RSTREASON](#12-atrstreason)
+- [13. AT+CFUN](#13-atcfun)
+- [14. 错误一览](#14-错误一览)
+- [15. 联调顺序](#15-联调顺序)
 - [修订记录](#修订记录)
 
 ---
@@ -56,6 +57,7 @@ Lua：`require("info")` / `lp` 读的是同一套驻网与时间，不是另一�
 | `AT+TIME` | `=?` | 无参或 `=0` | 无真正设置 | 本地墙钟 |
 | `AT+NTS` | `=?` | 无参 | 无 | 网时是否已同步 |
 | `AT+RESET` | 无 | `AT+RESET` / `?` | 无 | 软复位 |
+| `AT+RSTREASON` | `=?` | `AT+RSTREASON` / `?` | 无 | 上次 AP/CP 复位原因 |
 | `AT+CFUN` | `=?` | 无参 | `<0\|1>` | 射频/功能级 |
 
 ---
@@ -279,7 +281,25 @@ OK
 
 ---
 
-## 12. AT+CFUN {#12-atcfun}
+## 12. AT+RSTREASON {#12-atrstreason}
+
+```lua
+AT+RSTREASON
+```
+
+或 `AT+RSTREASON?`；`AT+RSTREASON=?` 可看复位码说明。
+
+```lua
++RSTREASON: <ap>,"<ap_name>",<cp>,"<cp_name>"
+
+OK
+```
+
+与开机 `ResetStateGet`、Lua `sys.reset_reason()` 同源。常见 AP 码：`4=HARDFAULT` `5=ASSERT` `6=WDTSW` `7=WDTHW` `8=LOCKUP`；`3=SWRESET` 含 `AT+RESET` / `sys.reset()`。
+
+---
+
+## 13. AT+CFUN {#13-atcfun}
 
 ```lua
 AT+CFUN=?
@@ -306,7 +326,7 @@ OK
 
 ---
 
-## 13. 错误一览
+## 14. 错误一览 {#14-错误一览}
 
 | 风格 | 指令 |
 | --- | --- |
@@ -318,7 +338,7 @@ OK
 
 ---
 
-## 14. 联调顺序
+## 15. 联调顺序 {#15-联调顺序}
 
 ```lua
 AT+CFUN?

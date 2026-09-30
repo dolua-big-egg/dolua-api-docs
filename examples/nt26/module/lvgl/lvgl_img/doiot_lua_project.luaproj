@@ -20,8 +20,5 @@
   "othersOrder": [
     "manifest.json",
     "rtu_config.conf"
-  ],
-  "newFiles": [
-    "rtu_config.conf"
   ]
 }

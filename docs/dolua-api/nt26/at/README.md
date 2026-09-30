@@ -21,6 +21,7 @@
 | [MQTT 连接](topics/mqtt.md) | 四路 MQTT：单通道 / 多通道 / 与 Socket 混合、串口透传、`MQTTSYNC` / `MQTTASYNC` |
 | [HTTP / HTTPS](topics/http.md) | 五路按需 HTTP(S)：自由请求、通道、证书组、响应路由、`HTTPREQ` / `HTTPFREE` |
 | [路由](topics/route.md) | 上行（串口输入）/ 下行（四路通道输入）：`DTUPSUP` / `DTUPSDN` |
+| [CME ERROR](topics/cme.md) | `+CME ERROR` 的两个码段：AT 引擎 `0`～`8`、自定义业务 `101`～`156`，怎么分怎么查 |
 
 ## 指令手册
 

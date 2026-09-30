@@ -15,7 +15,7 @@
 | [convention.md](convention.md) | — | 通用约定与自定义 `+CME ERROR` |
 | [route.md](route.md) | — | 路由串语法（不是指令）：通道 1～7 与子通道指向 |
 | [info.md](info.md) | `AT` `ATI` `VERSION` `CGMR` `IMEI` `ICCID` `IMSI` `SIMINFO` `CHIPID` `CMEERR` `ATMODE` | 握手、版本、标识 |
-| [netstat.md](netstat.md) | `CSQ` `MCC` `MNC` `CEREG` `CGACT` `CGI` `ISLINK` `UTC` `TIMEZONE` `TIME` `NTS` `RESET` `CFUN` | 驻网状态、时间、复位、射频开关 |
+| [netstat.md](netstat.md) | `CSQ` `MCC` `MNC` `CEREG` `CGACT` `CGI` `ISLINK` `UTC` `TIMEZONE` `TIME` `NTS` `RESET` `RSTREASON` `CFUN` | 驻网状态、时间、复位、射频开关 |
 | [link.md](link.md) | `APN` `APNAUTH` `LP` `SIMCFG` `SIMSLOT` `DOSIMSLOT` `RILAT` `RNDIS` `RNDISSAVE` | APN、低功耗、切卡、原厂通道、USB 网卡 |
 | [dns.md](dns.md) | `DNS` `DNSG` `DNSC` `DNSCID` | DNS 服务器、解析、缓存 |
 | [ntp.md](ntp.md) | `NTP` | 对时（一次执行） |

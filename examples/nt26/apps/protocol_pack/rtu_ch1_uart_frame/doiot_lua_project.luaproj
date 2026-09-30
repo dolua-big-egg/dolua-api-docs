@@ -6,15 +6,15 @@
   },
   "main": "main.lua",
   "modules": [],
-  "checked": [
-    "main.lua"
-  ],
   "configs": [
     "rtu_config.conf"
   ],
   "selectedConfig": "rtu_config.conf",
   "internal": [
     "manifest.json"
+  ],
+  "checked": [
+    "main.lua"
   ],
   "othersOrder": []
 }

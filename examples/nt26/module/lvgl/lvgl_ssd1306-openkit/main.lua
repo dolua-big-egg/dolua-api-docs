@@ -1,11 +1,13 @@
 --[=[
-  lvgl_ssd1306 — LVGL 刷到 SSD1306，总线是硬件 I2C0
+  lvgl_ssd1306-openkit — LVGL 刷到 SSD1306
   ============================================================================
   硬件
   ============================================================================
-    硬件 I2C0（与 iic_ssd1306 同一对脚，不要再 i2c.new 占用 I2C0）
-      Pin58  SDA
-      Pin57  SCL
+    OpenKit 屏电源 LDO 接在 NET 灯上：GPIO25 / PIN 16。
+    rtu_config.conf 的 [net_led] enable=0 把这只脚交给脚本，先拉高再开 I2C。
+    硬件 I2C1
+      PIN 57  SCL   scl_pin_map = 3
+      PIN 66  SDA   sda_pin_map = 0
     从地址 0x3C，128×64。没接 RST 就不要填 rst。
 
   ============================================================================
@@ -20,6 +22,7 @@
 
 local rt = require("rt")
 local log = require("log")
+local gpio = require("gpio")
 local lcd = require("lcd")
 local lvgl = require("lvgl")
 
@@ -46,7 +49,15 @@ local function halt(msg)
     end
 end
 
-log.info("%s lcd.new I2C0 ssd1306 128x64 addr=0x3C", TAG)
+-- OpenKit 屏 LDO 由 NET 灯供电。对象留在入口协程里，避免被回收后掉电。
+local panel_pwr = gpio.open(gpio.BY_GPIO, 25)
+if not panel_pwr:config(true, true) then
+    halt("panel LDO gpio25 config fail")
+end
+log.info("%s panel LDO on gpio25 pin16", TAG)
+rt.delay(100)
+
+log.info("%s lcd.new I2C1 ssd1306 128x64 addr=0x3C", TAG)
 
 local panel, err = lcd.new({
     driver = lcd.SSD1306,
