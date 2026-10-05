@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "projectInfo": {
+    "softwareVersion": "1.0.0"
+  },
+  "main": "main.lua",
+  "modules": [
+    "gb2312.lua"
+  ],
+  "configs": [
+    "rtu_config.conf"
+  ],
+  "selectedConfig": "rtu_config.conf",
+  "internal": [
+    "gb2312.bin"
+  ],
+  "internalStorage": {
+    "gb2312.bin": "blob"
+  },
+  "checked": [
+    "main.lua",
+    "gb2312.lua",
+    "gb2312.bin"
+  ],
+  "othersOrder": [
+    "gb2312.html"
+  ]
+}
