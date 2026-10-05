@@ -1,8 +1,8 @@
 # sys
 
-**文档版本** `2.0.2`
+**文档版本** `2.1.0`
 
-系统级工具模块：版本与复位原因、print/log 输出路由、授时、看门狗、复位/关机，以及 **不让出 Lua 协程** 的三类延时。日常等待请优先用 `rt.delay`。
+系统级工具模块：版本与复位原因、print/log 输出路由、授时、看门狗、复位/关机、蜂窝累计流量，以及 **不让出 Lua 协程** 的三类延时。日常等待请优先用 `rt.delay`。
 
 ```lua
 local sys = require("sys")
@@ -32,6 +32,7 @@ local sys = require("sys")
   - [6.10 `sys.set_ts`](#6-10-set-ts)
   - [6.11 `sys.set_ts_ms`](#6-11-set-ts-ms)
   - [6.12 `sys.nitz_reg`](#6-12-nitz-reg)
+  - [6.13 `sys.data_bytes`](#6-13-data-bytes)
 - [7. 授时回调](#7-授时回调)
 - [8. 错误与返回约定](#8-错误与返回约定)
 - [9. 资源上限与生命周期](#9-资源上限与生命周期)
@@ -45,7 +46,7 @@ local sys = require("sys")
 
 `sys` 是纯函数模块，没有对象、没有 `open`。两类用途：
 
-1. **查询与控制整机**：版本、上次复位原因、`print`/`log` 输出路由、写本机时间、NITZ 授时回调、软件复位、关机、喂硬件看门狗。
+1. **查询与控制整机**：版本、上次复位原因、`print`/`log` 输出路由、写本机时间、NITZ 授时回调、软件复位、关机、喂硬件看门狗、读蜂窝累计上下行字节。
 2. **线程级 / 忙等延时**：`delay_ms`、`delay_until`、`delay_us`。它们 **不是** `rt.delay` 的换皮，调度模型完全不同，见 [第 3 节](#3-延时sys-与-rtdelay-的本质区别)。
 
 日常“等一会儿再干活”用 `rt.delay`。`sys` 的 delay 只留给：时序必须尽快返回、不能被其它 Lua 协程插队，或只要几十～几百微秒的脚线时序。
@@ -74,7 +75,7 @@ local sys = require("sys")
                              ▼
 ┌─────────────────────────────────────────────────────────┐
 │  其它 sys 能力                                            │
-│  版本 / 复位原因 / option 路由 / 授时 / 复位关机 / 喂狗   │
+│  版本 / 复位原因 / option 路由 / 授时 / 复位关机 / 喂狗 / 累计流量 │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -500,6 +501,36 @@ sys.nitz_reg(cb)
 
 ---
 
+### 6.13 `sys.data_bytes()` {#6-13-data-bytes}
+
+读取蜂窝数据当前累计的发送字节、接收字节。开机后可以反复调用。
+
+本接口只读内存里的累计值，**不会**把字节数写入本地存储。掉电后，上次没另行保存的增量不会留下来。计数默认是关的，第一次调用会把它打开；这个开关会记住，之后再读不再改配置。
+
+调用期间整条 Lua 引擎线程停住，其它协程走不到。轮询放在 `rt.task` 里，两次之间用 `rt.delay`。不要在快捷回调里调用。
+
+**调用模式**
+
+```lua
+sys.data_bytes()
+```
+
+无参数。
+
+**返回**
+
+- 成功：两个值，`sent`（上行字节）、`recv`（下行字节），都是 integer。
+- 失败：`nil`（协议栈暂时不应答）。不抛错。
+
+```lua
+local sent, recv = sys.data_bytes()
+if sent then
+    log.info("bytes sent=%s recv=%s", sent, recv)
+end
+```
+
+---
+
 ## 7. 授时回调
 
 ```lua
@@ -527,6 +558,7 @@ function cb(ts)
 | `version` / `reset_reason` | table | — |
 | `reset` / `poweroff` | 通常不再返回 | — |
 | `set_ts` / `set_ts_ms` | `true` | `false`（无 `err`：`<=0` 或写失败） |
+| `data_bytes` | `sent, recv` 两个 integer | `nil`（无 `err`） |
 | `nitz_reg` | `true` | 回调里再登记：`false`（无 `err`）；否则 **抛** |
 
 缺参、类型错走 Lua 标准 `bad argument #n`。`option` 写值必须是字符串名。
@@ -572,6 +604,7 @@ function cb(ts)
 | 几十～几百微秒脚线 | `sys.delay_us`（到 ms 禁止） |
 | 超长计算占着线程 | 分片 + `wdt_kick`，能让出就让出 |
 | 看版本 / 为何复位 | `version` / `reset_reason` |
+| 看本次运行的蜂窝累计上下行字节 | `data_bytes` |
 | 改 print/log 出口 | `option`（UART 或 USB AT） |
 | 写本机时间 | `set_ts` / `set_ts_ms` |
 | 等基站授时 | `nitz_reg` |
@@ -612,6 +645,11 @@ sys.nitz_reg(function(utc)
     log.info("nitz ts=%s", utc)
 end)
 
+local sent, recv = sys.data_bytes()
+if sent then
+    log.info("bytes sent=%s recv=%s", sent, recv)
+end
+
 while true do
     rt.delay(10000)     -- 日常等待用 rt，不要用 sys.delay_us 凑秒
 end
@@ -636,6 +674,7 @@ end
 | `sys.set_ts(ts)` | Unix 秒 `>0` | boolean |
 | `sys.set_ts_ms(ts_ms)` | Unix 毫秒 `>0` | boolean |
 | `sys.nitz_reg(cb)` | 1 个函数 | `true` / `false` / 抛错 |
+| `sys.data_bytes()` | 无 | `sent, recv` 或 `nil` |
 
 ## 附录 B. 枚举值一览
 
@@ -669,3 +708,4 @@ end
 | 2.0.0 | 2026-09-09 | `sys.option` 路由值改为字符串 `"uart1"` / `"uart2"` / `"uart3"` / `"usb_at"`；读写不再用整数 1/2/3 |
 | 2.0.1 | 2026-09-09 | 写明配置文件 `print_route=1` 等价 `uart1`；`sys.option` 仍只认字符串名 |
 | 2.0.2 | 2026-09-09 | `sys.wdt_kick` 写明同时喂 Always-On（约 20 秒超时，对应 `RST_AONWDT`），与 Flash 长占用路径同一套 |
+| 2.1.0 | 2026-10-01 | 新增 `sys.data_bytes()`：读蜂窝累计发送/接收字节；失败返回 `nil`；不把字节数写入本地存储 |
