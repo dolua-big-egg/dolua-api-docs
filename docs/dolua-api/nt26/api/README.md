@@ -54,6 +54,7 @@
 | cron | [cron.md](module/cron.md) | [lowpower_cron](../../../../examples/nt26/module/lp/lowpower_cron) |
 | ufs | [ufs.md](module/ufs.md) | [ufs_api](../../../../examples/nt26/storage/ufs/ufs_api)、[ufs_cmd](../../../../examples/nt26/storage/ufs/ufs_cmd) |
 | ublob | [ublob.md](module/ublob.md) | [ublob_api](../../../../examples/nt26/storage/ublob/ublob_api)、[ublob_cmd](../../../../examples/nt26/storage/ublob/ublob_cmd) |
+| buf | [buf.md](module/buf.md) | [buf_api](../../../../examples/nt26/storage/buf/buf_api)、[buf_builder](../../../../examples/nt26/storage/buf/buf_builder) |
 | sfud | [sfud.md](module/sfud.md) | [flashdb_kv](../../../../examples/nt26/storage/flashdb_kv) 等外挂盘工程 |
 | flashdb | [flashdb.md](module/flashdb.md) | [flashdb_kv](../../../../examples/nt26/storage/flashdb_kv)、[flashdb_ts](../../../../examples/nt26/storage/flashdb_ts)、[mix](../../../../examples/nt26/storage/mix) |
 | lfs | [lfs.md](module/lfs.md) | [littlefs](../../../../examples/nt26/storage/littlefs)、[mix](../../../../examples/nt26/storage/mix) |
