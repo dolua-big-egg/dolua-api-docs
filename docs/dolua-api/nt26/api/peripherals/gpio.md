@@ -1,6 +1,6 @@
 # gpio
 
-**文档版本** `1.3.0`
+**文档版本** `1.4.0`
 
 GPIO 对象化驱动模块。按编号打开引脚对象后，可配置方向、读写电平、同步时序播放、异步波形任务，以及边沿回调。
 
@@ -11,7 +11,6 @@ local gpio = require("gpio")
 平台预加载模块，无需额外 `.lua` 文件。
 
 ---
-c
 ## 目录
 
 - [1. 模块定位](#1-模块定位)
@@ -24,6 +23,8 @@ c
 - [4. 常量与枚举](#4-常量与枚举)
 - [5. 类型约定](#5-类型约定)
 - [6. 模块函数](#6-模块函数)
+  - [6.1 `gpio.open`](#6-1-open)
+  - [6.2 `gpio.volt`](#6-2-volt)
 - [7. 对象方法](#7-对象方法)
   - [7.1 `obj:config`](#7-1-config)
   - [7.2 `obj:set`](#7-2-set)
@@ -367,6 +368,17 @@ din:reg(gpio.IRQ_BOTH, 20, on_io)
 
 `wave_reg` / `wave_insert` 的保持时间必须 `≥ WAVE_QUANT_MS`，且为它的整数倍。人眼可辨的指示灯用 100 / 200 / 500 / 1000 ms；不要拿 wave 做几十微秒的精确定时。
 
+### 4.6 电压域 `volt_domain`
+
+用于 `gpio.volt(domain [, volts])`。一次调用改的是整组脚的高电平，不是某一根 `open` 出来的脚。
+
+| 符号 | 值 | 含义 |
+| --- | --- | --- |
+| `gpio.NORMAL` | `0` | 普通 IO 域。这组上的 GPIO，以及复用成 I2C、CSPI、UART、SPI 之后的高电平，都跟着变 |
+| `gpio.AON` | `1` | 常电域。GPIO20～27 这一组 |
+
+电压用伏特数字，步进 0.05。合法档从 `1.65` 到 `2.00`，然后跳到 `2.65` 直到 `3.40`。`2.05`～`2.60` 没有独立档，会就近对齐。只改当前运行，不写配置；下次上电仍按电压选择脚决定。
+
 波形槽位数量、通道数量没有单独常量，见 [第 12 节](#12-资源上限与生命周期)：每脚槽位 `1..8`，整机同时跑 wave 的脚最多 8 路。
 
 ---
@@ -395,9 +407,9 @@ din:reg(gpio.IRQ_BOTH, 20, on_io)
 
 ## 6. 模块函数
 
-模块表上 **只有** `open` 一个函数，其余都是对象方法。
+模块表上有 `open` 和 `volt`。脚的方向、电平、波形、回调都是对象方法。
 
-### `gpio.open(type, id) → GpioObj`
+### 6.1 `gpio.open(type, id) → GpioObj` {#6-1-open}
 
 打开一条脚，返回对象。
 
@@ -433,6 +445,45 @@ local by_pin = gpio.open(gpio.BY_PINNO, 23)  -- 按模块 pin 23；旧名 gpio.I
 ```
 
 打开不等于配置。未 `config` 前不要假设方向和电平。
+
+---
+
+### 6.2 `gpio.volt(domain [, volts]) → number` {#6-2-volt}
+
+读或设置一整组 IO 的高电平。返回值是对齐后的伏特数。
+
+**调用模式**
+
+```lua
+gpio.volt(gpio.NORMAL)
+gpio.volt(gpio.AON)
+```
+
+```lua
+gpio.volt(gpio.NORMAL, 1.8)
+gpio.volt(gpio.AON, 3.3)
+```
+
+| 参数 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `domain` | integer | 是 | `gpio.NORMAL` 或 `gpio.AON` |
+| `volts` | number | 否 | 省略或 `nil` 表示只读。写入时单位是伏特，范围 `1.65`～`3.40` |
+
+第二参省略时返回当前档。写入时就近对齐到 0.05V 一档（`2.00` 与 `2.65` 之间没有中间档），返回实际写入的那一档。例如 `1.82` 写成 `1.80`，`2.20` 写成 `2.00`。
+
+`NORMAL` 会同时改变这组上 I2C、CSPI、UART、SPI 的高电平。对接 1.8V 器件用 `1.8`，对接 2.8V 用 `2.8`，不要用 `3.3` 去接最高只到 3.0V 的器件。
+
+不让出协程。不写配置。
+
+**返回**
+
+- 成功：number，单位伏特，例如 `1.8`、`3.05`
+- 失败：抛错
+
+```lua
+local now = gpio.volt(gpio.NORMAL)
+gpio.volt(gpio.NORMAL, 1.8)
+```
 
 ---
 
@@ -968,7 +1019,7 @@ din:reg(gpio.IRQ_BOTH, 20, on_io)
 
 | 风格 | 接口 | 成功 | 失败 |
 | --- | --- | --- | --- |
-| 抛错 | `open` / `seq` / `wave_*` / `reg` | 对象或 `true` | `error` |
+| 抛错 | `open` / `volt` / `seq` / `wave_*` / `reg` | 对象、伏特数或 `true` | `error` |
 | 布尔 / nil | `config` / `set` | `true` | `false` |
 | 布尔 / nil | `get` / `tog` | `0` 或 `1` | `nil` |
 | 布尔 / nil | `unreg` | `true` 卸掉了 | `false` 本来就没有 |
@@ -992,6 +1043,10 @@ end)
 | `invalid io_type, expect BY_GPIO/BY_PINNO` | `open` 第一参不是 `BY_GPIO`/`BY_PINNO`。旧名 `INPUT_GPIO`/`INPUT_PINNO` 数值相同，仍合法 |
 | `invalid pin` | 编号不在本机型固定映射表里（见 [1.2](#12-nt26-pro-map) / [1.3](#13-nt26-f6b0-映射表)），或该脚未对脚本开放 |
 | `gpio open failed` | 打开失败：脚已被占用或映射无效 |
+| `invalid volt domain, expect NORMAL/AON` | `volt` 第一参不是 `gpio.NORMAL` / `gpio.AON` |
+| `invalid volt, expect 1.65~3.40` | 电压超出 1.65～3.40 |
+| `volt set failed` | 写入电压域失败 |
+| `volt get failed` | 读回的档位无法对应到伏特数 |
 | `gpio seq failed` | `seq` 图案非法、粒度不对、或执行中失败 |
 | `gpio seq final toggle failed` | 收尾翻转没做成 |
 | `wave_id expect 1..N` | 波形 id 超出 1～8（N 为当时上限） |
@@ -1044,6 +1099,7 @@ end)
 | 多盏灯各自闪、脚本还要干活 | `wave_reg` + `wave_set` |
 | 告警时插一下快闪再回到慢闪 | `wave_insert` |
 | 按键 / 插拔 / 开关量 | `config` 输入 + `reg` |
+| 整组 IO 高电平（含 I2C / CSPI） | `gpio.volt(gpio.NORMAL, 1.8)` |
 | 微秒级脉宽、高速边沿计数 | **不要用本模块回调** |
 
 `seq` 和 `wave` 数组长得像，执行模型完全不同：一个卡 Lua，一个不卡。选错会把整台脚本拖成“闪灯专用机”。
@@ -1186,6 +1242,8 @@ end
 | `gpio.TIME_MS` | 1 |
 | `gpio.TIME_US` | 2 |
 | `gpio.WAVE_QUANT_MS` | 100 |
+| `gpio.NORMAL` | 0 |
+| `gpio.AON` | 1 |
 
 ---
 
@@ -1201,3 +1259,4 @@ end
 | 1.2.3 | 2026-09-05 | 链到硬件落盘区 GPIO（含 PDDR） |
 | 1.2.4 | 2026-09-07 | `reg` 的 irq_mode 只过滤 Lua 回调；硬件中断始终双边沿 |
 | 1.3.0 | 2026-09-09 | 打开类型推荐 `BY_GPIO` / `BY_PINNO`（使用 GPIO 编号 / 使用模块 PIN）；`INPUT_GPIO` / `INPUT_PINNO` 仍为同值旧别名 |
+| 1.4.0 | 2026-10-07 | 新增 `gpio.volt`：读或设置 `NORMAL` / `AON` 整组高电平，只改运行时，2.00V 与 2.65V 之间无中间档 |
