@@ -1,6 +1,6 @@
 # lp
 
-**文档版本** `1.1.0`
+**文档版本** `1.2.1`
 
 低功耗与驻网模块。用来设定休眠**目标**、等驻网、收网络/唤醒事件，以及用投票在“有业务要保活”和“允许睡”之间切换。本模块还提供本地 SIM 配置读写和运行时切卡。
 
@@ -29,6 +29,20 @@ local lp = require("lp")
   - [7.6 `lp.vote_create`](#7-6-vote-create)
   - [7.7 `lp.config`](#7-7-config)
   - [7.8 `lp.simslot`](#7-8-simslot)
+  - [7.9 `lp.wkpad`](#7-9-wkpad)
+  - [7.10 `lp.wake_src`](#7-10-wake-src)
+  - [7.11 `lp.last_slp`](#7-11-last-slp)
+  - [7.12 `lp.chg_pin`](#7-12-chg-pin)
+  - [7.13 `lp.pwrkey`](#7-13-pwrkey)
+  - [7.14 `lp.sleep_limit`](#7-14-sleep-limit)
+  - [7.15 `lp.sleep_ms`](#7-15-sleep-ms)
+  - [7.16 `lp.sleep_est`](#7-16-sleep-est)
+  - [7.17 `lp.dstmr`](#7-17-dstmr)
+  - [7.18 `lp.dstmr_stop`](#7-18-dstmr-stop)
+  - [7.19 `lp.dstmr_on`](#7-19-dstmr-on)
+  - [7.20 `lp.dstmr_left`](#7-20-dstmr-left)
+  - [7.21 `lp.flag`](#7-21-flag)
+  - [7.22 `lp.time_ok`](#7-22-time-ok)
 - [8. 对象方法（vote）](#8-对象方法vote)
   - [8.1 `obj:acquire`](#8-1-acquire)
   - [8.2 `obj:release`](#8-2-release)
@@ -272,6 +286,31 @@ lp.acquire(vote, "k")        -- 错误：模块表上没有实例方法
 | `lp.WAKE_PWRKEY` | `5` | 电源键 |
 | `lp.WAKE_CHARG` | `6` | 充电 |
 
+`lp.wake_src()` 的返回值也是这组整数。
+
+### 5.4 实际睡眠档 `SLP_*` {#5-4-slp}
+
+用于 `lp.last_slp()`。这是上次实际进入的档，**不是** `MODE_*` 目标档。
+
+| 符号 | 值 | 含义 |
+| --- | --- | --- |
+| `lp.SLP_ACTIVE` | `0` | 醒着 |
+| `lp.SLP_IDLE` | `1` | 空闲 |
+| `lp.SLP_SLEEP1` | `2` | Sleep1，醒来后脚本还在 |
+| `lp.SLP_SLEEP2` | `3` | Sleep2 |
+| `lp.SLP_HIB` | `4` | Hibernate |
+
+### 5.5 唤醒脚编号 {#5-5-wkpad}
+
+用于 `lp.wkpad` 的第一参。只有 `0`～`5`。
+
+| 编号 | NT26 对应脚 |
+| --- | --- |
+| `0` | WAKEUP0，模块 PIN 87 |
+| `1` | USB_VBUS，模块 PIN 61 |
+| `2` | USIM_DET，模块 PIN 79 |
+| `3`～`5` | 可关掉唤醒、改回常电脚。`0`～`2` 不能关 |
+
 ---
 
 ## 6. 类型约定
@@ -284,6 +323,8 @@ lp.acquire(vote, "k")        -- 错误：模块表上没有实例方法
 | `timeout_ms` | integer | `-1` 或省略=无限等；`>=0` 为毫秒 |
 | `sim_id` | integer | `0` 翻转，`1` / `2` 指定卡槽 |
 | `pdp` | integer | `0` 未驻网，`1` 已驻网（**不是 boolean**） |
+| `SLP_*` | integer | `last_slp` 的返回，不是 `MODE_*` |
+| 开关布尔 | boolean 或 `0`/`1` | `wkpad` 写入、`sleep_limit`、`flag`。其它数字非法 |
 
 `lp.islink()` 返回整数 `0`/`1`。在 Lua 里 `0` 仍为真，不要写 `if lp.islink() then`，应写 `if lp.islink() == 1 then`。
 
@@ -642,6 +683,270 @@ lp.simslot(2)
 
 ---
 
+### 7.9 `lp.wkpad(...)` {#7-9-wkpad}
+
+读或设置一根唤醒脚：是否当唤醒、上升沿、下降沿、上拉、下拉。
+
+**调用模式**
+
+```lua
+lp.wkpad(pad)
+```
+
+```lua
+lp.wkpad(pad, enable, pos, neg, pull_up, pull_down)
+```
+
+| 参数 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `pad` | integer | 是 | `0`～`5`，见 [5.5](#5-5-wkpad) |
+| `enable` | boolean 或 `0`/`1` | 写入时必填 | `true` 当唤醒脚。`false` 只允许 `pad` 为 `3`～`5` |
+| `pos` | boolean 或 `0`/`1` | 写入时必填 | 上升沿 |
+| `neg` | boolean 或 `0`/`1` | 写入时必填 | 下降沿 |
+| `pull_up` | boolean 或 `0`/`1` | 写入时必填 | 内部上拉 |
+| `pull_down` | boolean 或 `0`/`1` | 写入时必填 | 内部下拉 |
+
+布尔只接受 `true`/`false` 或整数 `0`/`1`。数字 `0` 是假。其它数字抛错。
+
+上升沿和下降沿都为假时，这根脚不会唤醒，跟 `enable` 是否为真无关。上拉和下拉不能同时为真。
+
+**返回**
+
+- 只传 `pad`：表 `{ enable, pos, neg, pull_up, pull_down }`，字段都是 boolean
+- 写入：无返回
+- 失败：抛错
+
+```lua
+lp.wkpad(0, true, false, true, true, false)
+local cfg = lp.wkpad(0)
+```
+
+不让出协程。不写配置，下次上电按固件默认。
+
+---
+
+### 7.10 `lp.wake_src()` {#7-10-wake-src}
+
+读这次醒来的原因，取值见 [5.3](#53-唤醒源)。
+
+```lua
+lp.wake_src()
+```
+
+无参数。返回 `lp.WAKE_POR` 等整数。不抛错。
+
+和 `reg_netcb` 里 `WAKE` 的第二参是同一组数。上电后、还没睡过时，读到的是上电。
+
+---
+
+### 7.11 `lp.last_slp()` {#7-11-last-slp}
+
+上次实际进入的睡眠档，取值见 [5.4](#5-4-slp)。
+
+```lua
+lp.last_slp()
+```
+
+返回 `lp.SLP_*`。不抛错。还没睡过时是 `lp.SLP_ACTIVE`。
+
+---
+
+### 7.12 `lp.chg_pin()` {#7-12-chg-pin}
+
+读充电检测脚电平。
+
+```lua
+lp.chg_pin()
+```
+
+- `true`：悬空或高
+- `false`：低
+
+不抛错。这是脚电平，不是 [charge](../peripherals/charge.md) 的充电状态。
+
+---
+
+### 7.13 `lp.pwrkey()` {#7-13-pwrkey}
+
+读电源键电平。模块 PIN 7，脚本 GPIO 打不开这根脚。
+
+```lua
+lp.pwrkey()
+```
+
+- `true`：悬空或高
+- `false`：低
+
+不抛错。
+
+---
+
+### 7.14 `lp.sleep_limit(enable [, ms])` {#7-14-sleep-limit}
+
+限制单次最长睡眠，单位毫秒。
+
+```lua
+lp.sleep_limit(true, 60000)
+```
+
+```lua
+lp.sleep_limit(false)
+```
+
+```lua
+lp.sleep_limit(false, 0)
+```
+
+| 参数 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `enable` | boolean 或 `0`/`1` | 是 | 是否限制 |
+| `ms` | integer | `enable` 为真时建议给出 | `0`～`4294967295`。省略当作 `0` |
+
+无返回。`ms` 越界抛 `invalid sleep limit ms`。
+
+只在射频关闭时，到点一定会醒回脚本。在网时，协议栈的寻呼时间更短的话，可能停在寻呼流程里，不会按这个上限醒回应用。
+
+---
+
+### 7.15 `lp.sleep_ms()` {#7-15-sleep-ms}
+
+读刚刚这次实际睡了多少毫秒。
+
+```lua
+lp.sleep_ms()
+```
+
+返回整数。不抛错。
+
+Sleep1 真正睡下去再醒之后，这个数才是这一次的时长。这次没睡成（进睡眠失败）时，读到的仍是上一次成功睡眠的毫秒。Sleep2 / Hibernate 成功后脚本会重新启动，不要在旧回调里等这个数。
+
+---
+
+### 7.16 `lp.sleep_est()` {#7-16-sleep-est}
+
+读即将入睡时估计的睡眠毫秒。实际往往会短一点，不到 100 ms。
+
+```lua
+lp.sleep_est()
+```
+
+返回整数。不抛错。
+
+平时调用读到的是上一次估计，不是「如果现在睡会睡多久」。要这次实际睡了多久，用 `lp.sleep_ms()`。
+
+---
+
+### 7.17 `lp.dstmr(id, ms)` {#7-17-dstmr}
+
+启动一个深睡定时器。睡眠过程中也会走时，到期把模组唤醒。
+
+```lua
+lp.dstmr(id, ms)
+```
+
+| 参数 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `id` | integer | 是 | `0`～`6`。`0` 和 `1` 不写 Flash，最长约 2.5 小时。`2`～`6` 写入 Flash，最长约 740 小时 |
+| `ms` | integer | 是 | 大于 `0`，且不超过 `4294967295` |
+
+无返回。`id` 非法抛 `invalid dstmr id, expect 0~6`。`ms` 非法抛 `invalid dstmr ms`。
+
+`7`～`9` 不开放。没有单独的到期回调；醒来后用 `lp.reg_netcb` 的 `WAKE`，或再读 `lp.dstmr_on`。
+
+不让出协程。
+
+---
+
+### 7.18 `lp.dstmr_stop(id)` {#7-18-dstmr-stop}
+
+停掉一个深睡定时器。
+
+```lua
+lp.dstmr_stop(id)
+```
+
+`id` 为 `0`～`6`。无返回。非法 `id` 抛 `invalid dstmr id, expect 0~6`。
+
+---
+
+### 7.19 `lp.dstmr_on(id)` {#7-19-dstmr-on}
+
+这个深睡定时器是否还在跑。
+
+```lua
+lp.dstmr_on(id)
+```
+
+返回 boolean。非法 `id` 抛 `invalid dstmr id, expect 0~6`。
+
+---
+
+### 7.20 `lp.dstmr_left(id)` {#7-20-dstmr-left}
+
+离到期还有多少毫秒。
+
+```lua
+lp.dstmr_left(id)
+```
+
+返回整数。非法 `id` 抛 `invalid dstmr id, expect 0~6`。已停掉的定时器不要把返回值当成剩余时间。
+
+---
+
+### 7.21 `lp.flag([v])` {#7-21-flag}
+
+读写 1 个比特。Sleep1、Sleep2、Hibernate 醒来后都还在。
+
+```lua
+lp.flag()
+```
+
+```lua
+lp.flag(nil)
+```
+
+```lua
+lp.flag(true)
+```
+
+```lua
+lp.flag(false)
+```
+
+```lua
+lp.flag(0)
+```
+
+```lua
+lp.flag(1)
+```
+
+省略或 `nil` 只读。写入接受 `true`/`false` 或 `0`/`1`。
+
+**返回**
+
+- 成功：boolean，即当前值（写入时就是刚写进去的值）
+- 失败：抛 `invalid bool, expect true/false or 0/1`
+
+只有这 1 比特，不够存计数。
+
+---
+
+### 7.22 `lp.time_ok()` {#7-22-time-ok}
+
+系统时间是否已经和网络对齐。
+
+```lua
+lp.time_ok()
+```
+
+- `true`：已对齐
+- `false`：还没有
+
+不抛错。未驻网时为 `false`。
+
+---
+
 ## 8. 对象方法（vote）
 
 `key`：非空字符串，最长 31 字节。同一 key 重复 `acquire` 视为成功（幂等）。`release` 一个未持有的 key 失败。
@@ -836,6 +1141,13 @@ release ─(票 →0)─→ 等 sleep_delay_ms ──→ 目标 = 创建时的 s
 | `vote_create` | userdata | `nil, err` |
 | `config` | table | `nil, err` |
 | `simslot` | integer 槽位 | **抛** |
+| `wkpad` 读取 | 配置表 | **抛** |
+| `wkpad` 写入 / `sleep_limit` / `dstmr` / `dstmr_stop` | 无返回 | **抛** |
+| `wake_src` / `last_slp` / `sleep_ms` / `sleep_est` | integer | — |
+| `dstmr_left` | integer | 非法 `id` **抛** |
+| `chg_pin` / `pwrkey` / `time_ok` | boolean | — |
+| `dstmr_on` | boolean | 非法 `id` **抛** |
+| `flag` | boolean | 写入非法时 **抛** |
 | `acquire` / `release` / `vote` / `clear` | `true` | `false, err` |
 | `status` | table | **抛** |
 
@@ -872,6 +1184,13 @@ release ─(票 →0)─→ 等 sleep_delay_ms ──→ 目标 = 创建时的 s
 | `invalid current sim slot` | `simslot(0)` 翻转时当前槽不是 1/2 |
 | `invalid sim_id (0\|1\|2)` | `simslot` 参数不在 0/1/2 |
 | `invalid sim_id` | 槽号无法映射到硬件 |
+| `invalid bool, expect true/false or 0/1` | 布尔参数不是 `true`/`false`，也不是整数 `0`/`1` |
+| `invalid wakeup pad, expect 0~5` | `wkpad` 的编号不在 0～5 |
+| `wakeup pad 0~2 cannot disable` | 对 WAKEUP0/1/2 传入 `enable=false`。这三根不能改回普通脚 |
+| `pull up and pull down together` | 上拉和下拉同时为真 |
+| `invalid sleep limit ms` | `sleep_limit` 的毫秒小于 0 或超过 32 位无符号上限 |
+| `invalid dstmr id, expect 0~6` | 深睡定时器编号不是 0～6 |
+| `invalid dstmr ms` | `dstmr` 的毫秒不是正数，或超过 32 位无符号上限 |
 
 ---
 
@@ -884,6 +1203,9 @@ release ─(票 →0)─→ 等 sleep_delay_ms ──→ 目标 = 创建时的 s
 | key 长度 | 31 字节 | 空串非法 |
 | 唤醒源排队 | 16 | 过密时丢最旧的 |
 | 网络回调 | 每 VM 一条 | 重复 `reg_netcb` 覆盖 |
+| 唤醒脚 | `0`～`5` | `0`～`2` 不能关闭唤醒 |
+| 深睡定时器 | `0`～`6` | `0`/`1` 约 2.5 小时且不写 Flash；`2`～`6` 约 740 小时，写入 Flash |
+| 跨睡眠标志 | 1 比特 | `lp.flag` |
 
 vote 对象 `__gc` 拆除实例（停倒计时、释放槽）。虚拟机退出后回调登记失效。没有“关闭 lp 模块”的接口。
 
@@ -903,6 +1225,10 @@ vote 对象 `__gc` 拆除实例（停倒计时、释放槽）。虚拟机退出�
 | 看从哪醒的 | `reg_netcb` 判断 `WAKE` |
 | 改默认卡槽策略 | `config` |
 | 立刻切另一张卡 | `simslot(1\|2)` |
+| 配唤醒脚 | `wkpad(0, true, false, true, true, false)` |
+| 看这次为什么醒、上次睡了哪档、睡了多久 | `wake_src` / `last_slp` / `sleep_ms` |
+| 睡眠中也要到点醒 | `dstmr(id, ms)` |
+| 跨睡眠留一个布尔 | `flag(true)` |
 
 `set_mode` 和 `vote` 不要各管各的互相覆盖。常用：vote 的 `sleep_mode` 与产品休眠档一致；干活 `acquire`，干完 `release`。
 
@@ -993,6 +1319,22 @@ end
 | `lp.config(tbl)` | 局部写 | 同上 |
 | `lp.simslot()` | 查询 | `1\|2` |
 | `lp.simslot(0\|1\|2)` | 翻转或指定 | `1\|2` / 抛错 |
+| `lp.wkpad(pad)` | 只读 | 配置表 / 抛错 |
+| `lp.wkpad(pad, enable, pos, neg, pull_up, pull_down)` | 写入 | 无 / 抛错 |
+| `lp.wake_src()` | 无 | `WAKE_*` |
+| `lp.last_slp()` | 无 | `SLP_*` |
+| `lp.chg_pin()` | 无 | boolean |
+| `lp.pwrkey()` | 无 | boolean |
+| `lp.sleep_limit(enable [, ms])` | 见 7.14 | 无 / 抛错 |
+| `lp.sleep_ms()` | 无 | 毫秒 |
+| `lp.sleep_est()` | 无 | 毫秒 |
+| `lp.dstmr(id, ms)` | `id` 0～6 | 无 / 抛错 |
+| `lp.dstmr_stop(id)` | `id` 0～6 | 无 / 抛错 |
+| `lp.dstmr_on(id)` | `id` 0～6 | boolean / 抛错 |
+| `lp.dstmr_left(id)` | `id` 0～6 | 毫秒 / 抛错 |
+| `lp.flag()` | 只读 | boolean |
+| `lp.flag(v)` | `true`/`false` 或 `0`/`1` | boolean / 抛错 |
+| `lp.time_ok()` | 无 | boolean |
 | `obj:acquire(key)` | 1 个字符串 | `true` 或 `false, err` |
 | `obj:release(key)` | 1 个字符串 | 同上 |
 | `obj:vote(key, active)` | 见 8.3 | 同上 |
@@ -1020,6 +1362,11 @@ end
 | `lp.WAKE_USB` | 4 |
 | `lp.WAKE_PWRKEY` | 5 |
 | `lp.WAKE_CHARG` | 6 |
+| `lp.SLP_ACTIVE` | 0 |
+| `lp.SLP_IDLE` | 1 |
+| `lp.SLP_SLEEP1` | 2 |
+| `lp.SLP_SLEEP2` | 3 |
+| `lp.SLP_HIB` | 4 |
 
 ---
 
@@ -1030,3 +1377,5 @@ end
 | 1.0.0 | 2026-09-04 | 首版 |
 | 1.0.1 | 2026-09-04 | 修正跨目录文档链接，demo 路径改为 examples/ |
 | 1.1.0 | 2026-09-05 | 补全错误与返回约定：全部 `err` 文本、抛错摘要与可能原因 |
+| 1.2.0 | 2026-10-07 | 新增唤醒脚 `wkpad`、唤醒源与睡眠档查询、充电脚/电源键电平、`doze`、睡眠上限与提前醒、`sleep_ms`/`sleep_est`、深睡定时器、跨睡眠 `flag`、`time_ok` |
+| 1.2.1 | 2026-10-07 | `sleep_trim`、`doze`、`can_slp` 暂不开放 |
