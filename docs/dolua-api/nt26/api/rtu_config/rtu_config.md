@@ -1,6 +1,6 @@
 # rtu_config
 
-**文档版本** `1.1.4`
+**文档版本** `1.1.5`
 
 这不是 `require("…")` 模块。它是模组开机时解析的 **声明式配置文件** `rtu_config.cfg`：只改文件里写到的段和 key，没写到的字段保持机内当前值。Lua 的 [`rtu`](../module/rtu.md)、[`uart`](../peripherals/uart.md)、[`sms`](../module/sms.md)、[`lbs`](../network/lbs.md) 等运行时模块 **读的是这份文件落盘后的业务配置**，不是另起一套通道。
 
@@ -60,13 +60,14 @@
 | 只写出现的 key | 未出现的字段 **保持当前机内值** |
 | 解析时刻 | 开机很早：在 UART2/3、短信、SSL、HTTP、映射、IO 上报、脚本、RTU 任务、监控、云配置拉取 **之前** |
 | 运行时改 AT / Lua | 改的是业务 KV 或 RAM，**不会回写** 本文件 |
-| 热改本文件 | YMODEM `_rtu_config_.cmd`、云下发、工具重烧只更新文件；**下次开机**才再解析 |
+| 热改本文件 | YMODEM `_rtu_config_.cmd`、`AT+RTUCONFIG="write"`、云下发、工具重烧只更新文件；**下次开机**才再解析。`AT+RTUCONFIG="delete"`（固件 `1.3.5` 起）只删本地文件，不改当前运行时 |
 
 来源（任选其一，后到的文件覆盖盘上旧文件）：
 
 1. doLua 工程 config 分区：`doiot_lua_project.luaproj` 的 `configs` / `selectedConfig`。
 2. YMODEM 文件名 `_rtu_config_.cmd`：只写入 `/rtu_config.cfg`，不当场套用。`_rtu_config_erase_.cmd` 删除该文件。
 3. LUAPK / 云配置包里的同名文件。
+4. `AT+RTUCONFIG="write"`：等 `>` 后收一包原文，覆盖写入，不当场套用。`AT+RTUCONFIG="read"` 读出文件。`AT+RTUCONFIG="delete"` 删除该文件（固件 `1.3.5` / `NT26-PRO-RTU-D1.3.5` 起）；文件不存在也成功。详见 [AT+RTUCONFIG](../../at/manual/rtu.md#2-atrtuconfig)。
 
 和脚本的边界：
 
@@ -1085,3 +1086,4 @@ log_route=uart1
 | 1.1.2 | 2026-09-19 | AT Socket / 路由串链接改到 `at/manual/`，并链到 Socket 专栏 |
 | 1.1.3 | 2026-09-19 | `[mqtt.N]`：`platform=2` / `"doiot"` 标明仅玄武；演示口用 `0` / `"normal"` + `"<#IMEI>"` / `doiot` / `web` |
 | 1.1.4 | 2026-09-20 | `platform=2` 链到 [专栏 · MQTT 连接度云物联](../../at/topics/5giot.md) |
+| 1.1.5 | 2026-10-08 | 热改来源补 `AT+RTUCONFIG`：`write` / `read` 只动本地文件；`delete` 从固件 `1.3.5` 起，不改运行时 |

@@ -1,6 +1,6 @@
 #  透传任务（RTU / DTU）
 
-**文档版本** `1.1.2`
+**文档版本** `1.1.3`
 
 四路透传任务选 SOCK 还是 MQTT、心跳/注册包、上下行路由、往通道写裸数据、暂停恢复、AT 口密码锁、云配置拉取策略。与 [`[task.N]`](../../api/rtu_config/rtu_config.md#17-task--taskn--tasknheart--tasknreg)、[`[netio.N]`](../../api/rtu_config/rtu_config.md#21-netion)、`[loader]` 同一套。
 
@@ -28,7 +28,7 @@
 
 | 指令 | 作用 |
 | --- | --- |
-| `AT+RTUCONFIG` | `write` 把当前业务配置导出；`read` 从文件套用（文件 `/rtu.config`，以帮助为准） |
+| `AT+RTUCONFIG` | `write` 覆盖写入本地 `/rtu_config.cfg`；`read` 读出该文件；`delete` 只删本地文件（固件 `1.3.5` 起）。三条都不改当前运行时 |
 | `AT+DTUTASK` | `<id>,<en>,"SOCK"\|"MQTT"` |
 | `AT+DTUSTATE` | 查该路任务是否在跑 |
 | `AT+NETIO` | 通道在线指示 IO |
@@ -47,19 +47,41 @@
 
 ## 2. AT+RTUCONFIG {#2-atrtuconfig}
 
+读写内置文件系统上的本地配置文件 **`/rtu_config.cfg`**（最大 32 KB）。`write` / `read` / `delete` 都只动这个文件，不套用、不改当前已经生效的业务配置。文件更新或删除后，**下次开机**才再解析；文件不在则开机跳过，沿用机内已有配置。语法见 [`rtu_config.cfg`](../../api/rtu_config/rtu_config.md)。
+
+`delete` 从固件 **`1.3.5`**（`NT26-PRO-RTU-D1.3.5`）起支持。更早的包没有这个动作，会回 `"error action"`。
+
 ```lua
 AT+RTUCONFIG="write"
+>
+<一整包配置文本>
++RTUCONFIG: "write",<len>
+
+OK
 ```
 
-把当前机内业务配置打成文本吐出（可能很长），最后 `OK`。
+`write` 先回 `>`，约 10 秒内收一包原始配置文本，整包覆盖写入 `/rtu_config.cfg`。成功回写入长度。
 
 ```lua
 AT+RTUCONFIG="read"
++RTUCONFIG: "read",<len>
+<文件原文>
+
+OK
 ```
 
-从内部文件套用。失败 `"error action"` 或其它 reason（`read` / 内存等）。
+文件不存在或长度为 0 时回 `+RTUCONFIG: "read",0`，后面直接 `OK`，没有正文。
 
-这不是工程里的 `rtu_config.cfg` 文件名；工程配置开机已解析进机内。本指令管的是机内那份快照的导出/再套用。
+```lua
+AT+RTUCONFIG="delete"
++RTUCONFIG: "delete"
+
+OK
+```
+
+只删除本地 `/rtu_config.cfg`。文件本来就不在也回 `OK`。已经在跑的配置保持不动。
+
+失败统一 `+RTUCONFIG: "error <reason>"` 再 `ERROR`。reason：`param`、`action`、`read`、`write`、`stat`、`size`、`malloc`、`delete`。
 
 ---
 
@@ -168,3 +190,4 @@ AT+DTUSTATE=1
 | 1.1.0 | 2026-09-07 | 上下行/写出链到 [route.md](route.md)；纠正 HEART/REG 最后一段是发布槽列表，不是路由串 |
 | 1.1.1 | 2026-09-19 | 随目录迁到 `at/manual/`；文首链到 Socket / MQTT 专栏 |
 | 1.1.2 | 2026-09-19 | 文首链到 [专栏 · 路由](../topics/route.md) |
+| 1.1.3 | 2026-10-08 | `AT+RTUCONFIG` 改为读写本地 `/rtu_config.cfg`，不改运行时；新增 `delete`（固件 `1.3.5` 起） |
