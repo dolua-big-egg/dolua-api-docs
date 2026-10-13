@@ -1,6 +1,6 @@
 # i2c
 
-**文档版本** `1.5.1`
+**文档版本** `1.6.0`
 
 对象化硬件 I2C 主机。按控制器编号打开一路，再 `write` / `read` / 寄存器读写。每路同时只能有一个实例。
 
@@ -33,7 +33,7 @@ local i2c = require("i2c")
   - [7.5 `obj:scan`](#7-5-scan)
   - [7.6 `obj:bus_recover`](#7-6-bus-recover)
   - [7.7 `obj:id`](#7-7-id)
-  - [7.8 `obj:deinit`](#7-8-deinit)
+  - [7.8 `obj:deinit` / `obj:close`](#7-8-deinit)
 - [8. 设备地址与数据](#8-设备地址与数据)
 - [9. 错误与返回约定](#9-错误与返回约定)
 - [10. 资源上限与生命周期](#10-资源上限与生命周期)
@@ -182,9 +182,16 @@ bus.write(bus, addr, data)   -- 等价
 
 ## 6. 模块函数
 
-模块表上只有工厂 `new`。
+模块表上的工厂是 `new`。`open` 是它的**别名**，指向同一个函数：参数、返回值、失败、占哪一路，全部相同。下面写法两种都可以，新脚本用 `open`。
+
+```lua
+i2c.open(id, cfg)   -- 别名
+i2c.new(id, cfg)    -- 同一个函数
+```
 
 ### `i2c.new(id [, cfg]) → I2cObj`
+
+`i2c.open(id [, cfg])` 与下面完全相同。
 
 打开一路控制器。
 
@@ -341,10 +348,13 @@ obj:id()
 
 ### 7.8 `obj:deinit()` {#7-8-deinit}
 
-释放该路。始终 `true`。之后才能再 `new` 同一路。对象回收也会走同一套清理。
+`obj:close()` 是它的**别名**，同一个函数，参数和返回值相同。
+
+释放该路。始终 `true`。之后才能再 `open` / `new` 同一路。对象回收也会走同一套清理。
 
 ```lua
-obj:deinit()
+obj:close()    -- 别名
+obj:deinit()   -- 同一个函数
 ```
 
 ---
@@ -468,3 +478,4 @@ local raw = bus:read(ADDR, 7)
 | 1.4.1 | 2026-09-29 | 更正组 0：I2C0 SCL 为 ALT2，与不传 `pin_map` 相同。I2C1 组 3 的 SCL 为 ALT3 |
 | 1.5.0 | 2026-09-29 | SCL、SDA 分开传 `scl_pin_map` / `sda_pin_map`，不再用一个成对编号 |
 | 1.5.1 | 2026-09-29 | 写明 `lcd.new` 的硬件 I2C 使用同一套 `scl_pin_map` / `sda_pin_map` |
+| 1.6.0 | 2026-10-14 | `open` 作为 `new` 的别名，`close` 作为 `deinit` 的别名，功能相同 |

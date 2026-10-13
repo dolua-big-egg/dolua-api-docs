@@ -6,7 +6,7 @@
 
 | 分区 | 路径 | 读什么 |
 | --- | --- | --- |
-| **专栏** | [topics/](topics/README.md) | 场景：Socket / MQTT / HTTP(S) / 路由怎么跑起来 |
+| **专栏** | [topics/](topics/README.md) | 场景：Socket / MQTT / HTTP(S) / 路由 / 通配符怎么跑起来 |
 | **指令手册** | [manual/](manual/README.md) | 逐条指令：测试/查询/设置、参数、应答、错误码 |
 
 先读 [通用约定](manual/convention.md)（行格式、测试/查询/设置、两种失败风格、CME 码）。指令参数里的 `1|6[1]` 一类出口写法见 [路由串](manual/route.md)，那不是一条指令。演示代码块一律标 `lua`。
@@ -22,6 +22,7 @@
 | [HTTP / HTTPS](topics/http.md) | 五路按需 HTTP(S)：自由请求、通道、证书组、响应路由、`HTTPREQ` / `HTTPFREE` |
 | [路由](topics/route.md) | 上行（串口输入）/ 下行（四路通道输入）：`DTUPSUP` / `DTUPSDN` |
 | [CME ERROR](topics/cme.md) | `+CME ERROR` 的两个码段：AT 引擎 `0`～`8`、自定义业务 `101`～`156`，怎么分怎么查 |
+| [通配符（maping）](topics/maping.md) | `<#名字>` 占位符、`IO~`、各路径 `map.*` 开关 |
 
 ## 指令手册
 

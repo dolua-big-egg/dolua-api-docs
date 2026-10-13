@@ -1,6 +1,6 @@
 # rtu_config
 
-**文档版本** `1.1.5`
+**文档版本** `1.1.6`
 
 这不是 `require("…")` 模块。它是模组开机时解析的 **声明式配置文件** `rtu_config.cfg`：只改文件里写到的段和 key，没写到的字段保持机内当前值。Lua 的 [`rtu`](../module/rtu.md)、[`uart`](../peripherals/uart.md)、[`sms`](../module/sms.md)、[`lbs`](../network/lbs.md) 等运行时模块 **读的是这份文件落盘后的业务配置**，不是另起一套通道。
 
@@ -645,7 +645,7 @@ Lua `uart` 模块文档：[uart.md](../peripherals/uart.md)。
 
 未知 key（例如 `map.foo` 或 `foo`）整段失败。
 
-可用占位符见第 29 节。
+可用占位符、`IO~` 和 `<#hex:…>` 见第 29 节，展开规则见 [专栏 · 通配符](../../at/topics/maping.md)。
 
 ---
 
@@ -684,7 +684,7 @@ N 是 **1-based 脚号**，对应内部 GPIO 0～38。`[io.1]` 配 GPIO0。
 
 | key | 类型 | 范围 | 独立作用 |
 | --- | --- | --- | --- |
-| `tpl_bytes` | 二进制 | `hex:`，最长 256 字节 | 上报载荷模板，可含 `<#IMEI>`、`<#IO1>` 等 |
+| `tpl_bytes` | 二进制 | `hex:`，最长 256 字节 | 上报载荷模板，可含 `<#IMEI>`、`<#IO0>`（GPIO 编号）等，见 [通配符专栏](../../at/topics/maping.md) |
 
 映射受 `map.all` + `map.io_change` 管。
 
@@ -855,25 +855,7 @@ mode=3 的占位符：`<#SENDER>`（号码）、`<#SMS_MSG>`（正文）。**没
 
 在被 `[maping]` 放行的载荷里，`<#NAME>` 会被替换。展开后额外增长超过 4096 字节的部分丢掉。
 
-| 名字 | 展开成 |
-| --- | --- |
-| `IMEI` | 本机 IMEI |
-| `ICCID` | SIM ICCID |
-| `IMSI` | IMSI |
-| `CSQ` | 信号 |
-| `LBS` | 最近一次定位摘要 |
-| `LBS_LAT` / `LBS_LON` | 纬度 / 经度 |
-| `VBAT` | 电池电压 |
-| `LAC` / `CELL` | 小区 |
-| `TIME` / `UTC` | 本地时间 / UTC |
-| `ENTER` | `\r\n` |
-| `COMMA` | `,` |
-| `QUOTE` | `"` |
-| `IO~` | `<#IO1>`、`<#IO2>`、`<#IOALL>` 等 IO 电平 |
-| `SENDER` | 仅短信路由：发送号码 |
-| `SMS_MSG` | 仅短信路由：短信正文 |
-
-`SENDER` / `SMS_MSG` 在非短信路径上展开为空。
+每个名字的格式、`IO~`（GPIO 0～38）、短信 `<#SENDER>` / `<#SMS_MSG>`、`<#hex:…>`，以及认不出时留原文、拿不到值时写 `null`，见 [专栏 · 通配符](../../at/topics/maping.md)。
 
 ---
 
@@ -1087,3 +1069,4 @@ log_route=uart1
 | 1.1.3 | 2026-09-19 | `[mqtt.N]`：`platform=2` / `"doiot"` 标明仅玄武；演示口用 `0` / `"normal"` + `"<#IMEI>"` / `doiot` / `web` |
 | 1.1.4 | 2026-09-20 | `platform=2` 链到 [专栏 · MQTT 连接度云物联](../../at/topics/5giot.md) |
 | 1.1.5 | 2026-10-08 | 热改来源补 `AT+RTUCONFIG`：`write` / `read` 只动本地文件；`delete` 从固件 `1.3.5` 起，不改运行时 |
+| 1.1.6 | 2026-10-08 | 占位符细则改到 [专栏 · 通配符](../../at/topics/maping.md)；`<#IOk>` 标明是 GPIO 编号 |
