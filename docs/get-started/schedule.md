@@ -1,10 +1,12 @@
-# 消息框架与系统调度
+# 应用框架导读
 
-**文档版本** `1.1.1`
+**文档版本** `1.2.0`
 
-本页是 [开始使用](get-started.md) 的进阶导读。**【新手提示】** 第一次只要会 `print` + `rt.delay` + 下载即可。等要写串口回调、MQTT、多任务时再读；全文见 [消息和调度](../dolua-core/schedule.md)、[doLua 是怎么运行的](../dolua-core/runtime.md)。
+doLua 的任务、等待、定时和消息通道随固件提供，开箱即用。`require("rt")` 之后用 `rt.task_start` 建任务，`rt.delay` 让出，`rt.mbox_send` / `rt.mbox_recv` 传消息，`rt.tmr_once` / `rt.tmr_loop` 定时。调度循环在固件里，脚本不用自己启动，也不用再用 `coroutine` 包一层。
 
-[← 开发工具](tools.md)
+接口表和可调用骨架见 [应用框架与调度](../dolua-core/schedule.md)。虚拟机何时进入调度循环见 [doLua 是怎么运行的](../dolua-core/runtime.md)。
+
+[← 开始使用](get-started.md)
 
 ---
 
@@ -110,4 +112,4 @@ end
 
 ---
 
-[← 开发工具](tools.md)
+[← 开始使用](get-started.md) · [应用框架与调度 →](../dolua-core/schedule.md)

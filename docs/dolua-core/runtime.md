@@ -203,7 +203,7 @@ require("led")
 - 引擎线程被按停时（整线程睡眠、或 CPU 忙等），Lua 回调和协程都不跑；其它线程仍可能在工作。
 - 外设和网络的底层收包发生在各自路径，但 **Lua 回调一定回到调度循环再执行**。
 
-三种「等一会儿」的差别见 [消息和调度](schedule.md)。
+三种「等一会儿」的差别见 [应用框架与调度](schedule.md)。
 
 ---
 
@@ -225,7 +225,7 @@ require("led")
 
 ## 9. 接下来读什么
 
-1. [消息和调度](schedule.md)
+1. [应用框架与调度](schedule.md)
 2. 对照例程：[started/task](../../examples/nt26/started/task)、[os/script/script_api](../../examples/nt26/os/script/script_api)
 
 ---

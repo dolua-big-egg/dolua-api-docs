@@ -4,7 +4,7 @@
 
 本页是 [开始使用](get-started.md) 的续篇，讲 doLua 开发助手侧边栏的日常操作。安装与第一份工程见入门页；下载口细节见 [下载与云端](download.md)。
 
-[← 工程形态](project.md) · [调度导读 →](schedule.md)
+[← 工程形态](project.md) · [应用框架 →](schedule.md)
 
 ---
 
@@ -156,4 +156,4 @@
 
 ---
 
-[← 工程形态](project.md) · [调度导读 →](schedule.md)
+[← 工程形态](project.md) · [应用框架 →](schedule.md)

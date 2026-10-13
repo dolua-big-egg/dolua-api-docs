@@ -17,4 +17,4 @@
 | 入门工程 | [started](../../../examples/nt26/started) |
 | 应用场景分类 | [apps](../../../examples/nt26/apps) |
 
-阅读顺序： [开始使用](../../get-started/get-started.md) → [doLua 核心](../../dolua-core/README.md) → [资源](resources/README.md) → [工程结构](../../dolua-assisant/project-structure.md) → `started/hello` → 再进对应模块的 API。
+阅读顺序： [开始使用](../../get-started/get-started.md) → [应用框架与调度](../../dolua-core/schedule.md) → [doLua 核心](../../dolua-core/README.md) → [资源](resources/README.md) → [工程结构](../../dolua-assisant/project-structure.md) → `started/hello` → 再进对应模块的 API。

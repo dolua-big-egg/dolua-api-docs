@@ -1,4 +1,4 @@
 {
   "title": "doLua 核心",
-  "pages": ["index", "what", "runtime", "schedule", "project"]
+  "pages": ["index", "what", "schedule", "runtime", "project"]
 }
