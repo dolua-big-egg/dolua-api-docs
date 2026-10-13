@@ -1,6 +1,6 @@
 # doLua 开发助手
 
-配套插件 / 侧边栏相关说明：工程文件夹长什么样、五区怎么分、LUAPK 怎么打。新手安装插件、建第一份工程见 [开始使用](../get-started/get-started.md)，USB / UART / 云端下载见 [下载与云端](../get-started/download.md)。设备上虚拟机怎么跑见 [doLua 核心](../dolua-core/README.md)，NT26 配额见 [资源](../dolua-api/nt26/resources/README.md)。
+配套插件 / 侧边栏相关说明：工程文件夹长什么样、五区怎么分、LUAPK 怎么打。插件、在线编辑器和官网 Ask AI 的总入口见 [生态](../ecosystem/README.md)。新手安装插件、建第一份工程见 [开始使用](../get-started/get-started.md)，USB / UART / 云端下载见 [下载与云端](../get-started/download.md)。设备上虚拟机怎么跑见 [doLua 核心](../dolua-core/README.md)，NT26 配额见 [资源](../dolua-api/nt26/resources/README.md)。
 
 | 文档 | 说明 |
 | --- | --- |
