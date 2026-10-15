@@ -1,6 +1,6 @@
 # uart
 
-**文档版本** `1.2.1`
+**文档版本** `1.4.0`
 
 纯函数串口模块。对外业务口是 UART1～UART3：热改线参数、写数据、登记收包回调、或阻塞等一整包。没有对象、没有 `open`。UART0 留给内部调试，**不对外使用**。
 
@@ -25,9 +25,11 @@ local uart = require("uart")
   - [6.1 `uart.config`](#6-1-config)
   - [6.2 `uart.get_config`](#6-2-get-config)
   - [6.3 `uart.write`](#6-3-write)
-  - [6.4 `uart.reg`](#6-4-reg)
-  - [6.5 `uart.unreg`](#6-5-unreg)
-  - [6.6 `uart.block`](#6-6-block)
+  - [6.4 `uart.async_write`](#6-4-async-write)
+  - [6.5 `uart.sync_write`](#6-5-sync-write)
+  - [6.6 `uart.reg`](#6-6-reg)
+  - [6.7 `uart.unreg`](#6-7-unreg)
+  - [6.8 `uart.block`](#6-8-block)
 - [7. 收包回调协议](#7-收包回调协议)
 - [8. 分包与配置落盘](#8-分包与配置落盘)
 - [9. 错误与返回约定](#9-错误与返回约定)
@@ -54,7 +56,9 @@ UART0 不给脚本当业务口：脚不对外、`rtu_config.cfg` 里的 `[uart.0
 2. 收数据：`reg` 和 `block` **可以同时用**，不是二选一。
    - `uart.reg(id, cb)`：平时来一包调一次回调（须立刻返回）。
    - `uart.block(id, timeout_ms)`：当前任务协程等到一包或超时。即使已经 `reg`，正在 `block` 的那一口到来的包会先被这次 `block` **截走**，不进回调；`block` 结束后，后续包再回到 `reg`。
-3. `uart.write(id, data)` 发送。字符串或连续字节表都可以。
+3. 发送。字符串或连续字节表都可以。
+   - `uart.write` / `uart.async_write`：交给发送队列后立刻返回。二者是同一个函数。
+   - `uart.sync_write`：等到这一段字节离开发送器再返回。期间不让出协程，整台调度都停着。
 
 引脚组 `pin_map`、分包 `max_packet_size` / `max_wait_ms` / `max_packets` **不能** 用本模块改。改 `rtu_config.cfg` 后重新加载配置。
 
@@ -69,13 +73,13 @@ UART0 不给脚本当业务口：脚不对外、`rtu_config.cfg` 里的 `[uart.0
 ```
 ┌─────────────────────────────────────────────────────────┐
 │  Lua 脚本                                                │
-│  config / write / reg / unreg / block                    │
+│  config / write / async_write / sync_write / reg / block │
 └────────────────────────────┬────────────────────────────┘
                              │
 ┌────────────────────────────▼────────────────────────────┐
 │  uart 模块                                               │
 │  · 按 id 热改波特率等（不写盘）                           │
-│  · 写出排队发送                                          │
+│  · 异步写出排队；同步写出等到发送器送完                   │
 │  · 收包：block 优先；否则进本 VM 的 reg 回调              │
 └────────────────────────────┬────────────────────────────┘
                              │
@@ -90,8 +94,9 @@ UART0 不给脚本当业务口：脚不对外、`rtu_config.cfg` 里的 `[uart.0
 
 | 路径 | 调用当场做什么 | 是否让出协程 | 谁在等 |
 | --- | --- | --- | --- |
-| `config` / `get_config` / `write` / `reg` / `unreg` | 改线、排队发送、登记 | **否** | 当前协程（很快返回） |
-| `write` | 把数据交给发送队列 | 否 | **不等** 发完 |
+| `config` / `get_config` / `reg` / `unreg` | 改线、登记 | **否** | 当前协程（很快返回） |
+| `write` / `async_write` | 把数据交给发送队列 | 否 | **不等** 发完 |
+| `sync_write` | 等到这一段从发送器送出 | **否**（不让出；整台调度停住） | 当前调用，直到这一段发完 |
 | `block` | 挂起当前 **任务协程** 等一包 | **是**（仅当前协程） | 其它 task / 定时 / IO 能跑 |
 | `reg` 回调 | 调度循环里执行 | 回调返回前整台 Lua 调度被占住 | 其它任务都要等 |
 
@@ -111,7 +116,7 @@ Lua 回调 **不在** 硬件中断、也不在驱动线程里跑。
 
 **`uart.block` 和 `rt.delay` 同类**：只挂起当前任务协程。必须在任务协程里调用（`main.lua` 顶层可以）。不要在 `reg` 回调里调用。
 
-同一时刻 **整台脚本只能有一个** `block`。第二个会立刻 `false, "busy"`。
+同一口同一时刻只能有一个 `block`。UART1、UART2、UART3 可以各有一个同时在等。同一口再来一次会立刻 `false, "busy"`。
 
 已经 `reg` 的口照样可以 `block`。等待期间该口到来的包 **只给这次 block，不进 `reg`**；等到或超时返回后，后续包再进回调。没有人在 `block` 时，包才进回调。
 
@@ -264,7 +269,46 @@ uart.write(U, {0x01, 0x02, 0xAA, 0xFF, 0x0D, 0x0A})
 
 ---
 
-### 6.4 `uart.reg(id, callback)` {#6-4-reg}
+### 6.4 `uart.async_write(id, data)` {#6-4-async-write}
+
+与 [`uart.write`](#6-3-write) **是同一个函数**。参数、返回值、失败条件都相同：入队后立刻返回，不等发送完毕。
+
+```lua
+uart.async_write(id, data_string)
+uart.async_write(id, byte_table)
+```
+
+名字用来和 `sync_write` 对照。已有的 `uart.write` 不用改。
+
+---
+
+### 6.5 `uart.sync_write(id, data)` {#6-5-sync-write}
+
+把这一段字节送进发送器，**离开发送器后才返回**。不走 `write` 那条发送队列，所以不会因为队列满被整段丢掉。
+
+```lua
+uart.sync_write(id, data_string)
+uart.sync_write(id, byte_table)
+```
+
+`data` 的两种形态与 [`uart.write`](#6-3-write) 相同。数字同样会按字符发出去，二进制用 `\xHH` 或字节表。
+
+成功 `true`，表示这一段已经送出。失败只返回 `false`（没有第二返回值）：空串、空表、不是字符串也不是合法字节表、口未就绪、发送器正忙、或该口当前不允许脚本发送。`id` 非法 **抛** `"invalid uart id"`。
+
+调用期间 **不让出协程**。整台 Lua 调度停住，其它任务、定时器和收包回调都要等这次返回。段越长、波特率越低，停得越久。大段请自行切开，多次调用；切口可以落在任意字节上，函数不会往两段之间插字节。
+
+同一口上已经在队列里的异步发送会排在这次同步发送的前面或后面，不会和这一段字节交错。同步发送进行中，不要再从回调里调用它。
+
+```lua
+local ok = uart.sync_write(uart.UART1, "hello UART1\r\n")
+if not ok then
+    -- 空数据、口未就绪，或该口当前不允许脚本发送
+end
+```
+
+---
+
+### 6.6 `uart.reg(id, callback)` {#6-6-reg}
 
 登记该口在 **当前虚拟机** 上的收包回调。同一 VM、同一口重复 `reg` **换绑**，覆盖旧函数。内置 [`gps`](../module/gps.md) 在分发层旁路收包，**不占本槽**；对同一口再 `uart.reg` 仍会进脚本回调。
 
@@ -283,7 +327,7 @@ uart.reg(id, callback)
 
 ---
 
-### 6.5 `uart.unreg(id)` {#6-5-unreg}
+### 6.7 `uart.unreg(id)` {#6-7-unreg}
 
 取消当前 VM 在该口上的回调。
 
@@ -297,7 +341,7 @@ uart.unreg(id)
 
 ---
 
-### 6.6 `uart.block(id [, timeout_ms])` {#6-6-block}
+### 6.8 `uart.block(id [, timeout_ms])` {#6-8-block}
 
 阻塞等该口 **下一整包**。
 
@@ -315,7 +359,7 @@ uart.block(id, timeout_ms)
 | --- | --- |
 | 等到一包 | `true, data`（二进制 string） |
 | 超时 | `false, "timeout"` |
-| 已有一个 block 在等 | `false, "busy"` |
+| 这一口已经有一个 block 在等 | `false, "busy"` |
 | 等到了但载荷异常 | `true, nil`（少见） |
 
 不在 `rt` 上下文：**抛** `"rt context not found"`。
@@ -405,7 +449,8 @@ max_packets=4
 | --- | --- | --- |
 | `config` | `true, "ok"` | `false, err`；id/`cfg` 类型不对则 **抛** |
 | `get_config` | table | 读不到：单独 `nil`（无错误串）；id 非法 **抛** |
-| `write` | `true` | 只 `false`（空数据、类型不对、或发送未接受）；id 非法 **抛** |
+| `write` / `async_write` | `true` | 只 `false`（空数据、类型不对）；id 非法 **抛**。`true` 只表示已交给发送队列，不等发完，队列满时这一帧可能被丢掉 |
+| `sync_write` | `true` | 只 `false`（空数据、类型不对、口未就绪、发送器正忙、或该口不允许脚本发送）；id 非法 **抛**。`true` 表示这一段已经送出 |
 | `reg` | `true` | 槽满/无 rt：**抛** |
 | `unreg` | `true` | 只 `false`（id 越界、无调度上下文、或该口未 `reg`） |
 | `block` | `true, data` | `false, "timeout"` / `"busy"`；无 rt / id 非法 **抛** |
@@ -441,9 +486,9 @@ max_packets=4
 | `err` | 可能原因 |
 | --- | --- |
 | `timeout` | 在 `timeout_ms` 内没收到完整一包（对端没回、分包超时、或口接错） |
-| `busy` | 同一脚本里已有一次 `block` 还在等，同时只能有 1 个 |
+| `busy` | 这一口已经有一次 `block` 还在等。别的口可以同时 `block` |
 
-诊断：`uart reg full` 先 `unreg` 不用的口；`reconfig fail` 确认该口已在配置文件里启用；`busy` 不要并行两个 `block`；`write` 失败没有文案，先查数据是否空、是否传了既非 string 也非 byte 表。
+诊断：`uart reg full` 先 `unreg` 不用的口；`reconfig fail` 确认该口已在配置文件里启用；`busy` 表示这一口已经有人在 `block`，换一口或等这次返回；`write` / `async_write` / `sync_write` 失败都没有文案，先查数据是否空、是否传了既非 string 也非 byte 表。`sync_write` 再确认口已启用，以及当前不是下载模式之类会关掉脚本发送的状态。
 
 ---
 
@@ -453,12 +498,14 @@ max_packets=4
 | --- | --- | --- |
 | 对外业务口 | **3**（UART1～UART3） | UART0 保留，收包不进 Lua |
 | `reg` 槽 | **16** | 整机；按「虚拟机 + 口」各一条。满则抛 `uart reg full` |
-| 同时 `block` | **1** | 每脚本 VM 一个；第二个 `busy` |
+| 同时 `block` | 每口 **1** 个 | UART1～UART3 可同时各等一包；同一口第二个 `busy` |
 | 单包 / 邮箱 | 见第 8 节 | 配置文件 |
 
 没有 userdata。回调挂在当前 VM 上，VM 退出会清。脚本应在不用时 `unreg`。
 
-`write` 走发送队列，调用返回不代表线上已经发完。高速连发可能在底层排队或丢，取决于驱动队列深度（脚本侧没有单独的“发完”回调）。
+`write` / `async_write` 走发送队列，调用返回不代表线上已经发完。高速连发可能在底层排队或丢，取决于驱动队列深度（脚本侧没有单独的“发完”回调）。
+
+`sync_write` 不走这条队列。返回 `true` 时这一段已经离开发送器。调用期间整台调度停住，没有单独的发完回调。
 
 ---
 
@@ -468,6 +515,8 @@ max_packets=4
 | --- | --- |
 | 长期收包、旁路分发 | `reg` + 独立 task + `mbox`（`uart_normal`） |
 | 一问一答、Modbus 轮询 | `write` + `block`（`uart_block` / `modbus_rs485`） |
+| 必须等这一段离开发送器 | `sync_write`。大段自己切开再送。调用期间整台调度停住 |
+| 入队后立刻返回 | `write` 或 `async_write`（同一个函数） |
 | `reg` 期间再 `block` | 可以。`block` 截走那一口的下一包，返回后回调继续收 |
 | 改波特率（本次运行） | `uart.config` |
 | 改脚、改分包 | `rtu_config.cfg`，不是本模块 |
@@ -544,3 +593,5 @@ end
 | 1.1.1 | 2026-09-05 | `pin_map` 链到硬件表列出的全部 UART 组 |
 | 1.2.0 | 2026-09-09 | `print` / `log` 路由改为 `"uart1"` / `"uart2"` / `"uart3"` / `"usb_at"` |
 | 1.2.1 | 2026-09-16 | 标明内置 gps 不占 `uart.reg` 槽，可与脚本回调并存 |
+| 1.3.0 | 2026-10-14 | `block` 改为按口占用：不同口可以同时等，同一口第二个返回 `busy` |
+| 1.4.0 | 2026-10-15 | 增加 `async_write`（与 `write` 相同）和 `sync_write`（等到字节离开发送器再返回，期间不让出协程） |
