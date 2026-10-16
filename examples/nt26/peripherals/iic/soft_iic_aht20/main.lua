@@ -1,9 +1,14 @@
+-- 只改这一行。
+-- false  标准开漏：高电平只释放，SDA/SCL 必须有外部上拉。默认。
+-- true   免外部上拉：主机发的高电平保持驱动，只在等从机 ACK / 读数据时放开 SDA。短线可以用；线长请改回 false 并加上拉。
+local USE_NO_EXT_PULLUP = false
+
 --[=[
   soft_iic_aht20 demo — 软件 I2C 读 AHT20 温湿度
   ============================================================================
   本 demo
   ============================================================================
-    1) soft_i2c.new GPIO8/9
+    1) 按文件最上面的 USE_NO_EXT_PULLUP 打开软件 I2C（pin55=SDA，pin54=SCL）
     2) 初始化 AHT20（write BE 08 00）
     3) 每 2 秒测量并打印温湿度；失败则重新初始化
 
@@ -13,9 +18,9 @@ local rt = require("rt")
 local log = require("log")
 local soft_i2c = require("soft_i2c")
 
--- IO8=GPIO8 SDA；IO9=GPIO9 SCL。input=INPUT_GPIO 时前两个参数是 GPIO 编号
-local SDA_GPIO = 8
-local SCL_GPIO = 9
+-- 模块引脚序号。input=INPUT_PINNO 时前两个参数是 pin 号：pin55=SDA，pin54=SCL。
+local SDA_PIN = 55
+local SCL_PIN = 54
 local ADDR = 0x38
 local CMD_INIT = string.char(0xBE, 0x08, 0x00)
 local CMD_MEAS = string.char(0xAC, 0x33, 0x00)
@@ -29,13 +34,15 @@ local function to_hex(s)
     return table.concat(t)
 end
 
-local bus = soft_i2c.new(SDA_GPIO, SCL_GPIO, {
-    input = soft_i2c.INPUT_GPIO,
+local bus = soft_i2c.new(SDA_PIN, SCL_PIN, {
+    input = soft_i2c.INPUT_PINNO,
     clock_speed = 10000,
+    no_ext_pullup = USE_NO_EXT_PULLUP and soft_i2c.NO_EXT_PULLUP_ENABLE
+        or soft_i2c.NO_EXT_PULLUP_DISABLE,
 })
 
 local sda, scl = bus:pins()
-log.info("soft_i2c sda=%d scl=%d", sda, scl)
+log.info("soft_i2c sda=%d scl=%d no_ext_pullup=%s", sda, scl, tostring(USE_NO_EXT_PULLUP))
 
 rt.delay(50)
 
@@ -108,7 +115,7 @@ end
     INPUT_GPIO          内部 GPIO 编号，和 gpio.open(gpio.BY_GPIO, n) 同一套
                         （gpio.BY_GPIO 旧名 gpio.INPUT_GPIO）
 
-  本 demo 用 IO8 / IO9：SDA=GPIO8，SCL=GPIO9（对应 pin66 / pin67）。
+  本 demo 用模块引脚序号：SDA=pin55，SCL=pin54。
 
   设备地址：写 7bit（AHT20=0x38）。写成 8bit 写地址 0x70 也能用，
   小于等于 0x7F 时底层会左移成写地址。
@@ -131,6 +138,7 @@ end
     soft_i2c.DUAL_ADDRESS_DISABLE / DUAL_ADDRESS_ENABLE
     soft_i2c.GENERAL_CALL_DISABLE / GENERAL_CALL_ENABLE
     soft_i2c.NO_STRETCH_DISABLE / NO_STRETCH_ENABLE
+    soft_i2c.NO_EXT_PULLUP_DISABLE / NO_EXT_PULLUP_ENABLE
 
   ----------------------------------------------------------------------------
   soft_i2c.new(sda, scl [, cfg]) -> bus
@@ -143,6 +151,9 @@ end
          dual_address_mode   默认 DUAL_ADDRESS_DISABLE
          general_call_mode   默认 GENERAL_CALL_DISABLE
          no_stretch_mode     默认 NO_STRETCH_DISABLE
+         no_ext_pullup       默认 NO_EXT_PULLUP_DISABLE（标准开漏，要外部上拉）
+                             NO_EXT_PULLUP_ENABLE 或 true：免外部上拉。
+                             主机高电平保持驱动，等 ACK / 读数据时才放开 SDA
     返回 总线对象
     失败抛错：脚非法、input 非法、配置失败
     例   -- 按 GPIO：IO8 SDA / IO9 SCL
@@ -215,6 +226,6 @@ end
   4) 首字节 bit7=1 表示传感器还忙，丢掉这包
   5) 湿度、温度各 20bit，拼在第 2~6 字节里
 
-  SDA=GPIO8，SCL=GPIO9（pin66/67）。地址 0x38。初始化成功后每 2 秒测一次。读失败会重新发初始化命令。
+  SDA=pin55，SCL=pin54。地址 0x38。初始化成功后每 2 秒测一次。读失败会重新发初始化命令。
 
 ]=]
