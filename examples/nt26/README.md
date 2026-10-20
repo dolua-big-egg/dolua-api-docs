@@ -42,7 +42,7 @@
 | [tcp](network/tcp)（[tcp_api](network/tcp/tcp_api)、[tcp_tls](network/tcp/tcp_tls)、[tcp_cmd](network/tcp/tcp_cmd)） | [tcp](../../docs/dolua-api/nt26/api/network/tcp.md) |
 | [websocket/websocket](network/websocket/websocket) | [websocket](../../docs/dolua-api/nt26/api/network/websocket.md) |
 | [http](network/http) | [http](../../docs/dolua-api/nt26/api/network/http.md) |
-| [mqtt](network/mqtt) | [mqtt](../../docs/dolua-api/nt26/api/network/mqtt.md) |
+| [mqtt](network/mqtt)（[mqtt_client](network/mqtt/mqtt_client)、[mqtts](network/mqtt/mqtts)、[mqtt_cmd](network/mqtt/mqtt_cmd)） | [mqtt](../../docs/dolua-api/nt26/api/network/mqtt.md) |
 | [dns](network/dns) | [dns](../../docs/dolua-api/nt26/api/network/dns.md) |
 | [ntp](network/ntp) | [ntp](../../docs/dolua-api/nt26/api/network/ntp.md) |
 | [lbs](network/lbs) | [lbs](../../docs/dolua-api/nt26/api/network/lbs.md) |

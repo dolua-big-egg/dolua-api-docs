@@ -1,0 +1,37 @@
+{
+  "id": "mqtts",
+  "name": "MQTTS 公共 broker",
+  "version": "1.0.0",
+  "category": "network",
+  "hw": "低",
+  "tags": [
+    "mqtt",
+    "mqtts",
+    "tls"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "info",
+      "log",
+      "lp",
+      "mqtt",
+      "rt"
+    ],
+    "pins": [],
+    "peripherals": [
+      "SIM"
+    ],
+    "controllers": [],
+    "extras": [],
+    "network": true
+  },
+  "readme": "",
+  "description": "先等驻网，再用 MQTTS 连接 EMQX 公共 broker broker.emqx.io:8883。TLS_AUTH = 1，用 DigiCert Global Root G2 做单向认证，匿名登录。主题带本机 IMEI。连上后发 hello mqtts，保持长连接，断开后内部重连并重新订阅。\n"
+}

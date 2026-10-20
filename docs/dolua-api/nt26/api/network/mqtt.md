@@ -1,6 +1,6 @@
 # mqtt
 
-**文档版本** `2.0.0`
+**文档版本** `2.0.1`
 
 全托管 MQTT 3.1.1 客户端。协议能力、心跳、重发边界和云平台适配见 [概述](#概述)。`create` 建实例并拉起工作线程；`open` 只把目标设成「要连上」。之后连 broker、断线重连、收报文都由内部自动跑，消息和状态用回调回来。全系统最多 4 路。
 
@@ -1069,6 +1069,8 @@ c:update({
 })
 ```
 
+[examples/nt26/network/mqtt/mqtts](../../../../../examples/nt26/network/mqtt/mqtts) 用 `mqtt.TLS_SERVER_AUTH` 连 EMQX 公共 broker `broker.emqx.io:8883`。CA 是 DigiCert Global Root G2（同目录 `ca.pem`，脚本里内联同一份）。匿名，主题带本机 IMEI。
+
 ---
 
 ## 10. 订阅：`sub` 与 `auto_sub`
@@ -1433,3 +1435,4 @@ broker 关掉连接后日志会看到 `disconnected`，然后内部自己再连�
 | 1.2.1 | 2026-10-13 | 写明 MQTTS 在 AT 的 `ssl_level`；Lua `mqtt` 仍是明文 TCP |
 | 1.3.0 | 2026-10-13 | Lua `mqtt` 增加 MQTTS：`tls_enable` / `tls_seclevel` / 主机名 / 套件；证书可内联 PEM，也可写 ublob 地址，建连前重读 |
 | 2.0.0 | 2026-10-13 | 证书只认 PEM 字符串或 `{ ublob = 短名 }`。去掉 `ublob://`、`ublob:` 和 `ca_ublob` / `client_cert_ublob` / `client_key_ublob` |
+| 2.0.1 | 2026-10-20 | 增加 MQTTS 例程 `examples/nt26/network/mqtt/mqtts`。单向认证，CA 为 DigiCert Global Root G2，连 `broker.emqx.io:8883` |
