@@ -308,6 +308,7 @@ OK
 | `sim.sw_num` | 8 | 连续自动切卡上限（1～255，**不能写 0**） |
 | `sim.sw_silent` | 600 | 达到上限后的静默秒数。**不能写 0** |
 | `sim.remember` | 0 | 是否记住上次驻网成功的卡槽 |
+| `sim.slot2_disable` | 0 | `1`：禁用外部卡槽 2，调度不再切过去 |
 
 值用 **TAILRAW**（最后一个逗号后的原文），会去掉首尾空白再解析成十进制。
 
@@ -322,7 +323,7 @@ AT+SIMCFG=?
 sim.slot(1|2) sim.sw_auto(0|1)
 sim.ready_time sim.attach_time
 sim.sw_num sim.sw_silent
-sim.remember(0|1)
+sim.remember(0|1) sim.slot2_disable(0|1)
 query all: AT+SIMCFG?
 
 OK
@@ -334,7 +335,7 @@ OK
 AT+SIMCFG?
 ```
 
-或 `AT+SIMCFG`。连续七行，顺序固定：
+或 `AT+SIMCFG`。连续八行，顺序固定：
 
 ```lua
 +SIMCFG: "sim.slot",1
@@ -344,6 +345,7 @@ AT+SIMCFG?
 +SIMCFG: "sim.sw_num",8
 +SIMCFG: "sim.sw_silent",600
 +SIMCFG: "sim.remember",0
++SIMCFG: "sim.slot2_disable",0
 
 OK
 ```
@@ -379,6 +381,7 @@ OK
 | `sim.sw_num` | 1～255 | 0 或超过 255 → CME **105** |
 | `sim.sw_silent` | ≥1 秒 | 0 / 非数字 → CME **105** |
 | `sim.remember` | 0 或 1 | CME **105** |
+| `sim.slot2_disable` | 0 或 1 | CME **105**。`1` 时调度不再切到外部卡槽 2 |
 
 未知 key → CME **104**。第一参不是字符串 → CME **105**。落盘失败 → `"error write"`。
 

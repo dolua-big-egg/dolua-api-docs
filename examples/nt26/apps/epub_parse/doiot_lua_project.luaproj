@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "projectInfo": {
+    "softwareVersion": "1.0.0"
+  },
+  "packageConfig": {
+    "exportPath": "d:\\307n\\now-new2\\PLAT\\dolua\\examples\\nt26\\apps\\epub_parse\\epub_parse-1.0.1.luapk",
+    "checkCode": true,
+    "stripComments": true,
+    "minifyToSingleLine": true
+  },
+  "scriptProcess": {
+    "usb": {
+      "checkCode": true,
+      "stripComments": true,
+      "minifyToSingleLine": true
+    },
+    "cloud": {
+      "checkCode": true,
+      "stripComments": true,
+      "minifyToSingleLine": true
+    },
+    "export": {
+      "checkCode": true,
+      "stripComments": true,
+      "minifyToSingleLine": true
+    }
+  },
+  "main": "main.lua",
+  "modules": [],
+  "configs": [
+    "rtu_config.conf"
+  ],
+  "selectedConfig": "rtu_config.conf",
+  "internal": [
+    "book.epub"
+  ],
+  "internalStorage": {
+    "book.epub": "blob"
+  },
+  "checked": [
+    "main.lua",
+    "book.epub"
+  ],
+  "othersOrder": []
+}

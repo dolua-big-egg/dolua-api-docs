@@ -30,5 +30,5 @@
     "network": false
   },
   "readme": "",
-  "description": "用 uart.block 同步等待一整包，适合 Modbus / RS485 这种一问一答。\n\nblock 会让出当前协程，不会卡死整台 Lua。全脚本同一时刻只能有一个 block。本例走 UART1，发出提示后等待回复。\n"
+  "description": "用 uart.block 同步等待一整包，适合 Modbus / RS485 这种一问一答。\n\nblock 会让出当前协程，不会卡死整台 Lua。同一口同一时刻只能有一个 block，不同口可以同时等。本例走 UART1，发出提示后等待回复。\n"
 }

@@ -618,6 +618,7 @@ lp.config({
     sw_num = 8,
     sw_silent = 600,
     remember = 0,
+    slot2_disable = 0,
 })
 ```
 
@@ -632,6 +633,7 @@ lp.config({
 | `sw_num` | integer | `1..255` | 连续自动切卡上限 |
 | `sw_silent` | integer | `> 0` | 达上限后的静默秒数 |
 | `remember` | integer | `0` / `1` | 是否记忆上次驻网成功的卡槽 |
+| `slot2_disable` | integer | `0` / `1` | `1`：禁用外部卡槽 2，调度不再切过去 |
 
 这些开关是 **整数 0/1**，不是 Lua boolean。`sw_auto = true` 会当成非法。
 

@@ -128,7 +128,7 @@ local dev, open_err = audio.open(audio.ES8311, {
     sda_pin_map = 2,
     rate = audio.RATE_16K,
     -- 播音
-    play_volume = 60,         -- 喇叭响度 0~100，越大越响。播放中可 dev:set_play_volume(80)
+    play_volume = 70,         -- 喇叭响度 0~100，越大越响。播放中可 dev:set_play_volume(80)
     play_diff = true,         -- true 差分线出，接 CST8302A。false 单端耳机
     play = PLAY,              -- 下行降噪/压缩/增益/均衡，字段说明在上面的 PLAY
     -- 录音

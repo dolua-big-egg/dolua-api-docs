@@ -1,0 +1,33 @@
+{
+  "id": "zip_ublob",
+  "name": "ublob ZIP 解压打印",
+  "version": "1.0.0",
+  "category": "module",
+  "hw": "低",
+  "tags": [
+    "zip",
+    "ublob",
+    "miniz"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "zip",
+      "log",
+      "rt"
+    ],
+    "pins": [],
+    "peripherals": [],
+    "controllers": [],
+    "extras": [],
+    "network": false
+  },
+  "readme": "",
+  "description": "内置文件系统的 data.zip 以 blob 下载进 ublob。zip.open({ ublob = \"data.zip\" }) 后列出成员，extract 整份明文并从 print 打出。\n"
+}

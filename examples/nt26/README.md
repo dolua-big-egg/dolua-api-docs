@@ -39,7 +39,8 @@
 
 | 工程 | API |
 | --- | --- |
-| [tcp](network/tcp) | [tcp](../../docs/dolua-api/nt26/api/network/tcp.md) |
+| [tcp](network/tcp)（[tcp_api](network/tcp/tcp_api)、[tcp_tls](network/tcp/tcp_tls)、[tcp_cmd](network/tcp/tcp_cmd)） | [tcp](../../docs/dolua-api/nt26/api/network/tcp.md) |
+| [websocket/websocket](network/websocket/websocket) | [websocket](../../docs/dolua-api/nt26/api/network/websocket.md) |
 | [http](network/http) | [http](../../docs/dolua-api/nt26/api/network/http.md) |
 | [mqtt](network/mqtt) | [mqtt](../../docs/dolua-api/nt26/api/network/mqtt.md) |
 | [dns](network/dns) | [dns](../../docs/dolua-api/nt26/api/network/dns.md) |

@@ -219,9 +219,9 @@ I2C1 的 `0` 不要和 `spi.SPI0` 同时开。I2C0 的 `0` 与 I2C1 的 `3` 不�
 | SPI0 | MOSI | 67 | 24 | 落地。与 I2C1 SCL 同一焊盘 |
 | SPI0 | MISO | 28 | 25 | 落地（半双工可不占） |
 | SPI0 | 片选（常用） | 66 | 23 | 脚本 GPIO8；demo 多用这脚做 CS。与 I2C1 SDA 同一焊盘 |
-| SPI1 | SCLK | 49 | 30 | 固件已登记 PAD；**当前镜像未打开该控制器** |
-| SPI1 | MOSI | 63 | 28 | 同上 |
-| SPI1 | MISO | 62 | 29 | 同上 |
+| SPI1 | SCLK | 49 | 30 | **已编入**。`spi.new(spi.SPI1)` 时占用。与 USIM2 无关 |
+| SPI1 | MOSI | 63 | 28 | 已编入。与 USIM2_RST 同一焊盘 |
+| SPI1 | MISO | 62 | 29 | 已编入。与 USIM2_CLK 同一焊盘 |
 
 SPI0 的 SCLK / MISO 就是 UART2 **出厂组**（`pin_map=2`）的 TX / RX。外挂 Flash 或自己摸 SPI0 时，把 UART2 改成 `pin_map=0` 或 `pin_map=1`，或关掉 UART2。
 

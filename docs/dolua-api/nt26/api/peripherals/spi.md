@@ -61,7 +61,7 @@ dev:transfer("\x9F\x00\x00\x00")   -- 等价
 2. 事务期间自己管片选（`set_cs` 或 GPIO），再 `send` / `recv` / `transfer`。
 3. 不用时 `deinit`，或丢掉引用让回收拆掉，整机才能再 `new` 同一路。
 
-两路控制器：`spi.SPI0`、`spi.SPI1`。SPI0 脚位见上；SPI1 按板级复用，文档不以 SPI0 那组脚去套。
+两路控制器：`spi.SPI0`、`spi.SPI1`。SPI0 脚位见上。SPI1 的 SCLK / MOSI / MISO 是 PIN 49 / 63 / 62（PDDR 30 / 28 / 29），和 USIM2 的 RST、CLK 重叠。卡槽 2 在用时不要开 SPI1。
 
 `lcd.new` 若占用了同一路通用 SPI，再 `spi.new` 会失败（该路已在用）。
 
@@ -605,3 +605,4 @@ end
 | 1.1.1 | 2026-09-05 | SPI0 脚改为 PIN+PDDR，并链到硬件落盘表 |
 | 1.1.2 | 2026-09-09 | 片选 GPIO 编号对照改为 `gpio.BY_GPIO` |
 | 1.2.0 | 2026-10-14 | `open` 作为 `new` 的别名，`close` 作为 `deinit` 的别名，功能相同 |
+| 1.2.1 | 2026-10-15 | SPI1 编入固件；脚位为 PIN 49/63/62 |

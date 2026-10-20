@@ -9,8 +9,9 @@ local USE_NO_EXT_PULLUP = false
   本 demo
   ============================================================================
     1) 按文件最上面的 USE_NO_EXT_PULLUP 打开软件 I2C（pin55=SDA，pin54=SCL）
-    2) 初始化 AHT20（write BE 08 00）
-    3) 每 2 秒测量并打印温湿度；失败则重新初始化
+    2) scan 0x08~0x77，打印有应答的地址，并核对是否有 0x38
+    3) 初始化 AHT20（write BE 08 00）
+    4) 每 2 秒测量并打印温湿度；失败则重新初始化
 
 ]=]
 
@@ -45,6 +46,25 @@ local sda, scl = bus:pins()
 log.info("soft_i2c sda=%d scl=%d no_ext_pullup=%s", sda, scl, tostring(USE_NO_EXT_PULLUP))
 
 rt.delay(50)
+
+-- 0x08~0x77 各探一次写地址。空表=这条总线没有 ACK；有 0x38 只说明地址有应答。
+local addrs = bus:scan()
+local found = false
+if #addrs == 0 then
+    log.warn("scan empty: no ACK on this bus")
+else
+    for i = 1, #addrs do
+        log.info("scan[%d]=0x%02X", i, addrs[i])
+        if addrs[i] == ADDR then
+            found = true
+        end
+    end
+end
+if found then
+    log.info("AHT20 0x%02X is on the bus", ADDR)
+else
+    log.warn("AHT20 0x%02X not in scan result", ADDR)
+end
 
 local function aht20_init()
     if not bus:write(ADDR, CMD_INIT) then
@@ -221,10 +241,11 @@ end
   AHT20 流程（本 demo 实际跑的）
   ============================================================================
   1) 上电后等几十毫秒
-  2) write(0x38, BE 08 00)，再等 10ms
-  3) 每次测量：write(0x38, AC 33 00) → 等 80ms → read(0x38, 7)
-  4) 首字节 bit7=1 表示传感器还忙，丢掉这包
-  5) 湿度、温度各 20bit，拼在第 2~6 字节里
+  2) scan()，打印应答地址，核对是否有 0x38
+  3) write(0x38, BE 08 00)，再等 10ms
+  4) 每次测量：write(0x38, AC 33 00) → 等 80ms → read(0x38, 7)
+  5) 首字节 bit7=1 表示传感器还忙，丢掉这包
+  6) 湿度、温度各 20bit，拼在第 2~6 字节里
 
   SDA=pin55，SCL=pin54。地址 0x38。初始化成功后每 2 秒测一次。读失败会重新发初始化命令。
 

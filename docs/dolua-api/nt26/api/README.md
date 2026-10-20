@@ -19,7 +19,8 @@
 
 | 模块 | 文档 | 示例 |
 | --- | --- | --- |
-| tcp | [tcp.md](network/tcp.md) | [tcp_api](../../../../examples/nt26/network/tcp/tcp_api)、[tcp_cmd](../../../../examples/nt26/network/tcp/tcp_cmd)、[tcp_uart_frame](../../../../examples/nt26/apps/protocol_pack/tcp_uart_frame) |
+| tcp | [tcp.md](network/tcp.md) | [tcp_api](../../../../examples/nt26/network/tcp/tcp_api)、[tcp_tls](../../../../examples/nt26/network/tcp/tcp_tls)、[tcp_cmd](../../../../examples/nt26/network/tcp/tcp_cmd)、[tcp_uart_frame](../../../../examples/nt26/apps/protocol_pack/tcp_uart_frame) |
+| websocket | [websocket.md](network/websocket.md) | [websocket](../../../../examples/nt26/network/websocket/websocket) |
 | http | [http.md](network/http.md) | [http_request](../../../../examples/nt26/network/http/http_request)、[https](../../../../examples/nt26/network/http/https)、[http_file_ublob](../../../../examples/nt26/network/http/http_file_ublob)、[http_file_lfs](../../../../examples/nt26/network/http/http_file_lfs) |
 | mqtt | [mqtt.md](network/mqtt.md) | [mqtt_client](../../../../examples/nt26/network/mqtt/mqtt_client)、[mqtt_cmd](../../../../examples/nt26/network/mqtt/mqtt_cmd) |
 | dns | [dns.md](network/dns.md) | [dns_api](../../../../examples/nt26/network/dns/dns_api) |

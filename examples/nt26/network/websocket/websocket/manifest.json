@@ -1,0 +1,35 @@
+{
+  "id": "websocket",
+  "name": "WebSocket 回声",
+  "version": "1.0.0",
+  "category": "network",
+  "hw": "低",
+  "tags": [
+    "websocket",
+    "tls"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "log",
+      "lp",
+      "rt",
+      "websocket"
+    ],
+    "pins": [],
+    "peripherals": [
+      "SIM"
+    ],
+    "controllers": [],
+    "extras": [],
+    "network": true
+  },
+  "readme": "",
+  "description": "先等驻网，再用 wss 连接 ws.postman-echo.com:443 路径 /raw。证书是 RSA。TLS_AUTH = 0 只加密不校验证书。升级成功后发 hello ws，收到回声后保持长连接，断开后内部重连并重新升级。\n"
+}

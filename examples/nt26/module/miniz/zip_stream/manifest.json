@@ -1,0 +1,38 @@
+{
+  "id": "zip_stream",
+  "name": "ZIP 按偏移流式解压",
+  "version": "1.0.0",
+  "category": "module",
+  "hw": "低",
+  "tags": [
+    "zip",
+    "ublob",
+    "miniz",
+    "stream"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "zip",
+      "ublob",
+      "uart",
+      "sys",
+      "log",
+      "info",
+      "rt"
+    ],
+    "pins": [],
+    "peripherals": [],
+    "controllers": [],
+    "extras": [],
+    "network": false
+  },
+  "readme": "",
+  "description": "ublob.open 得到的 view 充当 Flash。zip.open({ read, size }) 按绝对偏移来要字节，再用 reader 分段解开 data.zip 里的成员，经 uart.sync_write 送出。\n"
+}

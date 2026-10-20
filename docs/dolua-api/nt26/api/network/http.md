@@ -1,6 +1,6 @@
 # http
 
-**文档版本** `1.1.0`
+**文档版本** `1.2.1`
 
 同步 HTTP/HTTPS 客户端。纯函数模块：一次 `request` 从发到收完，没有对象、没有托管线程、没有自动重连。响应体可以进 Lua 字符串，也可以落到 **ublob**、已挂载的 **LittleFS**，或已挂载的 FlashDB。
 
@@ -27,6 +27,7 @@ local http = require("http")
   - [6.5 `http.save.lfs`](#6-5-save-lfs)
   - [6.6 `http.save.kv`](#6-6-save-kv)
   - [6.7 `http.save.ts`](#6-7-save-ts)
+  - [6.8 `http.encode`](#6-8-encode)
 - [7. 请求配置](#7-请求配置)
 - [8. 自定义头](#8-自定义头)
 - [9. HTTPS](#9-https)
@@ -54,6 +55,7 @@ local http = require("http")
 2. `http.request(opts)` 是通用入口。`http.sync` 与它是同一个函数。
 3. `http.get` / `http.post` 只是帮你填 `url`、`method`（post 再填 body），其余仍走 `request`。
 4. 不带 `save`：整份 body 变成 Lua 字符串。带 `save`：body 写入指定存储，`resp.body` 为空串，`body_len` 仍有效。
+5. `http.encode` 只做百分号编码，不联网、不改你正在发的请求。查询值里的方括号要自己编完再拼进 `url`。
 
 这不是 TCP/MQTT 那种托管连接：没有后台任务、不会断线重连、失败不会自己再试。要再发就再调一次。
 
@@ -130,6 +132,28 @@ local http = require("http")
 
 其它整数未导出。`https://` 必须设 `tls_mode`，否则握手按「不校验」以外的路径可能直接失败。demo 明文站点也一律带上 `TLS_INSECURE`。
 
+### 4.3 URL 编码等级
+
+`http.encode` 的第二参。省略时是 `ENCODE_COMPONENT`。
+
+| 符号 | 值 | 原样保留 | 空格 | `[` `]` |
+| --- | --- | --- | --- | --- |
+| `http.ENCODE_COMPONENT` | `0` | `A-Z` `a-z` `0-9` `-` `.` `_` `~` | `%20` | `%5B` `%5D` |
+| `http.ENCODE_FORM` | `1` | 与 `ENCODE_COMPONENT` 相同 | `+` | `%5B` `%5D` |
+| `http.ENCODE_PATH` | `2` | `ENCODE_COMPONENT` 的集合，再加 `/` | `%20` | `%5B` `%5D` |
+| `http.ENCODE_URI` | `3` | `ENCODE_COMPONENT` 的集合，再加 `:` `/` `?` `#` `@` `!` `$` `&` `'` `(` `)` `*` `+` `,` `;` `=` | `%20` | `%5B` `%5D` |
+
+其余字节一律写成 `%` 加大写十六进制。四个等级都会编码方括号。
+
+| 等级 | 用在 |
+| --- | --- |
+| `ENCODE_COMPONENT` | 查询参数的一个值，或路径里的一段 |
+| `ENCODE_FORM` | `application/x-www-form-urlencoded` 的一个值 |
+| `ENCODE_PATH` | 已经带 `/` 的路径，斜杠要留下来当分隔符 |
+| `ENCODE_URI` | 已经拼好的整段地址，方案和 `?` `&` `=` 不要被编掉 |
+
+其它整数没有导出。传进去会抛错，见 [6.8](#6-8-encode)。
+
 错误码 **没有** 挂到模块表。失败时用第二返回值的整数和第三返回值的英文短句，见 [第 12 节](#12-错误与返回约定)。
 
 ---
@@ -145,6 +169,7 @@ local http = require("http")
 | `headers` | table | 见第 8 节 |
 | `save` | string 或 table | 落盘目标，见第 10 节 |
 | `tls_mode` | integer | `1` / `2` / `3` |
+| `level` | integer | `http.encode` 的第二参：`0`～`3`，见 [4.3](#43-url-编码等级) |
 | `tls_sni` / `tls_ignore_time` / `require_content_length` | boolean | **走 `toboolean`：数字 `0` 为真**。请用 `true`/`false` |
 | `resp` | table | 成功响应，见第 11 节 |
 
@@ -154,7 +179,7 @@ local http = require("http")
 
 ## 6. 模块函数
 
-模块表：`request`、`sync`、`get`、`post`，以及嵌套表 `http.save`。
+模块表：`request`、`sync`、`get`、`post`、`encode`，以及嵌套表 `http.save`。
 
 ---
 
@@ -289,6 +314,65 @@ http.save.kv(kv, "fw.bin")
 ```lua
 http.save.ts(ts)
 ```
+
+---
+
+### 6.8 `http.encode(text [, level])` {#6-8-encode}
+
+百分号编码。不联网，也不改 `request` / `get` / `post` 里的 `url`。成功返回一个新字符串。
+
+| 参数 | 类型 | 必填 | 默认 | 说明 |
+| --- | --- | --- | --- | --- |
+| `text` | string | 是 | | 按字节编码，可以含 `0` 字节。空串得到空串 |
+| `level` | integer | 否 | `http.ENCODE_COMPONENT`（`0`） | 只能是 [4.3](#43-url-编码等级) 的四个值。`nil` 用默认 |
+
+**调用模式**
+
+```lua
+http.encode(text)
+```
+
+```lua
+http.encode(text, http.ENCODE_COMPONENT)
+```
+
+```lua
+http.encode(text, http.ENCODE_FORM)
+```
+
+```lua
+http.encode(text, http.ENCODE_PATH)
+```
+
+```lua
+http.encode(text, http.ENCODE_URI)
+```
+
+```lua
+local ver = "NT26-PRO-RTU-D1.3.7[A]"
+local url = "https://5giot.cn/prod-api/openDtuConfig/getConfigParams?ware_version=" .. http.encode(ver)
+```
+
+```lua
+http.encode("a b", http.ENCODE_FORM)
+-- "a+b"
+```
+
+```lua
+http.encode("/a b/c", http.ENCODE_PATH)
+-- "/a%20b/c"
+```
+
+`http.encode("NT26-PRO-RTU-D1.3.7[A]")` 得到 `NT26-PRO-RTU-D1.3.7%5BA%5D`。
+
+失败 **抛错**，没有 `nil, err`：
+
+| 文案 | 可能原因 |
+| --- | --- |
+| `bad argument #1 ...` | `text` 不是字符串 |
+| `invalid encode level, expect ENCODE_COMPONENT/ENCODE_FORM/ENCODE_PATH/ENCODE_URI` | 第二参不是 `0`～`3`，也不是 `nil` |
+| `encode input too large` | 原文长到编码结果无法放进一个字符串 |
+| `encode failed` | 编码缓冲不足 |
 
 ---
 
@@ -562,6 +646,7 @@ HTTP 状态不是 2xx 时，只要收包和写盘成功，仍返回这张表。�
 | 接口 | 成功 | 失败 |
 | --- | --- | --- |
 | `request` / `sync` / `get` / `post` | 响应表 | `nil, err_code, err_msg` |
+| `http.encode` | 编码后的字符串 | **抛错**，见 [6.8](#6-8-encode) |
 | `http.save.ublob` | 描述表 | 缺参抛错 |
 | `http.save.lfs` / `kv` / `ts` | 描述表 | 对象未挂载等：**抛错** |
 
@@ -626,6 +711,7 @@ TLS 配置失败：`err_msg` 为 `"tls configure failed"`，码可能是 `-1`～
 | 需求 | 做法 |
 | --- | --- |
 | 小 JSON / 调试 | `http.get` / `request`，看 `resp.body` |
+| 查询值里有 `[` `]`、空格 | 先 `http.encode`，再拼进 `url` |
 | HTTPS 不验证书 | `tls_mode = http.TLS_INSECURE` |
 | HTTPS 验服务端 | `TLS_SERVER_AUTH` + `ca_cert` |
 | 内部小二进制 | `save` → ublob |
@@ -737,6 +823,8 @@ f:close()
 | `http.get(url, filename, opts)` | 同上，可加 TLS 等 |
 | `http.post(url, body)` | POST |
 | `http.post(url, body, opts)` | POST + 选项（可含 `save`） |
+| `http.encode(text)` | 按 `ENCODE_COMPONENT` 百分号编码 |
+| `http.encode(text, level)` | 按 `ENCODE_COMPONENT` / `ENCODE_FORM` / `ENCODE_PATH` / `ENCODE_URI` 编码 |
 | `http.save.ublob(name)` | ublob 描述表 |
 | `http.save.lfs(fs, path)` | LittleFS 描述表（fs 已挂载） |
 | `http.save.kv(db, key)` | KV 描述表 |
@@ -754,6 +842,10 @@ f:close()
 | `http.TLS_INSECURE` | `1` |
 | `http.TLS_SERVER_AUTH` | `2` |
 | `http.TLS_MUTUAL_AUTH` | `3` |
+| `http.ENCODE_COMPONENT` | `0` |
+| `http.ENCODE_FORM` | `1` |
+| `http.ENCODE_PATH` | `2` |
+| `http.ENCODE_URI` | `3` |
 
 ---
 
@@ -764,3 +856,5 @@ f:close()
 | 1.0.0 | 2026-09-04 | 首版 |
 | 1.0.1 | 2026-09-04 | 修正跨目录文档链接，demo 路径改为 examples/ |
 | 1.1.0 | 2026-09-05 | 协议/落盘错误码补全可能原因，并写未翻译码与 LFS 关闭时的抛错 |
+| 1.2.0 | 2026-10-16 | 新增 `http.encode` 与 `ENCODE_COMPONENT` / `ENCODE_FORM` / `ENCODE_PATH` / `ENCODE_URI`。查询值默认把方括号编成 `%5B` `%5D` |
+| 1.2.1 | 2026-10-16 | 补全 `http.encode` 的参数、四个调用等级和抛错文案 |

@@ -9,3 +9,5 @@
 | — | F6B0 | 全 IO 表尚未收录。脚本 GPIO↔PIN 见 [gpio.md 1.3](../api/peripherals/gpio.md#13-nt26-f6b0-映射表) |
 
 当前固件**不支持**用户改 GPIO↔PIN 绑定。做板以本目录表格为准。
+
+LCD 的 3 线 / 4 线 / 2 data lane / QSPI 见 [lspi.md](lspi.md)。
