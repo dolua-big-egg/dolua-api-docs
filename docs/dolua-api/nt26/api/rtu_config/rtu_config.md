@@ -1,6 +1,6 @@
 # rtu_config
 
-**文档版本** `1.1.6`
+**文档版本** `1.1.9`
 
 这不是 `require("…")` 模块。它是模组开机时解析的 **声明式配置文件** `rtu_config.cfg`：只改文件里写到的段和 key，没写到的字段保持机内当前值。Lua 的 [`rtu`](../module/rtu.md)、[`uart`](../peripherals/uart.md)、[`sms`](../module/sms.md)、[`lbs`](../network/lbs.md) 等运行时模块 **读的是这份文件落盘后的业务配置**，不是另起一套通道。
 
@@ -289,7 +289,7 @@ HTTP 是另一套：`[http.1]`～`[http.5]`，**不要**和上面的 N 当成一
 
 SSL 组是第三套：`[ssl.1]`～`[ssl.3]`，被 MQTT / HTTP 的 `ssl_id` 引用。
 
-UART：`[uart.1]`～`[uart.3]` 对应硬件 UART1～3。`[uart.0]` **禁止**，套用失败。
+UART：`[uart.0]`～`[uart.3]` 对应硬件 UART0～3。
 
 IO：`[io.N]` 的 N 是 GPIO 编号 **1～39**，对应内部脚 0～38。`[io.1]` = GPIO0。写文档和 AT 时按 1-based 脚号。
 
@@ -305,7 +305,7 @@ IO：`[io.N]` 的 N 是 GPIO 编号 **1～39**，对应内部脚 0～38。`[io.1
 | `mqtt` | `[mqtt.N]`、`[mqtt.N.subscribe.M]`、`[mqtt.N.publish.M]` | MQTT 通道与主题槽 |
 | `http` | `[http.N]` N=1..5 | HTTP 通道 |
 | `ssl` | `[ssl.N]` N=1..3 | 证书组 |
-| `uart` | `[uart]`、`[uart.N]` N=1..3 | 系统使能 + 线参数/分包 |
+| `uart` | `[uart]`、`[uart.N]` N=0..3 | 系统使能 + 线参数/分包/发送缓存 |
 | `lua` | `[lua]` | `print` / `log` 模块串口 |
 | `log` | `[log]` | 系统日志输出口与加密 |
 | `task` | `[task]`、`[task.N]`、`[task.N.heart]`、`[task.N.reg]` | 透传任务、心跳、注册包 |
@@ -486,16 +486,17 @@ N = 1..3。证书组，供 MQTT / HTTP 的 `ssl_id` 引用。
 两套完全不同的存储，靠段名区分：
 
 - `[uart]`（段名等于模块名、无 `.N`）：系统使能。
-- `[uart.N]`：N 必须是 1、2、3，对应 UART1～3。`[uart.0]` 被拒绝。
+- `[uart.N]`：N 是 0、1、2、3，对应 UART0～3。
 
 ### 14.1 `[uart]`
 
 | key | 类型 | 独立作用 |
 | --- | --- | --- |
+| `uart0_enable` | 布尔 | 关则 UART0 不初始化 |
 | `uart2_enable` | 布尔 | 关则 UART2 不初始化，脚可给 SPI 等 |
 | `uart3_enable` | 布尔 | 关则 UART3 不初始化 |
 
-没有 `uart1_enable`。UART1 恒开。开机时本文件在 UART2/3 初始化 **之前** 解析，故这两位 **本次开机生效**。
+没有 `uart1_enable`。UART1 恒开。开机时本文件在 UART0/2/3 初始化 **之前** 解析，故这三位 **本次开机生效**。
 
 ### 14.2 `[uart.N]`
 
@@ -510,8 +511,9 @@ N = 1..3。证书组，供 MQTT / HTTP 的 `ssl_id` 引用。
 | `max_packet_size` | 整数 | 0～12288 | 单包上限；`0` 表示不按这套分包（产品常用 1～12288） |
 | `max_wait_ms` | 整数 | 0～60000 | 空闲断包 ms |
 | `max_packets` | 整数 | 0～64 | 待处理包深度 |
+| `tx_buf_size` | 整数 | 4096～65536 | 该路发送缓存字节数。小于 4096 收到 4096，大于 65536 收到 65536。不写则用出厂值：UART0 2048，UART1 12288，UART2/3 4096。UART1 下次开机按新值申请，UART0/2/3 本次开机生效 |
 
-联合：`uart.config` 只改 RAM 线参数，改不了 `pin_map` 与分包三参数。`[lua] print_route` 指 UART 时该口必须已使能；指 `usb_at` 则走 USB AT 口。`[log] output` 指向的系统日志口必须已使能，否则系统日志看不到。
+联合：`uart.config` 只改 RAM 线参数，改不了 `pin_map`、分包三参数和 `tx_buf_size`。`[lua] print_route` 指 UART 时该口必须已使能；指 `usb_at` 则走 USB AT 口。`[log] output` 指向的系统日志口必须已使能，否则系统日志看不到。
 
 Lua `uart` 模块文档：[uart.md](../peripherals/uart.md)。
 
@@ -526,16 +528,17 @@ Lua `uart` 模块文档：[uart.md](../peripherals/uart.md)。
 | `print_route` | 字符串 | 见下表 | Lua `print()` 打到哪路 |
 | `log_route` | 字符串 | 同上 | Lua `log` 模块打到哪路。**不是** `[log] output` |
 
-官方名是 `uart1` / `uart2` / `uart3` / `usb_at`（大小写不敏感）。旧整数写法只在本文件兼容：
+官方名是 `uart0` / `uart1` / `uart2` / `uart3` / `usb_at`（大小写不敏感）。旧整数写法只在本文件兼容：
 
 | 配置值 | 等价官方名 | 出口 |
 | --- | --- | --- |
+| `uart0` 或 `0` | `uart0` | UART0。该口须已使能，否则字节送不出去 |
 | `uart1` 或 `1` | `uart1` | UART1 |
 | `uart2` 或 `2` | `uart2` | UART2 |
 | `uart3` 或 `3` | `uart3` | UART3 |
 | `usb_at` | `usb_at` | USB AT 口（与 AT 应答同一条 VCOM） |
 
-`print_route=1` **就是** `print_route=uart1`。`2` / `3` 同理。没有 `4` 当 `usb_at` 的别名。两 key 互相独立。脚本启动时会把这两项应用到运行时。`sys.option("print_route", "usb_at")` 可热改，不回写本文件；**脚本侧不认整数**，必须写字符串名。读回永远是小写官方名。
+`print_route=0` **就是** `print_route=uart0`。`1` / `2` / `3` 同理。没有 `4` 或 `5` 当别名。这里的 `0` 不是 `[log] output=0`（那个是关掉系统日志）。两 key 互相独立。脚本启动时会把这两项应用到运行时。`sys.option("print_route", "uart0")` 可热改，不回写本文件；**脚本侧不认整数**，必须写字符串名。读回永远是小写官方名。默认仍是 `uart1`。
 
 ---
 
@@ -906,7 +909,7 @@ slot2_disable=1
 | `-4` | 解析 | 文件 > 32 KB；缺 `=`；段外 key；段名非法；索引为 0；单段 > 64 key；整数越界；字符串超长；`hex:` 奇数位/非法字符 |
 | `-5` | 无内存 | 堆不够读文件 |
 | `-6` | 未知 | 段模块名不在第 8 节表中（含 `[script]`） |
-| `-7` | 不支持 | 未知 key；`[uart.0]`；错误的 group；索引超出该模块上限 |
+| `-7` | 不支持 | 未知 key；错误的 group；索引超出该模块上限 |
 
 语法错误（`-4` 且发生在切行阶段）**停整文件**。某段套用失败（未知模块、未知 key、越界）记下首个错误并 **继续下一段**。
 
@@ -915,7 +918,7 @@ slot2_disable=1
 | 现象 | 可能原因 |
 | --- | --- |
 | `unsupported key …` | key 拼错、大小写错、在错误的段 |
-| `[uart.0] ignored` | 写了 UART0 |
+| `[uart.4]` 失败 | UART 只有 0～3 |
 | `maping` 失败且值是 `true` | 只认 `0`/`1` |
 | `ssl` `mode=0` | 解析过了，写入模式校验失败 |
 | `lbs` `reset=0` | reset 必须是 `1` |
@@ -1090,3 +1093,5 @@ log_route=uart1
 | 1.1.5 | 2026-10-08 | 热改来源补 `AT+RTUCONFIG`：`write` / `read` 只动本地文件；`delete` 从固件 `1.3.5` 起，不改运行时 |
 | 1.1.6 | 2026-10-08 | 占位符细则改到 [专栏 · 通配符](../../at/topics/maping.md)；`<#IOk>` 标明是 GPIO 编号 |
 | 1.1.7 | 2026-10-15 | `[sim] slot2_disable`：禁用外部卡槽 2，调度器不再切过去 |
+| 1.1.8 | 2026-10-21 | `[uart.N]` 开放 N=0；新增每路 `tx_buf_size`（4096～65536，超出收到边界）。单包出厂默认改为 UART0 2048、UART1 8192、UART2/3 4096 |
+| 1.1.9 | 2026-10-21 | `[lua] print_route` / `log_route` 增加 `uart0`；配置文件里 `0` 等价 `uart0`。`[log] output` 仍是 0～4，`0` 仍是关闭 |

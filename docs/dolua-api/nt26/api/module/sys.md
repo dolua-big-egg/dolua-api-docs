@@ -1,6 +1,6 @@
 # sys
 
-**文档版本** `2.1.0`
+**文档版本** `2.2.0`
 
 系统级工具模块：版本与复位原因、print/log 输出路由、授时、看门狗、复位/关机、蜂窝累计流量，以及 **不让出 Lua 协程** 的三类延时。日常等待请优先用 `rt.delay`。
 
@@ -182,7 +182,7 @@ sys.delay_us(10 * 1000 * 1000)   -- 空转十秒
 | `ms` | integer | 毫秒；`< 0` 在 `delay_ms` 里当 `0`；`delay_until` 里 `<= 0` 立即返回 |
 | `us` | integer | 微秒；`< 0` 当 `0` |
 | `option_key` | string | 仅 `"print_route"` / `"log_route"` |
-| `route_name` | string | `"uart1"` / `"uart2"` / `"uart3"` / `"usb_at"` |
+| `route_name` | string | `"uart0"` / `"uart1"` / `"uart2"` / `"uart3"` / `"usb_at"` |
 | `ts` | integer | UTC Unix 秒，必须 `> 0` |
 | `ts_ms` | integer | UTC Unix 毫秒，必须 `> 0` |
 | `rst` | integer | `RST_*` |
@@ -316,16 +316,16 @@ sys.option(key, value)
 | 参数 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
 | `key` | string | 是 | `"print_route"` 或 `"log_route"` |
-| `value` | string | 写时必填 | `"uart1"` / `"uart2"` / `"uart3"` / `"usb_at"` |
+| `value` | string | 写时必填 | `"uart0"` / `"uart1"` / `"uart2"` / `"uart3"` / `"usb_at"` |
 
 参数个数不是 1 或 2 时抛 `sys.option: usage sys.option(key) or sys.option(key, value)`。  
 写时第二参缺省或无法转成字符串走 Lua 标准 `bad argument #2`。  
-`value` 不是上表四名之一抛 `print_route must be "uart1", "uart2", "uart3" or "usb_at"`（或 `log_route` 同句）。  
+`value` 不是上表五名之一抛 `print_route must be "uart0", "uart1", "uart2", "uart3" or "usb_at"`（或 `log_route` 同句）。  
 未知 `key` 抛 `unsupported key`。
 
 名字大小写不敏感：`"USB_AT"` 与 `"usb_at"` 等价。读回永远是小写官方名。
 
-`sys.option` **不接受** 整数 `1` / `2` / `3`。配置文件里的旧写法另当别论：`rtu_config.cfg` 的 `[lua] print_route=1` 等价 `uart1`（`2`/`3` 同理），开机套用后再用本接口读，得到的是 `"uart1"` 这种字符串。完整对照见 [`rtu_config` 第 15 节](../rtu_config/rtu_config.md#15-lua)。
+`sys.option` **不接受** 整数 `0` / `1` / `2` / `3`。配置文件里的旧写法另当别论：`rtu_config.cfg` 的 `[lua] print_route=0` 等价 `uart0`（`1`/`2`/`3` 同理），开机套用后再用本接口读，得到的是 `"uart0"` 这种字符串。完整对照见 [`rtu_config` 第 15 节](../rtu_config/rtu_config.md#15-lua)。
 
 **返回**
 
@@ -569,8 +569,8 @@ function cb(ts)
 | --- | --- |
 | `sys.option: usage sys.option(key) or sys.option(key, value)` | 参数个数不是 1 或 2 |
 | `sys.option: unsupported key` | 键不是 `"print_route"` / `"log_route"` |
-| `sys.option: print_route must be "uart1", "uart2", "uart3" or "usb_at"` | 写 `print_route` 时名字不是这四个 |
-| `sys.option: log_route must be "uart1", "uart2", "uart3" or "usb_at"` | 写 `log_route` 时名字不是这四个 |
+| `sys.option: print_route must be "uart0", "uart1", "uart2", "uart3" or "usb_at"` | 写 `print_route` 时名字不是这五个 |
+| `sys.option: log_route must be "uart0", "uart1", "uart2", "uart3" or "usb_at"` | 写 `log_route` 时名字不是这五个 |
 | `sys.option: print_route invalid` / `log_route invalid` | 当前路由内部值损坏（读回对不上官方名） |
 | `nitz_reg not allowed in quick callback` | 在快捷回调上下文里登记 NITZ |
 | `main vm not found` | 当前没有主脚本虚拟机 |
@@ -588,7 +588,7 @@ function cb(ts)
 | NITZ 回调 | 每 VM 一条，重复 `nitz_reg` 覆盖 |
 | `delay_us` 上限 | **无软件截断**，长了会复位，靠调用方自制 |
 | `reset` / `poweroff` 前等待 | 约 1000 ms |
-| 路由 | `"uart1"` / `"uart2"` / `"uart3"` / `"usb_at"` |
+| 路由 | `"uart0"` / `"uart1"` / `"uart2"` / `"uart3"` / `"usb_at"` |
 
 无对象、无 `__gc`。NITZ 回调挂在当前虚拟机上。
 
@@ -666,7 +666,7 @@ end
 | `sys.delay_us(us)` | 1 个整数；只许很短 | 无 |
 | `sys.wdt_kick()` | 无 | 无 |
 | `sys.option(key)` | 读 | string |
-| `sys.option(key, value)` | 写 `"uart1"` / `"uart2"` / `"uart3"` / `"usb_at"` | string / 抛错 |
+| `sys.option(key, value)` | 写 `"uart0"` / `"uart1"` / `"uart2"` / `"uart3"` / `"usb_at"` | string / 抛错 |
 | `sys.version()` | 无 | table |
 | `sys.reset_reason()` | 无 | table |
 | `sys.reset()` | 无 | 通常不返回 |
@@ -709,3 +709,4 @@ end
 | 2.0.1 | 2026-09-09 | 写明配置文件 `print_route=1` 等价 `uart1`；`sys.option` 仍只认字符串名 |
 | 2.0.2 | 2026-09-09 | `sys.wdt_kick` 写明同时喂 Always-On（约 20 秒超时，对应 `RST_AONWDT`），与 Flash 长占用路径同一套 |
 | 2.1.0 | 2026-10-01 | 新增 `sys.data_bytes()`：读蜂窝累计发送/接收字节；失败返回 `nil`；不把字节数写入本地存储 |
+| 2.2.0 | 2026-10-21 | `print_route` / `log_route` 增加 `"uart0"`。配置文件 `0` 等价 `uart0`；`sys.option` 仍只认字符串名 |

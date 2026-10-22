@@ -1,8 +1,8 @@
 # uart
 
-**文档版本** `1.4.0`
+**文档版本** `1.7.0`
 
-纯函数串口模块。对外业务口是 UART1～UART3：热改线参数、写数据、登记收包回调、或阻塞等一整包。没有对象、没有 `open`。UART0 留给内部调试，**不对外使用**。
+纯函数串口模块。业务口是 UART0～UART3：热改线参数、写数据、登记收包回调、或阻塞等一整包。没有对象、没有 `open`。
 
 ```lua
 local uart = require("uart")
@@ -10,7 +10,7 @@ local uart = require("uart")
 
 平台预加载模块，无需额外 `.lua` 文件。
 
-回调和 `block` 拿到的都是已经按空闲超时 / 单包上限切好的 **一包**，不是每个字节一次。分包三参数不在本模块里改，写在 `rtu_config.cfg` 的 `[uart.N]`，开机生效。
+回调和 `block` 拿到的都是已经按空闲超时 / 单包上限切好的 **一包**，不是每个字节一次。分包三参数和发送缓存 `tx_buf_size` 不在本模块里改，写在 `rtu_config.cfg` 的 `[uart.N]`。
 
 ---
 
@@ -32,6 +32,10 @@ local uart = require("uart")
   - [6.8 `uart.block`](#6-8-block)
 - [7. 收包回调协议](#7-收包回调协议)
 - [8. 分包与配置落盘](#8-分包与配置落盘)
+  - [8.1 配置项](#81-配置项)
+  - [8.2 出厂默认](#82-出厂默认)
+  - [8.3 常驻内存](#83-常驻内存)
+  - [8.4 切出来的包](#84-切出来的包)
 - [9. 错误与返回约定](#9-错误与返回约定)
 - [10. 资源上限与生命周期](#10-资源上限与生命周期)
 - [11. 选型对照](#11-选型对照)
@@ -42,13 +46,13 @@ local uart = require("uart")
 
 ## 1. 模块定位
 
-对外三路业务串口（UART1～UART3），用整数 id 或模块常量点名：
+四路业务串口（UART0～UART3），用整数 id 或模块常量点名：
 
 ```lua
 local U = uart.UART1   -- 1
 ```
 
-UART0 不给脚本当业务口：脚不对外、`rtu_config.cfg` 里的 `[uart.0]` 会被忽略，收到的数据也不会进 `reg` / `block`。模块表虽导出 `uart.UART0`，请不要用。
+UART0 可以当业务口。`rtu_config.cfg` 的 `[uart.0]` 会套用到这一路，收到的数据走和 UART1～3 相同的 `reg` / `block`。出厂单包上限 2048 字节，发送缓存 2048 字节。
 
 典型用法：
 
@@ -60,9 +64,9 @@ UART0 不给脚本当业务口：脚不对外、`rtu_config.cfg` 里的 `[uart.0
    - `uart.write` / `uart.async_write`：交给发送队列后立刻返回。二者是同一个函数。
    - `uart.sync_write`：等到这一段字节离开发送器再返回。期间不让出协程，整台调度都停着。
 
-引脚组 `pin_map`、分包 `max_packet_size` / `max_wait_ms` / `max_packets` **不能** 用本模块改。改 `rtu_config.cfg` 后重新加载配置。
+引脚组 `pin_map`、分包 `max_packet_size` / `max_wait_ms` / `max_packets`、发送缓存 `tx_buf_size` **不能** 用本模块改。写在 `rtu_config.cfg`，见第 8 节。
 
-`print` / `log` 默认也走某路出口（常见 `uart1`，还可以是 `uart2` / `uart3` / `usb_at`，不能是 UART0）。业务口若和日志同口，输出会搅在一起。用 `sys.option("print_route")` / `"log_route"` 把日志挪开。外挂 SPI 时 UART2 默认脚常冲突，见 [`sfud`](../module/sfud.md)。
+`print` / `log` 默认走 `uart1`，也可以改成 `uart0` / `uart2` / `uart3` / `usb_at`。业务口若和日志同口，输出会搅在一起。用 `sys.option("print_route")` / `"log_route"` 把日志挪开。外挂 SPI 时 UART2 默认脚常冲突，见 [`sfud`](../module/sfud.md)。
 
 做 RS485 / 透传时，demo 会 `rtu.option("pass_up", false)` 和 `"pass_down", false`，避免这路被当成 AT 通道吃掉报文。
 
@@ -116,7 +120,7 @@ Lua 回调 **不在** 硬件中断、也不在驱动线程里跑。
 
 **`uart.block` 和 `rt.delay` 同类**：只挂起当前任务协程。必须在任务协程里调用（`main.lua` 顶层可以）。不要在 `reg` 回调里调用。
 
-同一口同一时刻只能有一个 `block`。UART1、UART2、UART3 可以各有一个同时在等。同一口再来一次会立刻 `false, "busy"`。
+同一口同一时刻只能有一个 `block`。UART0～UART3 可以各有一个同时在等。同一口再来一次会立刻 `false, "busy"`。
 
 已经 `reg` 的口照样可以 `block`。等待期间该口到来的包 **只给这次 block，不进 `reg`**；等到或超时返回后，后续包再进回调。没有人在 `block` 时，包才进回调。
 
@@ -128,12 +132,12 @@ Lua 回调 **不在** 硬件中断、也不在驱动线程里跑。
 
 | 符号 | 值 | 含义 | 用在哪 |
 | --- | --- | --- | --- |
-| `uart.UART0` | `0` | 第 0 路，内部调试口 | **不对外**。传入不会抛 `invalid uart id`，但收包进不了 Lua，配置文件也配不了 |
+| `uart.UART0` | `0` | 第 0 路 | 业务 `id`。`[uart.0]` 可配；出厂单包 2048，发送缓存 2048 |
 | `uart.UART1` | `1` | 第 1 路 | 业务 `id`；demo 常用 |
 | `uart.UART2` | `2` | 第 2 路 | 同上；常和 SPI0 抢脚 |
 | `uart.UART3` | `3` | 第 3 路 | 同上 |
 
-业务请用 `1`～`3`。`id` 是整数但不在 `0`～`3` 时 **抛** `"invalid uart id"`（`unreg` 除外，越界只返回 `false`）。`0` 不抛，也不当可用口。
+业务口是 `0`～`3`。`id` 是整数但不在 `0`～`3` 时 **抛** `"invalid uart id"`（`unreg` 除外，越界只返回 `false`）。
 
 配置表里的数字含义（未挂到模块表，按下表写）：
 
@@ -411,35 +415,105 @@ Lua **两种情况都会收到这包**。若这路还开着 AT 透传，脚本�
 
 收包路径（`reg` 与 `block` 同一套）：
 
-1. 字节进接收缓存。
-2. 攒满 `max_packet_size` **或** 最后一个字节后再空闲 `max_wait_ms` 没有新数据 → 结算成一包。
-3. 待处理包超过 `max_packets`：新包丢掉。
+1. 硬件一次最多收 2048 字节，放进该路的单次接收缓存，再并进拼包缓存。
+2. 拼包缓存攒满 `max_packet_size`，或最后一个字节后再空闲 `max_wait_ms` 没有新数据，结算成一包。交给脚本的这一包长度不超过 `max_packet_size`。
+3. 待处理包已经有 `max_packets` 个时，新包丢掉。
 
-这三项只在 `rtu_config.cfg` 的 `[uart.1]` / `[uart.2]` / `[uart.3]` 里配。写 `[uart.0]` 会被忽略。例如：
+`uart.config` 只改正在跑的线参数（波特率、数据位、停止位、校验、流控），改不了脚、分包和发送缓存。完整字段说明见 [`rtu_config` 第 14 节](../rtu_config/rtu_config.md#14-uart--uartn)。
+
+### 8.1 配置项 {#81-配置项}
+
+`[uart]` 管哪几路开机初始化。UART1 恒开，没有 `uart1_enable`。
+
+| key | 作用 |
+| --- | --- |
+| `uart0_enable` | `0` 关 UART0，`1` 开。关着时这路不申请下面的缓存，`reg` / `write` 也送不出数据 |
+| `uart2_enable` | 关则 UART2 不初始化，脚可让给 SPI |
+| `uart3_enable` | 关则 UART3 不初始化 |
+
+`[uart.0]`～`[uart.3]` 与 UART0～UART3 一一对应，每路各写各的。没写到的 key 保持机内已经保存的值。
+
+| key | 范围 | 作用 |
+| --- | --- | --- |
+| `baudrate` | 1200～3000000 | 波特率 |
+| `data_bits` | 7 或 8 | 数据位 |
+| `stop_bits` | 1 或 2 | 停止位 |
+| `parity` | 0 无，1 奇，2 偶 | 校验 |
+| `flow_control` | 0 无，1 RTS/CTS | 流控 |
+| `pin_map` | 0～255 | 引脚组。NT26-PRO 见 [硬件表 4.1](../../hardware/pro.md#41-uart)。UART2 出厂是 `2`（与 SPI0 重叠），外挂 Flash 写 `1` 或 `0` |
+| `max_packet_size` | 1～12288 | 单包上限。`0` 表示关掉这套分包，此时 `reg` / `block` 收不到包 |
+| `max_wait_ms` | 1～60000 | 空闲多少毫秒切一包。与 `max_packet_size`、`max_packets` 同为 0 才表示关闭分包 |
+| `max_packets` | 1～64 | 待处理包个数。满了丢新包 |
+| `tx_buf_size` | 写入时 4096～65536 | 该路发送缓存字节数。小于 4096 收到 4096，大于 65536 收到 65536 |
+
+`max_packet_size × max_packets` 必须小于 61440（60×1024）。超过则这路分包配置无效。
 
 ```ini
+[uart]
+uart0_enable=1
+uart2_enable=1
+uart3_enable=1
+
+[uart.0]
+tx_buf_size=4096
+max_packet_size=2048
+max_wait_ms=200
+max_packets=2
+
 [uart.1]
 baudrate=115200
 data_bits=8
 stop_bits=1
 parity=0
-max_packet_size=256
-max_wait_ms=50
-max_packets=4
+max_packet_size=8192
+max_wait_ms=200
+max_packets=2
+tx_buf_size=12288
 ```
 
-产品侧大致范围（改配置时不要超）：
+`[uart]` 的使能位在 UART0/2/3 初始化之前套用，**本次开机生效**。`[uart.1]` 的线参数、分包和 `tx_buf_size` 要 **下次开机** 才按新值申请：UART1 开机比这份文件更早完成初始化。`[uart.0]`、`[uart.2]`、`[uart.3]` 在套用之后才初始化，**本次开机** 按文件里的新值申请。
 
-| 项 | 范围 | 说明 |
+机内已经存过的 `max_packet_size` 不会因为出厂默认改小而自动变掉。要换成新默认，在对应 `[uart.N]` 里把 key 写上，或对该路做恢复出厂。
+
+### 8.2 出厂默认 {#82-出厂默认}
+
+下面是该路 **没有保存过配置**、配置文件也没写这个 key 时用的值。四路的空闲断包都是 200 ms，待处理包数都是 2。单包上限和发送缓存按路分开。
+
+| 口 | `max_packet_size` | `max_wait_ms` | `max_packets` | `tx_buf_size` |
+| --- | --- | --- | --- | --- |
+| UART0 | 2048 | 200 | 2 | 2048 |
+| UART1 | 8192 | 200 | 2 | 12288 |
+| UART2 | 4096 | 200 | 2 | 4096 |
+| UART3 | 4096 | 200 | 2 | 4096 |
+
+UART0 的发送缓存出厂是 2048。这个数低于 `tx_buf_size` 的写入下限。不写这个 key 时保持 2048；在 `[uart.0]` 里写了 `tx_buf_size=2048`（或任何小于 4096 的数）会被收到 4096。
+
+### 8.3 常驻内存 {#83-常驻内存}
+
+每一路在初始化时申请三块，一直留到关机。大小跟上面的配置走，运行中改文件不会把已经申请的块放大或缩小。
+
+| 块 | 大小 | 做什么 |
 | --- | --- | --- |
-| `max_packet_size` | 1～12288 | 单包上限，默认常见 2048 |
-| `max_wait_ms` | 1～60000 | 空闲断包，默认常见 100 |
-| `max_packets` | 1～64 | 邮箱深度，默认常见 8 |
-| 单包 × 包数 | 须小于约 60KB | 超了配置不会按预期生效 |
+| 发送缓存 | `tx_buf_size` | 整块先开好。`write` / `async_write` / `print` / `log` 的字节都排在这里。放不下时这一帧丢掉；`write` 仍可能返回 `true`，只表示已经交给这路发送 |
+| 拼包缓存 | `max_packet_size` + 16 | 把多次收到的字节拼成一包。多出来的 16 字节是余量，交给脚本的一包仍不超过 `max_packet_size` |
+| 单次接收缓存 | `min(max_packet_size, 2048)` | 硬件一次往这里收，最多 2048 字节，再并进拼包缓存 |
 
-`pin_map` 也在同一段。NT26-PRO 各组脚、PDDR、出厂默认见 [硬件表 4.1](../../hardware/pro.md#41-uart)。UART2 出厂是组 `2`（AUX PIN 29/28），和 SPI0 重叠；外挂 Flash 写 `pin_map=1` 或 `0`。`uart.config` 改不了组号；`get_config` 能读到当前组。
+按出厂默认、且配置文件没改过这些 key 时，每路常驻大约是：
 
-开机波特率等以配置文件为准。`uart.config` 只改 RAM 里正在跑的线参数。
+| 口 | 发送 | 拼包 | 单次接收 | 合计 |
+| --- | --- | --- | --- | --- |
+| UART0 | 2048 | 2064 | 2048 | 6160 |
+| UART1 | 12288 | 8208 | 2048 | 22544 |
+| UART2 | 4096 | 4112 | 2048 | 10256 |
+| UART3 | 4096 | 4112 | 2048 | 10256 |
+
+四路都按出厂值开着时，常驻合计约 49KB。某路 `uartN_enable=0` 时，那一路这三块都不申请。
+
+### 8.4 切出来的包 {#84-切出来的包}
+
+拼好的包不占上面的常驻块。每包按实际长度另申请一块，放进最多 `max_packets` 个待处理位置，`reg` 回调或 `block` 用完就释放。队列满时新包丢掉，拼包缓存里已经结算走的字节不会再交给脚本。
+
+`max_packets` 出厂是 2：每路同时最多压两包。要多留几包，在 `[uart.N]` 里加大，并保证 `max_packet_size × max_packets` < 61440。
 
 ---
 
@@ -461,7 +535,7 @@ max_packets=4
 
 | 摘要 | 可能原因 |
 | --- | --- |
-| `invalid uart id` | `id` 是整数但不在 0～3。`unreg` 越界只返回 `false` 不抛。`0` 不抛，但不对外收包 |
+| `invalid uart id` | `id` 是整数但不在 0～3。`unreg` 越界只返回 `false` 不抛 |
 | `cfg table required` | `config` 第二参不是表 |
 | `uart reg init fail` | `reg` 时系统互斥量创建失败 |
 | `rt vm context missing` | `reg` 时没有 `rt` 调度上下文（不在脚本 VM 里调） |
@@ -496,14 +570,14 @@ max_packets=4
 
 | 资源 | 上限 | 说明 |
 | --- | --- | --- |
-| 对外业务口 | **3**（UART1～UART3） | UART0 保留，收包不进 Lua |
+| 业务口 | **4**（UART0～UART3） | 每路独立分包和发送缓存 |
 | `reg` 槽 | **16** | 整机；按「虚拟机 + 口」各一条。满则抛 `uart reg full` |
-| 同时 `block` | 每口 **1** 个 | UART1～UART3 可同时各等一包；同一口第二个 `busy` |
-| 单包 / 邮箱 | 见第 8 节 | 配置文件 |
+| 同时 `block` | 每口 **1** 个 | UART0～UART3 可同时各等一包；同一口第二个 `busy` |
+| 单包 / 邮箱 / 三块常驻缓存 | 见第 8 节 | 每路独立；出厂合计见 8.3 |
 
 没有 userdata。回调挂在当前 VM 上，VM 退出会清。脚本应在不用时 `unreg`。
 
-`write` / `async_write` 走发送队列，调用返回不代表线上已经发完。高速连发可能在底层排队或丢，取决于驱动队列深度（脚本侧没有单独的“发完”回调）。
+`write` / `async_write` 把字节交给该路发送缓存后返回，不表示线上已经发完。缓存放不下时这一帧丢掉，返回值仍可能是 `true`。脚本侧没有单独的发完回调。缓存大小是 `[uart.N]` 的 `tx_buf_size`，见第 8.3 节。
 
 `sync_write` 不走这条队列。返回 `true` 时这一段已经离开发送器。调用期间整台调度停住，没有单独的发完回调。
 
@@ -519,9 +593,9 @@ max_packets=4
 | 入队后立刻返回 | `write` 或 `async_write`（同一个函数） |
 | `reg` 期间再 `block` | 可以。`block` 截走那一口的下一包，返回后回调继续收 |
 | 改波特率（本次运行） | `uart.config` |
-| 改脚、改分包 | `rtu_config.cfg`，不是本模块 |
-| 日志出口 | `sys.option("print_route")` / `"log_route"`，`"uart1"` / `"uart2"` / `"uart3"` / `"usb_at"`，不能是 UART0 |
-| 想用 UART0 | 不要。内部口，脚本当业务口收不到包 |
+| 改脚、分包、发送缓存 | `rtu_config.cfg` 的 `[uart]` / `[uart.N]`，见第 8 节 |
+| 日志出口 | `sys.option("print_route")` / `"log_route"`，`"uart0"` / `"uart1"` / `"uart2"` / `"uart3"` / `"usb_at"` |
+| 想用 UART0 | `uart.UART0`。`uart0_enable` 须为开；`print` / `log` 用 `"uart0"` |
 | 外挂 Flash 占 UART2 脚 | 换 `pin_map` 或换口 |
 
 不要在回调里自己按字节拼包：底层已经按空闲超时切过了。`max_wait_ms` 太短会把一帧拆成多包。
@@ -595,3 +669,6 @@ end
 | 1.2.1 | 2026-09-16 | 标明内置 gps 不占 `uart.reg` 槽，可与脚本回调并存 |
 | 1.3.0 | 2026-10-14 | `block` 改为按口占用：不同口可以同时等，同一口第二个返回 `busy` |
 | 1.4.0 | 2026-10-15 | 增加 `async_write`（与 `write` 相同）和 `sync_write`（等到字节离开发送器再返回，期间不让出协程） |
+| 1.5.0 | 2026-10-21 | `[uart.0]` 可配；补充每路 `tx_buf_size`，以及单包/发送缓存的出厂默认 |
+| 1.6.0 | 2026-10-21 | `print` / `log` 可以打到 UART0（`"uart0"`） |
+| 1.7.0 | 2026-10-21 | 写明每路常驻的发送缓存、拼包缓存、单次接收缓存，以及 `[uart]` / `[uart.N]` 的 key、出厂默认和生效时机。`max_packets` 出厂为 2，`max_wait_ms` 出厂为 200 |

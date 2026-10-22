@@ -1,12 +1,12 @@
 #  路由串
 
-**文档版本** `1.0.3`
+**文档版本** `1.0.4`
 
 这不是一条 `AT+…` 指令。它是若干 AT 参数共用的**字符串语法**，用来写「这一包数据要送到哪些出口」。Lua `rtu.write`、配置文件里的同类字段，和本篇是**同一套写法、同一套编号**。
 
 串口上行、四路通道下行怎么配对，见 [专栏 · 路由](../topics/route.md)。行格式、失败风格见 [convention.md](convention.md)。各指令怎么把路由串嵌进参数（要不要引号、非法时回短 reason 还是 `+CME ERROR: 109`）以该篇为准。
 
-`[lua] print_route` / `[lua] log_route` **不是**本篇语法，那些是 `uart1` / `uart2` / `uart3` / `usb_at`。[`[log] output`](../../api/rtu_config/rtu_config.md#16-log) 仍是整数 `0`～`4`。
+`[lua] print_route` / `[lua] log_route` **不是**本篇语法，那些是 `uart0` / `uart1` / `uart2` / `uart3` / `usb_at`。[`[log] output`](../../api/rtu_config/rtu_config.md#16-log) 仍是整数 `0`～`4`。
 
 ---
 
@@ -316,3 +316,4 @@ OK
 | 1.0.1 | 2026-09-09 | 标明 `[lua] print_route` / `log_route` 用 `uart1`/`uart2`/`uart3`/`usb_at`，与本篇路由串无关 |
 | 1.0.2 | 2026-09-19 | 相对链接随目录迁到 `at/manual/` |
 | 1.0.3 | 2026-09-19 | 文首链到 [专栏 · 路由](../topics/route.md) |
+| 1.0.4 | 2026-10-21 | `[lua] print_route` / `log_route` 补上 `uart0`。`[log] output` 仍是 0～4 |
