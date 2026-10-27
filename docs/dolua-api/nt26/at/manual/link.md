@@ -1,10 +1,10 @@
 #  链路（APN / 低功耗 / 切卡 / 原厂通道 / USB 网卡）
 
-**文档版本** `1.0.0`
+**文档版本** `1.1.0`
 
-配默认上网 APN、低功耗模式、双卡槽、经 UART 转发一行原厂 AT，以及 USB 4G 网卡。行格式、两种失败风格见 [convention.md](convention.md)。驻网状态见 [netstat.md](netstat.md)。
+配默认上网 APN、低功耗模式、唤醒脚、深睡定时器、双卡槽、经 UART 转发一行原厂 AT，以及 USB 4G 网卡。行格式、两种失败风格见 [convention.md](convention.md)。驻网状态见 [netstat.md](netstat.md)。
 
-APN 写入默认数据承载 **CID=1**，掉电保留。`SIMCFG` 的 `sim.*` 是开机默认；`SIMSLOT` 是运行时切卡。Lua 对照：`require("lp")` / `rndis`。
+APN 写入默认数据承载 **CID=1**，掉电保留。`SIMCFG` 的 `sim.*` 是开机默认；`SIMSLOT` 是运行时切卡。`WKPAD` / `DSTMR` 只改本次运行，不写 Flash。Lua 对照：`require("lp")` / `rndis`。
 
 ---
 
@@ -15,14 +15,16 @@ APN 写入默认数据承载 **CID=1**，掉电保留。`SIMCFG` 的 `sim.*` 是
 - [3. AT+APN](#3-atapn)
 - [4. AT+APNAUTH](#4-atapnauth)
 - [5. AT+LP](#5-atlp)
-- [6. AT+SIMCFG](#6-atsimcfg)
-- [7. AT+SIMSLOT](#7-atsimslot)
-- [8. AT+DOSIMSLOT](#8-atdosimslot)
-- [9. AT+RILAT](#9-atrilat)
-- [10. AT+RNDIS](#10-atrndis)
-- [11. AT+RNDISSAVE](#11-atrndissave)
-- [12. 错误一览](#12-错误一览)
-- [13. 联调顺序](#13-联调顺序)
+- [6. AT+WKPAD](#6-atwkpad)
+- [7. AT+DSTMR](#7-atdstmr)
+- [8. AT+SIMCFG](#8-atsimcfg)
+- [9. AT+SIMSLOT](#9-atsimslot)
+- [10. AT+DOSIMSLOT](#10-atdosimslot)
+- [11. AT+RILAT](#11-atrilat)
+- [12. AT+RNDIS](#12-atrndis)
+- [13. AT+RNDISSAVE](#13-atrndissave)
+- [14. 错误一览](#14-错误一览)
+- [15. 联调顺序](#15-联调顺序)
 - [修订记录](#修订记录)
 
 ---
@@ -32,11 +34,11 @@ APN 写入默认数据承载 **CID=1**，掉电保留。`SIMCFG` 的 `sim.*` 是
 | 项 | 约定 |
 | --- | --- |
 | APN / APNAUTH | 失败走 `+CME ERROR`。参数错是 **105**。读/写协议栈失败时，有时回 **底层数字**（常见负数，**不是** convention 101～156） |
-| LP / RNDIS / RNDISSAVE | 短 reason：`+CMD: "error <reason>"` + `ERROR` |
+| LP / WKPAD / DSTMR / RNDIS / RNDISSAVE | 短 reason：`+CMD: "error <reason>"` + `ERROR` |
 | SIMCFG | 混用：缺参 / 值非法 / 未知 key 走 CME **105** / **104**；读盘失败走短 reason |
 | SIMSLOT / DOSIMSLOT | 失败走 CME。外部卡槽编号 **1 / 2** |
 | RILAT | **只在 UART AT 口**。`mode=1` 后先打 `>`，再按 [UARTQUE](uart.md#4-atuartque) 读一包原厂 AT。失败是整句 reason，不是短词 |
-| 无参查询 | `APN` / `APNAUTH` / `LP` / `RNDIS` / `RNDISSAVE` / `SIMSLOT` / `DOSIMSLOT`：`AT+XXX` 与 `AT+XXX?` 等价 |
+| 无参查询 | `APN` / `APNAUTH` / `LP` / `WKPAD` / `DSTMR` / `RNDIS` / `RNDISSAVE` / `SIMSLOT` / `DOSIMSLOT`：`AT+XXX` 与 `AT+XXX?` 等价。`WKPAD` / `DSTMR` 的无参查询打出全部编号；带编号的 `AT+WKPAD=<pad>`、`AT+DSTMR=<id>` 与 `AT+XXX=<n>?` 等价，只查一路 |
 
 ---
 
@@ -47,6 +49,8 @@ APN 写入默认数据承载 **CID=1**，掉电保留。`SIMCFG` 的 `sim.*` 是
 | `AT+APN` | `=?` | 无参 | `"<apn>"` 或带鉴权；`"factory"` 恢复空 APN | 默认 CID=1 的 APN（NVM） |
 | `AT+APNAUTH` | `=?` | 无参 | `"<user>","<pass>","<auth>"` | 只改 CID=1 的 PAP/CHAP |
 | `AT+LP` | `=?` | 无参 | `"<mode>"` | 低功耗模式字符串 |
+| `AT+WKPAD` | `=?` | 无参为全部；`<pad>` 或 `<pad>?` 为单路 | `<pad>,<en>,<pos>,<neg>,<pu>,<pd>` | 唤醒脚，仅本次运行 |
+| `AT+DSTMR` | `=?` | 无参为全部；`<id>` 或 `<id>?` 为单路 | `<id>,<ms>`，`ms=0` 停止 | 深睡定时器，单位毫秒 |
 | `AT+SIMCFG` | `=?` | `?` 全量；`"<key>"` 单项 | `"<key>",<TAILRAW>` | 开机默认切卡策略 |
 | `AT+SIMSLOT` | `=?` | 无参 | `<1\|2>` | **运行时**切卡 |
 | `AT+DOSIMSLOT` | `=?` | 无参 | `<1\|2>` | 立刻选外部卡槽 |
@@ -101,7 +105,7 @@ OK
 
 未配时 APN / 用户 / 密码可能是空串 `""`，鉴权为 `"NONE"`。
 
-读失败：`+CME ERROR: <n>`（底层数字，见 [第 12 节](#12-错误一览)）。**没有**随后的 `OK`。
+读失败：`+CME ERROR: <n>`（底层数字，见 [第 14 节](#14-错误一览)）。**没有**随后的 `OK`。
 
 ### 3.3 只改 APN（保留当前鉴权）
 
@@ -291,7 +295,179 @@ OK
 
 ---
 
-## 6. AT+SIMCFG {#6-atsimcfg}
+## 6. AT+WKPAD {#6-atwkpad}
+
+设置 / 查询一根唤醒脚。参数顺序与 `lp.wkpad` 相同。只改本次运行，掉电或冷启动后回到固件默认。
+
+| 参数 | 取值 | 含义 |
+| --- | --- | --- |
+| `pad` | `0`～`5` | 唤醒脚编号，与 [lp 的唤醒脚](../../api/module/lp.md#5-5-wkpad) 同一套 |
+| `en` | `0` / `1` | 是否当作唤醒脚。`0`～`2` 不能设成 `0` |
+| `pos` | `0` / `1` | 上升沿 |
+| `neg` | `0` / `1` | 下降沿 |
+| `pu` | `0` / `1` | 内部上拉 |
+| `pd` | `0` / `1` | 内部下拉 |
+
+上拉和下拉不能同时为 `1`。`pos` 和 `neg` 都是 `0` 时，这只脚不会唤醒，跟 `en` 是否为 `1` 无关。成功应答是写完之后的回读，六个数字依次是 `pad,en,pos,neg,pu,pd`。
+
+### 6.1 测试
+
+```lua
+AT+WKPAD=?
+```
+
+```lua
++WKPAD: (0-5),(0-1),(0-1),(0-1),(0-1),(0-1)
+pad,en,pos,neg,pull_up,pull_down
+set: AT+WKPAD=<pad>,<en>,<pos>,<neg>,<pu>,<pd>
+query one: AT+WKPAD=<pad> or AT+WKPAD=<pad>?
+query all: AT+WKPAD or AT+WKPAD?
+pad 0-2 cannot set en=0; pull_up and pull_down cannot both be 1
+pos=0 and neg=0 will not wake; runtime only, not saved
+
+OK
+```
+
+### 6.2 查询
+
+无参打出 `0`～`5` 各一行。`AT+WKPAD` 与 `AT+WKPAD?` 相同。
+
+```lua
+AT+WKPAD
+```
+
+```lua
++WKPAD: 0,1,0,1,1,0
++WKPAD: 1,0,0,0,0,0
++WKPAD: 2,0,0,0,0,0
++WKPAD: 3,0,0,0,0,0
++WKPAD: 4,0,0,0,0,0
++WKPAD: 5,0,0,0,0,0
+
+OK
+```
+
+只查一路：`AT+WKPAD=0` 与 `AT+WKPAD=0?` 相同。
+
+```lua
+AT+WKPAD=0
+```
+
+```lua
++WKPAD: 0,1,0,1,1,0
+
+OK
+```
+
+### 6.3 设置
+
+六个参数都要给。下面把 WAKEUP0 配成唤醒、上下沿都开、内部下拉。
+
+```lua
+AT+WKPAD=0,1,1,1,0,1
+```
+
+```lua
++WKPAD: 0,1,1,1,0,1
+
+OK
+```
+
+**失败 reason**
+
+| reason | 可能原因 |
+| --- | --- |
+| `param` | 缺参、个数不对，或开关不是 `0`/`1` |
+| `pad` | 编号不在 `0`～`5` |
+| `disable` | 对 `0`～`2` 传入 `en=0` |
+| `pull` | 上拉和下拉同时为 `1` |
+
+---
+
+## 7. AT+DSTMR {#7-atdstmr}
+
+启动、停止或查询深睡定时器。对应 `lp.dstmr`、`lp.dstmr_stop`、`lp.dstmr_on`、`lp.dstmr_left`。时间单位是毫秒。
+
+| 参数 | 取值 | 含义 |
+| --- | --- | --- |
+| `id` | `0`～`6` | `0` 和 `1` 不写 Flash，最长约 2.5 小时。`2`～`6` 启停写入 Flash，最长约 740 小时。`7`～`9` 不开放 |
+| `ms` | `0`～`2147483647` | 大于 `0` 为启动。`0` 为停止。解析器是有符号整数，比 Lua 的 `4294967295` 上限小 |
+
+查询和设置成功都回读：`+DSTMR: <id>,<on>,<left_ms>`。`on` 为 `1` 表示还在走，`0` 表示已停。已停时 `left_ms` 打 `0`，不要把它当成剩余时间。没有单独的到期上报；Hibernate 醒来后用 `lp.wake_src` / `lp.last_slp` 看是不是定时器复位。
+
+`0`/`1` 和 `2`～`6` 都能在 PSM（Hibernate）里走时并唤醒。差别只是存不存 Flash、最长能定多久。
+
+### 7.1 测试
+
+```lua
+AT+DSTMR=?
+```
+
+```lua
++DSTMR: (0-6),(0-2147483647)
+id,ms  unit ms; ms=0 stops
+set: AT+DSTMR=<id>,<ms>
+query one: AT+DSTMR=<id> or AT+DSTMR=<id>?
+query all: AT+DSTMR or AT+DSTMR?
+reply: +DSTMR: <id>,<on>,<left_ms>
+id 0-1 no flash, about 2.5h; id 2-6 write flash, about 740h
+
+OK
+```
+
+### 7.2 查询
+
+无参打出 `0`～`6`。`AT+DSTMR` 与 `AT+DSTMR?` 相同。
+
+```lua
+AT+DSTMR=2
+```
+
+```lua
++DSTMR: 2,1,179998
+
+OK
+```
+
+`AT+DSTMR=2?` 与上面相同。
+
+### 7.3 设置
+
+启动 2 号定时器，3 分钟：
+
+```lua
+AT+DSTMR=2,180000
+```
+
+```lua
++DSTMR: 2,1,180000
+
+OK
+```
+
+停掉 2 号：
+
+```lua
+AT+DSTMR=2,0
+```
+
+```lua
++DSTMR: 2,0,0
+
+OK
+```
+
+**失败 reason**
+
+| reason | 可能原因 |
+| --- | --- |
+| `param` | 缺参，或类型不是数字 |
+| `id` | 不是 `0`～`6` |
+| `ms` | 小于 `0` |
+
+---
+
+## 8. AT+SIMCFG {#8-atsimcfg}
 
 读写**开机默认**的双卡策略，落盘。**不是**当前正在用的卡槽（当前槽用 `SIMSLOT` / `DOSIMSLOT`）。
 
@@ -312,7 +488,7 @@ OK
 
 值用 **TAILRAW**（最后一个逗号后的原文），会去掉首尾空白再解析成十进制。
 
-### 6.1 测试
+### 8.1 测试
 
 ```lua
 AT+SIMCFG=?
@@ -329,7 +505,7 @@ query all: AT+SIMCFG?
 OK
 ```
 
-### 6.2 查询全部
+### 8.2 查询全部
 
 ```lua
 AT+SIMCFG?
@@ -352,7 +528,7 @@ OK
 
 读盘失败 → `+SIMCFG: "error read"`。申请失败 → `malloc`。拼包失败 → `format` / `overflow`。
 
-### 6.3 查询单项 / 设置
+### 8.3 查询单项 / 设置
 
 无第二参（或 TAILRAW 长度为 0）当查询：
 
@@ -387,7 +563,7 @@ OK
 
 写的是开机默认。已经跑着的卡不会因为本指令立刻换槽；要当场切用 `AT+SIMSLOT`。
 
-### 6.4 示例
+### 8.4 示例
 
 ```lua
 AT+SIMCFG="sim.sw_auto",1
@@ -403,11 +579,11 @@ OK
 
 ---
 
-## 7. AT+SIMSLOT {#7-atsimslot}
+## 9. AT+SIMSLOT {#9-atsimslot}
 
 **运行时**查 / 切当前卡槽。不改 `SIMCFG` 里的开机默认。
 
-### 7.1 测试
+### 9.1 测试
 
 ```lua
 AT+SIMSLOT=?
@@ -422,7 +598,7 @@ query: AT+SIMSLOT?
 OK
 ```
 
-### 7.2 查询
+### 9.2 查询
 
 ```lua
 AT+SIMSLOT?
@@ -438,7 +614,7 @@ OK
 
 读失败 → CME **121**。
 
-### 7.3 设置
+### 9.3 设置
 
 ```lua
 AT+SIMSLOT=2
@@ -459,13 +635,13 @@ OK
 
 ---
 
-## 8. AT+DOSIMSLOT {#8-atdosimslot}
+## 10. AT+DOSIMSLOT {#10-atdosimslot}
 
 立刻按外部卡槽 1/2 选择（会走射频开关流程）。查询形态与 `SIMSLOT` 相同，都是当前槽。
 
 与 `SIMSLOT` 的差别：本指令直接下到卡槽选择；`SIMSLOT` 走网络管理的运行时切卡队列。开机默认仍只看 `SIMCFG`。
 
-### 8.1 测试
+### 10.1 测试
 
 ```lua
 AT+DOSIMSLOT=?
@@ -473,7 +649,7 @@ AT+DOSIMSLOT=?
 
 帮助一行：`sim_id(1:SIM0,2:SIM1)`，外部编号仍是 **1 / 2**。
 
-### 8.2 查询 / 设置
+### 10.2 查询 / 设置
 
 ```lua
 AT+DOSIMSLOT?
@@ -495,7 +671,7 @@ OK
 
 ---
 
-## 9. AT+RILAT {#9-atrilat}
+## 11. AT+RILAT {#11-atrilat}
 
 只在 **UART AT 口** 有效。USB AT 口会失败。
 
@@ -505,7 +681,7 @@ OK
 
 **仅设置，无查询。** `mode` 只能是 **1**。
 
-### 9.1 测试
+### 11.1 测试
 
 ```lua
 AT+RILAT=?
@@ -513,7 +689,7 @@ AT+RILAT=?
 
 帮助说明：`mode(1 only)`，先 `>`，再按 UARTQUE 读一包并转发。
 
-### 9.2 设置
+### 11.2 设置
 
 ```lua
 AT+RILAT=1
@@ -529,7 +705,7 @@ OK
 
 主机侧建议：先把该 UART 的 `max_wait_ms` 配成能收下一整行 AT（见 `AT+UARTQUE`），再发 `AT+RILAT=1`，看到 `>` 后立刻写一行原厂命令并以行结束符收尾。
 
-### 9.3 失败 reason
+### 11.3 失败 reason
 
 形态：`+RILAT: "error <…>"` + `ERROR`。
 
@@ -546,11 +722,11 @@ OK
 
 ---
 
-## 10. AT+RNDIS {#10-atrndis}
+## 12. AT+RNDIS {#12-atrndis}
 
 USB 当 4G 网卡的**本次**开关。**不写**开机策略。开机策略用 `RNDISSAVE`。
 
-### 10.1 测试
+### 12.1 测试
 
 ```lua
 AT+RNDIS=?
@@ -566,7 +742,7 @@ persist: AT+RNDISSAVE=<enable>
 OK
 ```
 
-### 10.2 查询
+### 12.2 查询
 
 ```lua
 AT+RNDIS?
@@ -585,7 +761,7 @@ OK
 
 读失败 → `"error read"`。
 
-### 10.3 设置
+### 12.3 设置
 
 ```lua
 AT+RNDIS=1
@@ -602,7 +778,7 @@ OK
 | `enable` | 不是 0/1 |
 | `set` | 本次开关失败 |
 
-### 10.4 示例
+### 12.4 示例
 
 ```lua
 AT+RNDIS=0
@@ -613,11 +789,11 @@ OK
 
 ---
 
-## 11. AT+RNDISSAVE {#11-atrndissave}
+## 13. AT+RNDISSAVE {#13-atrndissave}
 
 立刻按 `<enable>` 开关，并写入 NVM（下次开机跟这个策略）。
 
-### 11.1 测试
+### 13.1 测试
 
 ```lua
 AT+RNDISSAVE=?
@@ -632,7 +808,7 @@ query: AT+RNDISSAVE? -> +RNDISSAVE: saved
 OK
 ```
 
-### 11.2 查询
+### 13.2 查询
 
 ```lua
 AT+RNDISSAVE?
@@ -643,7 +819,7 @@ OK
 
 只有一个数：NVM 里保存的开机策略。读失败 → `"error read"`。
 
-### 11.3 设置
+### 13.3 设置
 
 ```lua
 AT+RNDISSAVE=1
@@ -660,9 +836,9 @@ OK
 
 ---
 
-## 12. 错误一览
+## 14. 错误一览
 
-### 12.1 `+CME ERROR`
+### 14.1 `+CME ERROR`
 
 | 码 | 指令 | 含义 |
 | --- | --- | --- |
@@ -674,28 +850,33 @@ OK
 
 现场可用 `AT+CMEERR` 对照 101～156；APN 的负数**不会**出现在那张表里。
 
-### 12.2 短 reason
+### 14.2 短 reason
 
 | reason | 指令 | 含义 |
 | --- | --- | --- |
-| `param` | LP / SIMCFG（短 reason 分支）/ RNDIS / RNDISSAVE | 形态不对 |
+| `param` | LP / WKPAD / DSTMR / SIMCFG（短 reason 分支）/ RNDIS / RNDISSAVE | 形态不对 |
 | `mode` | LP | 不是四个模式串 |
+| `pad` | WKPAD | 编号不在 0～5 |
+| `disable` | WKPAD | 对唤醒脚 0～2 传入关闭 |
+| `pull` | WKPAD | 上拉和下拉同时为 1 |
+| `id` | DSTMR | 编号不是 0～6 |
+| `ms` | DSTMR | 毫秒小于 0 |
 | `read` | SIMCFG / RNDIS / RNDISSAVE | 读配置失败 |
 | `write` | SIMCFG | 落盘失败 |
 | `malloc` / `format` / `overflow` | SIMCFG 全量查询 | 内存 / 拼包 |
 | `enable` | RNDIS / RNDISSAVE | 不是 0/1 |
 | `set` | RNDIS | 本次开关失败 |
 | `save` | RNDISSAVE | 写 NVM 失败 |
-| RILAT 整句 | 见 [第 9.3 节](#93-失败-reason) | |
+| RILAT 整句 | 见 [第 11.3 节](#113-失败-reason) | |
 
 ---
 
-## 13. 联调顺序
+## 15. 联调顺序
 
 1. `AT+CFUN=1`，等 `AT+ISLINK` 为 1。
 2. 专网卡：`AT+APN="<apn>"` 或带用户密码；要恢复空 APN：`AT+APN="factory"`。
 3. 双卡：开机默认用 `AT+SIMCFG="sim.slot",1`；已经在跑要换槽用 `AT+SIMSLOT=2`。
-4. 省电：`AT+LP="low_power"`（或 `AT+PMU=1`，见 sys 篇）。
+4. 省电：`AT+LP="low_power"`（或 `AT+PMU=1`，见 sys 篇）。要定时从 Hibernate 醒来：`AT+DSTMR=2,180000` 再 `AT+LP="psm"`。唤醒脚用 `AT+WKPAD`，只对本次运行有效。
 5. USB 上网：只要本次 `AT+RNDIS=1`；要开机也开 `AT+RNDISSAVE=1`。
 6. 必须发原厂 AT：在 UART 口配好 `UARTQUE`，再 `AT+RILAT=1`，见 `>` 后发一行。
 
@@ -706,3 +887,4 @@ OK
 | 版本 | 日期 | 说明 |
 | --- | --- | --- |
 | 1.0.0 | 2026-09-05 | 首版：APN / APNAUTH / LP / SIMCFG / SIMSLOT / DOSIMSLOT / RILAT / RNDIS / RNDISSAVE |
+| 1.1.0 | 2026-10-27 | 增加 `WKPAD`、`DSTMR` |

@@ -1,6 +1,6 @@
 # lp
 
-**文档版本** `1.2.1`
+**文档版本** `1.2.2`
 
 低功耗与驻网模块。用来设定休眠**目标**、等驻网、收网络/唤醒事件，以及用投票在“有业务要保活”和“允许睡”之间切换。本模块还提供本地 SIM 配置读写和运行时切卡。
 
@@ -723,7 +723,7 @@ lp.wkpad(0, true, false, true, true, false)
 local cfg = lp.wkpad(0)
 ```
 
-不让出协程。不写配置，下次上电按固件默认。
+不让出协程。不写配置，下次上电按固件默认。AT 侧是 `AT+WKPAD`，见 [链路手册](../../at/manual/link.md#6-atwkpad)。
 
 ---
 
@@ -853,9 +853,9 @@ lp.dstmr(id, ms)
 
 无返回。`id` 非法抛 `invalid dstmr id, expect 0~6`。`ms` 非法抛 `invalid dstmr ms`。
 
-`7`～`9` 不开放。没有单独的到期回调；醒来后用 `lp.reg_netcb` 的 `WAKE`，或再读 `lp.dstmr_on`。
+`7`～`9` 不开放。没有单独的到期回调；醒来后用 `lp.reg_netcb` 的 `WAKE`，或再读 `lp.dstmr_on`。`0`/`1` 与 `2`～`6` 都能在 Hibernate 里唤醒。
 
-不让出协程。
+不让出协程。AT 侧是 `AT+DSTMR`（第二参 `0` 即 `dstmr_stop`），见 [链路手册](../../at/manual/link.md#7-atdstmr)。
 
 ---
 
@@ -1227,9 +1227,9 @@ vote 对象 `__gc` 拆除实例（停倒计时、释放槽）。虚拟机退出�
 | 看从哪醒的 | `reg_netcb` 判断 `WAKE` |
 | 改默认卡槽策略 | `config` |
 | 立刻切另一张卡 | `simslot(1\|2)` |
-| 配唤醒脚 | `wkpad(0, true, false, true, true, false)` |
+| 配唤醒脚 | `wkpad(...)`，AT 为 `AT+WKPAD` |
 | 看这次为什么醒、上次睡了哪档、睡了多久 | `wake_src` / `last_slp` / `sleep_ms` |
-| 睡眠中也要到点醒 | `dstmr(id, ms)` |
+| 睡眠中也要到点醒 | `dstmr(id, ms)`，AT 为 `AT+DSTMR` |
 | 跨睡眠留一个布尔 | `flag(true)` |
 
 `set_mode` 和 `vote` 不要各管各的互相覆盖。常用：vote 的 `sleep_mode` 与产品休眠档一致；干活 `acquire`，干完 `release`。
@@ -1381,3 +1381,4 @@ end
 | 1.1.0 | 2026-09-05 | 补全错误与返回约定：全部 `err` 文本、抛错摘要与可能原因 |
 | 1.2.0 | 2026-10-07 | 新增唤醒脚 `wkpad`、唤醒源与睡眠档查询、充电脚/电源键电平、`doze`、睡眠上限与提前醒、`sleep_ms`/`sleep_est`、深睡定时器、跨睡眠 `flag`、`time_ok` |
 | 1.2.1 | 2026-10-07 | `sleep_trim`、`doze`、`can_slp` 暂不开放 |
+| 1.2.2 | 2026-10-27 | `wkpad`、`dstmr` 补 AT 对照：`AT+WKPAD`、`AT+DSTMR` |
