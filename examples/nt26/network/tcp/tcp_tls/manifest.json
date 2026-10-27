@@ -1,0 +1,35 @@
+{
+  "id": "tcp_tls",
+  "name": "TCP TLS 单向认证",
+  "version": "1.0.0",
+  "category": "network",
+  "hw": "中",
+  "tags": [
+    "tcp",
+    "tls"
+  ],
+  "entry": "main.lua",
+  "compatibility": {
+    "modules": null,
+    "chips": null,
+    "boards": null,
+    "sdk": ""
+  },
+  "requires": {
+    "libs": [
+      "log",
+      "lp",
+      "rt",
+      "tcp"
+    ],
+    "pins": [],
+    "peripherals": [
+      "SIM"
+    ],
+    "controllers": [],
+    "extras": [],
+    "network": true
+  },
+  "readme": "",
+  "description": "先等驻网，再用 TLS 连测试服务器。TLS_AUTH = 1 时用该服务器的自签名证书做单向认证，改成 0 则只加密、不校验证书。\n"
+}
