@@ -6,4 +6,4 @@
 
 | 工程 | 说明 |
 | --- | --- |
-| [gps_uart2](gps_uart2) | 工程内 `nmea.lua` / `gps.lua`（Lua 解析）。固件内置 `require("gps")` 见 [gps_api](../../module/gps/gps_api) |
+| [gps_uart2](gps_uart2) | 固件 `require("gps")`，UART3 接外置 GPS。短示例见 [gps_api](../../module/gps/gps_api) |

@@ -1,9 +1,19 @@
-
 --[=[
   gps_api demo — 内置 gps 模块（C 解析）
   ============================================================================
-  一包 UART 一次回调。ev.lat / ev.lon / ev.valid 给地图；
-  ev.rmc / ev.gga / … 按句取。keep_raw 才挂 ev.raw。
+  一包 UART 一次回调。一张表：坐标 + 特色字段。keep_raw 才挂 ev.raw。
+
+  ev = {
+    valid, lat, lon,
+    speed_kmh, course,
+    time = { hour, min, sec },
+    date = { day, month, year },
+    alt, quality, sats_used, hdop,
+    fix_type, pdop, vdop,
+    sats = { { sys, prn, elev, az, snr }, ... },
+    antenna,
+    raw,
+  }
 
   接线（NT26-PRO UART3 出厂 pin_map=0）
     GPS TX → 模块 RX PIN 53（LCD_CLK）
@@ -22,21 +32,16 @@ local function on_gps(ev)
     if ev.raw then
         log.info("%s", ev.raw)
     end
-    if ev.updated ~= "rmc" and ev.updated ~= "gga" and ev.updated ~= "gns" then
-        return
-    end
-    local rmc = ev.rmc
-    local gga = ev.gga
     if ev.valid and ev.lat then
         log.info("fix lat=%.6f lon=%.6f alt=%s kmh=%s sats=%s hdop=%s",
                  ev.lat, ev.lon,
-                 tostring(gga and gga.alt),
-                 tostring(rmc and rmc.speed_kmh),
-                 tostring(gga and gga.sats),
-                 tostring(gga and gga.hdop))
+                 tostring(ev.alt),
+                 tostring(ev.speed_kmh),
+                 tostring(ev.sats_used),
+                 tostring(ev.hdop))
         return
     end
-    log.info("fix invalid updated=%s", tostring(ev.updated))
+    log.info("fix invalid valid=%s", tostring(ev.valid))
 end
 
 gps.reg(on_gps)
