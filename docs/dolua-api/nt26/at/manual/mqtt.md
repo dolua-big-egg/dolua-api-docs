@@ -1,6 +1,8 @@
 #  MQTT
 
-**文档版本** `1.0.4`
+**文档版本** `1.0.5`
+
+**固件版本 1.4.4** 修复 MQTT 底层部分发送后继续发送时仍使用原始整包长度的问题，改为只发送剩余字节；零字节或非法长度返回按发送失败处理。`MQTTSYNC`、`MQTTASYNC` 和通道透传发布共用此修复。
 
 配置并收发模组上的 **4 路 MQTT 通道**。指令走应用 AT 口（主串口 / USB AT 等），与 [`rtu_config.cfg` 的 `[mqtt.N]`](../../api/rtu_config/rtu_config.md#10-mqttn) 以及主题槽 [`[mqtt.N.subscribe.M]` / `[mqtt.N.publish.M]`](../../api/rtu_config/rtu_config.md#11-mqttnsubscribem--mqttnpublishm) 读写**同一份持久化配置**。通道号一律 **1～4**，与配置段 `[mqtt.1]`～`[mqtt.4]` 对应。
 
@@ -822,6 +824,8 @@ OK
 
 `<len>` 是入队前的原始长度，**不是**对端已收到的长度。
 
+固件 **1.4.4** 的 UART 单包最大可设为 30720 字节，设置及重启生效方式见 [UARTQUE](uart.md#4-atuartque)。MQTT 的 `send_buffer_size` 最大仍为 16384 字节，须容纳载荷、主题和报文头；扩大 UART 接收包不会扩大 MQTT 报文容量，入队成功也不保证后续序列化和发送成功。
+
 失败 reason：`param` / `id` / `topic` / `qos` / `retain` / `rsp` / `data` / **`enqueue`**。
 
 `rsp=0`：发布成败无任何 AT 应答；解析错误仍回 ERROR。
@@ -1035,3 +1039,4 @@ OK
 | 1.0.2 | 2026-09-19 | 联调示例改为演示口 `mqtts.doiot.cn:1883`、平台 `normal`、ClientId `"<#IMEI>"`、账号 `doiot` / 密码 `web`；标明 `"doiot"` 平台仅玄武 |
 | 1.0.3 | 2026-09-20 | 文首与联调链到 [专栏 · MQTT 连接度云物联（玄武）](../topics/5giot.md) |
 | 1.0.4 | 2026-09-20 | 写明 `mqtts.doiot.cn` 是普通 MQTT 测试服务器；`"doiot"` 是度云物联云平台（与 OneNET 同类），主机 `5giot.cn` |
+| 1.0.5 | 2026-11-09 | 对应固件 1.4.4：记录 MQTT 部分发送重试长度修复，说明 UART 30 KiB 接收与 MQTT 16 KiB 发送缓冲分别限制 |

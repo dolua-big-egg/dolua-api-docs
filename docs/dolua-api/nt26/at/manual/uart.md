@@ -1,6 +1,8 @@
 #  串口（UART）
 
-**文档版本** `1.0.1`
+**文档版本** `1.1.0`
+
+**固件版本 1.4.4**：`UARTQUE` 单包上限提高到 **30720 字节（30 KiB）**，允许 2 包 × 30 KiB；Lua UART 事件同步保留完整分包，接收与解析大块数据使用 cust 堆。
 
 三路业务串口的线参数、收包分包，以及「当前这条 AT 口是谁」。与 [`rtu_config.cfg` 的 `[uart.N]`](../../api/rtu_config/rtu_config.md#14-uart--uartn) 同一套持久化。行格式见 [convention.md](convention.md)。
 
@@ -130,7 +132,7 @@ AT **不能** 写成 `0` 关闭分包（配置文件里 `max_packet_size=0` 才�
 AT+UARTQUE=?
 ```
 
-帮助里会带三项范围，以及 `max_packets*max_packet_size` 必须小于上限。
+帮助里会带三项范围，以及 `max_packets*max_packet_size` 不得超过上限。
 
 ### 4.2 查询
 
@@ -153,10 +155,12 @@ AT+UARTQUE=<uart_id>,<max_packets>,<max_packet_size>,<max_wait_ms>
 | 参数 | 范围 | 说明 |
 | --- | --- | --- |
 | `<max_packets>` | 1～64 | 待处理包深度 |
-| `<max_packet_size>` | 1～12288 | 单包上限（字节） |
+| `<max_packet_size>` | 1～30720 | 单包上限（字节），固件 1.4.4 起最大 30 KiB |
 | `<max_wait_ms>` | 1～60000 | 空闲断包（毫秒） |
 
-联合约束：`max_packets * max_packet_size` 必须 **小于 61440**（60 KB）。越界时 reason 文案是 `max_packets*max_packet_size must be < 32768`（机内固定句，数字按回文认，实际门槛是 61440）。
+联合约束：`max_packets * max_packet_size` 必须 **不超过 61440**（60 KiB）。越界时 reason 为 `max_packets*max_packet_size must be <= 61440`。
+
+`UARTQUE` 仅写入持久化配置，重启设备后按新值申请接收缓存；查询显示保存值。单包大小包含整条 AT 的命令头、参数、载荷和结尾 CRLF，30 KiB 接收上限不会扩大 MQTT 等下游协议的发送缓冲。
 
 其它 reason：`param`、`id`、`config`、`save`，以及 `max_packets=` / `max_packet_size=` / `max_wait_ms=` 的 `out_of_range[…]`。
 
@@ -168,6 +172,19 @@ AT+UARTQUE=1,8,2048,100
 
 OK
 ```
+
+允许 UART1 接收最大 30 KiB 分包，保持两包队列：
+
+```text
+AT+UARTQUE=1,2,30720,200
++UARTQUE: 1,2,30720,200
+
+OK
+```
+
+接收与回调仍使用独立线程，逻辑包由多次最多 2048 字节的驱动接收合并；单次请求还会按波特率、帧格式和等待时间缩小，使分包计时能在接收块完成后及时刷新。分包计时在接收事件有数据时刷新，`max_wait_ms` 不限制整包发送时长。
+
+拼包缓存、队列正文和 AT 解析副本均使用 cust 堆，不会在回调线程栈上创建 30 KiB 数组。每路 30 KiB、队列深度 2 时，接收拼包缓存、2 KiB 驱动缓存、两包待处理数据及一包正在执行的回调，合计约 122 KiB；线程栈、发送缓存及 AT/映射/Lua 的临时副本另外计入。队列满或内存不足仍可能导致投递失败，详见 [Lua UART 内存说明](../../api/peripherals/uart.md#84-切出来的包)。
 
 ---
 
@@ -245,3 +262,4 @@ OK
 | --- | --- | --- |
 | 1.0.0 | 2026-09-05 | 首版：UART / UARTQUE / UARTID |
 | 1.0.1 | 2026-09-19 | 相对链接随目录迁到 `at/manual/` |
+| 1.1.0 | 2026-11-09 | 对应固件 1.4.4：UARTQUE 单包最大 30 KiB，允许 2×30 KiB；同步帮助与联合约束，补充 cust 堆、Lua 完整交付、接收时序与内存说明 |

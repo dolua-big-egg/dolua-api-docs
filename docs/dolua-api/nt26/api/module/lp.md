@@ -1,6 +1,6 @@
 # lp
 
-**文档版本** `1.2.2`
+**文档版本** `1.3.0`
 
 低功耗与驻网模块。用来设定休眠**目标**、等驻网、收网络/唤醒事件，以及用投票在“有业务要保活”和“允许睡”之间切换。本模块还提供本地 SIM 配置读写和运行时切卡。
 
@@ -43,6 +43,8 @@ local lp = require("lp")
   - [7.20 `lp.dstmr_left`](#7-20-dstmr-left)
   - [7.21 `lp.flag`](#7-21-flag)
   - [7.22 `lp.time_ok`](#7-22-time-ok)
+  - [7.23 `lp.io_hold`](#7-23-io-hold)
+  - [7.24 `lp.agpio_sleep_power`](#7-24-agpio-sleep-power)
 - [8. 对象方法（vote）](#8-对象方法vote)
   - [8.1 `obj:acquire`](#8-1-acquire)
   - [8.2 `obj:release`](#8-2-release)
@@ -949,6 +951,46 @@ lp.time_ok()
 
 ---
 
+### 7.23 `lp.io_hold([enable])` {#7-23-io-hold}
+
+控制统一休眠回调中的自动 AGPIO 输出保持和 AON 锁存。默认 `true`。
+
+```lua
+lp.io_hold(false)  -- 后续休眠不自动钉住 AGPIO 输出、不使能 AON latch
+lp.io_hold(true)   -- 恢复自动保持
+local enabled = lp.io_hold() -- 或 lp.io_hold(nil)，只查询
+```
+
+写入接受 boolean 或整数 `0`/`1`，返回设置后的 boolean。关闭时也跳过 NET 灯的 `sleep_keep` 写入；Sleep1 的 GPIO 数字核方向/输出/中断备份恢复、软 I2C 休眠释放/恢复继续工作。此接口不把 AGPIO 切为高阻、不关闭 AGPIO LDO，也不停止 APWM。
+
+### 7.24 `lp.agpio_sleep_power([enable])` {#7-24-agpio-sleep-power}
+
+设置 **休眠期间** AGPIO LDO 是否供电，默认 `true`。不改变电压档位。
+
+```lua
+lp.agpio_sleep_power(false) -- 进睡准备的最后一步关闭 AGPIO LDO
+lp.agpio_sleep_power(true)  -- 后续休眠保留 AGPIO 供电
+local enabled = lp.agpio_sleep_power() -- 或传 nil，只查询策略
+```
+
+写入接受 boolean 或整数 `0`/`1`，返回设置后的 boolean。它设置供电策略，**不会在 Lua 调用当场断电**，查询值也不是实时电源测量结果。休眠前 GPIO/NET 灯处理完成后再断电，避免后面的保持代码重新上电。
+
+| `io_hold` | `agpio_sleep_power` | 休眠准备行为 |
+| --- | --- | --- |
+| true | true | 保留原有自动输出保持/锁存和供电 |
+| false | true | 保留 AGPIO 供电，停用自动保持/锁存 |
+| true 或 false | false | 关闭自动锁存并关闭 AGPIO LDO，供电关闭优先 |
+
+断电影响整组 AGPIO，原有高电平保持会消失，AGPIO 负载、APWM、复用唤醒脚需要按硬件连接验证。此接口不关闭整个 AON 域，不修改 RTC/深睡定时器或唤醒脚的检测配置。
+
+Sleep1 唤醒和任何档位入睡失败时，在应用线程恢复前重新上电并恢复配置；成功进入 Sleep2/Hibernate 则走正常开机初始化。本次开机的两个策略不写 Flash：Sleep1 唤醒继续保留，重启或成功进入 Sleep2/Hibernate 后恢复默认 `true`，脚本应重新设置。
+
+两个策略对全设备生效，不是单个 Lua 对象/虚拟机私有；关闭或重载脚本不会自动还原策略。需要还原时显式调用两个接口，示例会在测试完成和脚本报错后恢复原值。
+
+完整测试工程：[AGPIO 休眠供电对比](../../../../../examples/nt26/apps/lowpower/agpio_power_compare/README.md)。该工程使用 `MODE_LOW_POWER_2`，当前实现实际为 `CFUN=0 + Sleep1`，不是硬件 Sleep2。
+
+---
+
 ## 8. 对象方法（vote）
 
 `key`：非空字符串，最长 31 字节。同一 key 重复 `acquire` 视为成功（幂等）。`release` 一个未持有的 key 失败。
@@ -1150,6 +1192,7 @@ release ─(票 →0)─→ 等 sleep_delay_ms ──→ 目标 = 创建时的 s
 | `chg_pin` / `pwrkey` / `time_ok` | boolean | — |
 | `dstmr_on` | boolean | 非法 `id` **抛** |
 | `flag` | boolean | 写入非法时 **抛** |
+| `io_hold` / `agpio_sleep_power` | boolean 策略值 | 非法布尔参数 **抛** |
 | `acquire` / `release` / `vote` / `clear` | `true` | `false, err` |
 | `status` | table | **抛** |
 
@@ -1337,6 +1380,8 @@ end
 | `lp.flag()` | 只读 | boolean |
 | `lp.flag(v)` | `true`/`false` 或 `0`/`1` | boolean / 抛错 |
 | `lp.time_ok()` | 无 | boolean |
+| `lp.io_hold([enable])` | boolean 或整数 `0`/`1`；省略/nil 查询 | boolean 策略值 |
+| `lp.agpio_sleep_power([enable])` | boolean 或整数 `0`/`1`；省略/nil 查询 | boolean 策略值 |
 | `obj:acquire(key)` | 1 个字符串 | `true` 或 `false, err` |
 | `obj:release(key)` | 1 个字符串 | 同上 |
 | `obj:vote(key, active)` | 见 8.3 | 同上 |
@@ -1382,3 +1427,4 @@ end
 | 1.2.0 | 2026-10-07 | 新增唤醒脚 `wkpad`、唤醒源与睡眠档查询、充电脚/电源键电平、`doze`、睡眠上限与提前醒、`sleep_ms`/`sleep_est`、深睡定时器、跨睡眠 `flag`、`time_ok` |
 | 1.2.1 | 2026-10-07 | `sleep_trim`、`doze`、`can_slp` 暂不开放 |
 | 1.2.2 | 2026-10-27 | `wkpad`、`dstmr` 补 AT 对照：`AT+WKPAD`、`AT+DSTMR` |
+| 1.3.0 | 2026-11-10 | 增加 `io_hold`、`agpio_sleep_power`，支持休眠保持/锁存及 AGPIO LDO 供电对比测试 |

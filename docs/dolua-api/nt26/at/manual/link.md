@@ -1,6 +1,6 @@
 #  链路（APN / 低功耗 / 切卡 / 原厂通道 / USB 网卡）
 
-**文档版本** `1.1.0`
+**文档版本** `1.1.2`
 
 配默认上网 APN、低功耗模式、唤醒脚、深睡定时器、双卡槽、经 UART 转发一行原厂 AT，以及 USB 4G 网卡。行格式、两种失败风格见 [convention.md](convention.md)。驻网状态见 [netstat.md](netstat.md)。
 
@@ -66,6 +66,8 @@ APN 写入默认数据承载 **CID=1**，掉电保留。`SIMCFG` 的 `sim.*` 是
 
 读写默认上网 APN（CID=1），写入协议栈 NVM，掉电保留。APN 最长 **99** 字符。用户名 / 密码最长 **64** 字符。
 
+**生效时机**：设置成功表示 PDP 配置已写入，下次网络附着时才使用；正在使用的连接不会由此命令主动重拨。设置后重启设备，或完成 `AT+CFUN=0` → `AT+CFUN=1` 并等待重新驻网及 PDP 激活。`AT+APN?` 读的是配置值，不能用它证明当前已激活承载的实际 APN。
+
 ### 3.1 测试
 
 ```lua
@@ -82,6 +84,8 @@ AT+APN="<apn>","<user>","<pass>"[,"<auth>"]
   set APN+auth; auth omitted: PAP if user/pass else NONE
 AT+APN="factory"
   restore factory: empty APN, no user/pass, auth=NONE
+Settings apply on next network attach; reconnect or reset after saving.
+Query returns saved PDP settings, not the active network APN.
 auth: NONE, PAP, CHAP, CHAP_PAP
 
 OK
@@ -485,6 +489,9 @@ OK
 | `sim.sw_silent` | 600 | 达到上限后的静默秒数。**不能写 0** |
 | `sim.remember` | 0 | 是否记住上次驻网成功的卡槽 |
 | `sim.slot2_disable` | 0 | `1`：禁用外部卡槽 2，调度不再切过去 |
+| `sim.hot` | 1 | 固件 **1.4.4** 新增 AT 读写；`1` 启动 SIM 热插拔，`0` 关闭热插拔并禁用 WAKEUP2 双边沿唤醒，上拉保留。别名 `sim_hot` |
+
+`sim.hot`（或 `sim_hot`）与 `rtu_config.cfg` 的 `[sim] sim_hot` 读写同一份持久化配置。AT 写入后**重启生效**；若开机加载的配置文件仍含 `sim_hot`，该次启动会按文件值重新写入。
 
 值用 **TAILRAW**（最后一个逗号后的原文），会去掉首尾空白再解析成十进制。
 
@@ -500,6 +507,7 @@ sim.slot(1|2) sim.sw_auto(0|1)
 sim.ready_time sim.attach_time
 sim.sw_num sim.sw_silent
 sim.remember(0|1) sim.slot2_disable(0|1)
+sim.hot(0|1) alias: sim_hot; reboot to apply
 query all: AT+SIMCFG?
 
 OK
@@ -511,7 +519,7 @@ OK
 AT+SIMCFG?
 ```
 
-或 `AT+SIMCFG`。连续八行，顺序固定：
+或 `AT+SIMCFG`。固件 1.4.4 起连续九行，顺序固定：
 
 ```lua
 +SIMCFG: "sim.slot",1
@@ -522,6 +530,7 @@ AT+SIMCFG?
 +SIMCFG: "sim.sw_silent",600
 +SIMCFG: "sim.remember",0
 +SIMCFG: "sim.slot2_disable",0
++SIMCFG: "sim.hot",1
 
 OK
 ```
@@ -558,12 +567,27 @@ OK
 | `sim.sw_silent` | ≥1 秒 | 0 / 非数字 → CME **105** |
 | `sim.remember` | 0 或 1 | CME **105** |
 | `sim.slot2_disable` | 0 或 1 | CME **105**。`1` 时调度不再切到外部卡槽 2 |
+| `sim.hot` / `sim_hot` | 0 或 1 | CME **105**；全量查询统一显示 `sim.hot`，单项查询/设置回显传入的 key |
 
 未知 key → CME **104**。第一参不是字符串 → CME **105**。落盘失败 → `"error write"`。
 
 写的是开机默认。已经跑着的卡不会因为本指令立刻换槽；要当场切用 `AT+SIMSLOT`。
 
 ### 8.4 示例
+
+关闭 SIM 热插拔（写入后重启生效），或查询保存值：
+
+```text
+AT+SIMCFG="sim_hot",0
++SIMCFG: "sim_hot",0
+
+OK
+
+AT+SIMCFG="sim.hot"
++SIMCFG: "sim.hot",0
+
+OK
+```
 
 ```lua
 AT+SIMCFG="sim.sw_auto",1
@@ -888,3 +912,5 @@ OK
 | --- | --- | --- |
 | 1.0.0 | 2026-09-05 | 首版：APN / APNAUTH / LP / SIMCFG / SIMSLOT / DOSIMSLOT / RILAT / RNDIS / RNDISSAVE |
 | 1.1.0 | 2026-10-27 | 增加 `WKPAD`、`DSTMR` |
+| 1.1.1 | 2026-11-09 | 澄清 APN 查询与重新附着的生效时机，同步 APN 帮助输出 |
+| 1.1.2 | 2026-11-09 | 对应固件 1.4.4：SIMCFG 新增 sim.hot / sim_hot 的持久化读写、帮助和全量查询，重启应用 SIM 热插拔设置 |

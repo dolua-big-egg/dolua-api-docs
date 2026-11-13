@@ -1,6 +1,10 @@
 # mqtt
 
-**文档版本** `2.0.1`
+**文档版本** `2.1.1`
+
+**固件版本** `1.4.3` 起修复 Lua 接收正文超过 8192 字节时被截断的问题，单次回调上限提高到 16384 字节，并增加顺序分片和重组字段。详见 [11.1 接收分片](#11-1-receive-chunks)。
+
+**固件版本 1.4.4** 修复底层部分发送后继续发送时仍使用原始整包长度的问题，改为只发送剩余字节，避免越界读取和报文异常；底层返回零字节或非法长度时按发送失败处理。此修复同时适用于 Lua、AT 和通道透传发布，发送缓冲上限仍为 16384 字节，包含主题和 MQTT 报文头。
 
 全托管 MQTT 3.1.1 客户端。协议能力、心跳、重发边界和云平台适配见 [概述](#概述)。`create` 建实例并拉起工作线程；`open` 只把目标设成「要连上」。之后连 broker、断线重连、收报文都由内部自动跑，消息和状态用回调回来。全系统最多 4 路。
 
@@ -51,6 +55,7 @@ local mqtt = require("mqtt")
   - [9.3 MQTTS](#9-3-mqtts)
 - [10. 订阅：`sub` 与 `auto_sub`](#10-订阅sub-与-auto_sub)
 - [11. 事件回调](#11-事件回调)
+  - [11.1 接收分片（固件 1.4.3）](#11-1-receive-chunks)
 - [12. OneNET 平台](#12-onenet-平台)
 - [13. 错误与返回约定](#13-错误与返回约定)
 - [14. 资源上限与生命周期](#14-资源上限与生命周期)
@@ -177,7 +182,7 @@ CONNECT 里会带上：ClientId、用户名、密码（空则省略）、Clean S
 | QoS 1 的 PUBLISH | 先尝试入队，然后回 PUBACK | 入队失败也会回 PUBACK。broker 认为已送达，脚本可能没看到 |
 | QoS 2 的 PUBLISH | 入队并回 PUBREC；之后收到 PUBREL 再回 PUBCOMP | 模组不保存 QoS 2 事务。broker 重投时，`message` 会再来一次 |
 
-回调里的 `message` 只有主题和 payload。入站 QoS、DUP、retain 都不会放进 `ev`。入站也不按报文号去重。
+回调里的 `message` 包含主题、payload；固件 `1.4.3` 起还包含接收分片字段。入站 QoS、DUP、retain 都不会放进 `ev`。入站也不按报文号去重。
 
 所以：业务上要「至少一次」，脚本自己要能认重复、自己决定要不要再 `pub_async`。把 QoS 设成 2 得不到跨断线的恰好一次。
 
@@ -1106,7 +1111,13 @@ function cb(ev)
 | --- | --- | --- |
 | `ev.event` | string | 每次：见第 5 节 |
 | `ev.mqtt_topic` | string | 仅 `message`：收到的主题 |
-| `ev.data` | string | 仅 `message`：payload 原文（空 payload 时可能没有此字段） |
+| `ev.data` | string | 仅 `message`：本片正文，最多 16384 字节（固件 1.4.3）；空 payload 时可能没有此字段 |
+| `ev.data_len` | integer | `message`，固件 1.4.3：本片字节数 |
+| `ev.total_len` | integer | `message`，固件 1.4.3：原消息正文总字节数 |
+| `ev.offset` | integer | `message`，固件 1.4.3：本片在原正文中的字节偏移，从 0 开始 |
+| `ev.chunk_index` | integer | `message`，固件 1.4.3：分片序号，从 1 开始 |
+| `ev.chunk_count` | integer | `message`，固件 1.4.3：原消息的总片数 |
+| `ev.is_last` | boolean | `message`，固件 1.4.3：本片是否为最后一片 |
 | `ev.code` | integer | `error` 时有意义 |
 | `ev.client` | userdata | 这个客户端对象 |
 
@@ -1117,6 +1128,62 @@ function cb(ev)
 `connected` 之后，内部才会按 `auto_sub` 列表订阅。
 
 回调里抛错会被吞掉并记日志。
+
+---
+
+### 11.1 接收分片（固件 1.4.3） {#11-1-receive-chunks}
+
+固件 **1.4.3** 修复了 Lua 接收事件只复制前 8192 字节、尾部正文丢失的问题。运行时会将完整消息作为一个事件入队，再在 Lua 线程中按每片最多 **16384 字节（16 KiB）** 顺序调用回调。同一条消息的分片连续交付，偏移和序号在下一条消息开始时重新计算。
+
+- 正文不超过 16384 字节时，一次回调交付完整正文，`chunk_index = chunk_count = 1`，`offset = 0`，`is_last = true`。
+- 超出单次回调上限时，每片带相同的 `total_len` 和 `chunk_count`，最后一片的 `is_last` 为 `true`。
+- 二进制正文中的 NUL 字节计入长度。空 MQTT 正文的 `data_len = total_len = 0`，片数为 1，`ev.data` 可以不存在。
+- 完整事件入队失败时返回投递失败，MQTT 桥接层记录日志。消息进入队列后由 VM 切片，分片过程共用这一条队列记录。
+
+**MQTT 整包接收还受 `recv_buffer_size` 限制**，默认 4096，最大 16384 字节，且容量包含 MQTT 协议头和主题。协议层成功接收消息之后，才进入这里的 Lua 回调流程。接收缓冲区大小、下行队列内存池及 Lua 回调片大小是三项独立限制。
+
+下面以原消息已成功进入运行时为前提，展示切片边界。16385 字节这一行用于说明运行时规则。
+
+| 原正文长度 | 每次回调的 `data_len` | 每次回调的 `offset` |
+| --- | --- | --- |
+| 10240 | 10240 | 0 |
+| 16384 | 16384 | 0 |
+| 16385 | 16384、1 | 0、16384 |
+
+需要整条正文时，可以在 `is_last` 后处理拼接结果。下面代码放在已联网的任务中执行，回调只负责收集和处理已到达的数据。
+
+~~~lua
+local mqtt = require("mqtt")
+local chunks = {}
+
+local c, err = mqtt.create(function(ev)
+    if ev.event ~= "message" then
+        return
+    end
+    if ev.offset == 0 then
+        chunks = {}
+    end
+    chunks[ev.chunk_index] = ev.data or ""
+    if ev.is_last then
+        local body = table.concat(chunks)
+        chunks = {}
+        print("MQTT received bytes", #body, ev.total_len)
+    end
+end, {
+    host = "broker.emqx.io",
+    port = 1883,
+    client_id = "lua_chunk_receiver",
+    recv_buffer_size = 16384,
+})
+
+if not c then
+    error(err)
+end
+assert(c:auto_sub({{topic = "device/example/down", qos = 0}}))
+assert(c:open())
+~~~
+
+RTU 透传通道的 Lua `rtu.reg_chcb` 也采用相同规则，分片字段放在第三参 `meta`，见 [RTU 通道回调](../module/rtu.md#9-通道回调)。
 
 ---
 
@@ -1272,6 +1339,7 @@ c:open(host, port, device_name, product_id, access_key)
 | 客户端路数 | 4 | 整机，跨脚本共享；模块表无此常量 |
 | 自动订阅 | 20 条 | `auto_sub` 全量覆盖 |
 | 发送 / 接收缓冲 | 2048～16384 | 默认 4096；下次重连分配 |
+| Lua 单次接收回调正文 | 16384 字节 | 固件 1.4.3；运行时按原消息边界顺序切片，见 [11.1](#11-1-receive-chunks) |
 | 遗嘱消息 | 4096 字节 | — |
 | 高频重连窗 | 固定 5 秒 | 改不了 |
 | `client_id` / `username` 缓存 | 127 字节 | 超出截断 |
@@ -1436,3 +1504,5 @@ broker 关掉连接后日志会看到 `disconnected`，然后内部自己再连�
 | 1.3.0 | 2026-10-13 | Lua `mqtt` 增加 MQTTS：`tls_enable` / `tls_seclevel` / 主机名 / 套件；证书可内联 PEM，也可写 ublob 地址，建连前重读 |
 | 2.0.0 | 2026-10-13 | 证书只认 PEM 字符串或 `{ ublob = 短名 }`。去掉 `ublob://`、`ublob:` 和 `ca_ublob` / `client_cert_ublob` / `client_key_ublob` |
 | 2.0.1 | 2026-10-20 | 增加 MQTTS 例程 `examples/nt26/network/mqtt/mqtts`。单向认证，CA 为 DigiCert Global Root G2，连 `broker.emqx.io:8883` |
+| 2.1.0 | 2026-11-09 | 对应固件 1.4.3。修复 Lua 接收正文超过 8192 字节的静默截断；单次回调最多 16384 字节，超出按顺序分片；补充分片字段、重组示例及底层接收上限说明 |
+| 2.1.1 | 2026-11-09 | 对应固件 1.4.4：修复底层部分发送后剩余长度错误及零进度处理，补充发送缓冲边界说明 |

@@ -1,8 +1,12 @@
 # http
 
-**文档版本** `1.2.1`
+**文档版本** `1.4.0`
 
-同步 HTTP/HTTPS 客户端。纯函数模块：一次 `request` 从发到收完，没有对象、没有托管线程、没有自动重连。响应体可以进 Lua 字符串，也可以落到 **ublob**、已挂载的 **LittleFS**，或已挂载的 FlashDB。
+同步 HTTP/HTTPS 客户端。`request` / `get` / `post` 完成一次请求并返回响应，响应体可以进 Lua 字符串，也可以落到 **ublob**、已挂载的 **LittleFS**，或已挂载的 FlashDB。固件 `1.4.3` 起增加 `http.upload`，支持上传对象和取数回调两种 chunked 上传方式。
+
+**上传接口对应固件版本** `1.4.3`。上传参数、返回值、错误处理见 [6.9 Chunked 上传](#6-9-upload)。
+
+**当前 SDK 新增** `http.client()`：保留同一 TCP/TLS 连接，串行执行多次请求或上传。旧的单次接口仍默认关闭连接。见 [6.11 客户端](#6-11-client)。
 
 ```lua
 local http = require("http")
@@ -28,6 +32,10 @@ local http = require("http")
   - [6.6 `http.save.kv`](#6-6-save-kv)
   - [6.7 `http.save.ts`](#6-7-save-ts)
   - [6.8 `http.encode`](#6-8-encode)
+  - [6.9 `http.upload`（固件 1.4.3）](#6-9-upload)
+  - [6.10 上传对象方法](#6-10-upload-methods)
+  - [6.11 `http.client` 长连接客户端](#6-11-client)
+  - [6.12 客户端方法](#6-12-client-methods)
 - [7. 请求配置](#7-请求配置)
 - [8. 自定义头](#8-自定义头)
 - [9. HTTPS](#9-https)
@@ -49,15 +57,17 @@ local http = require("http")
 
 ## 1. 模块定位
 
-`http` 只做一件事：按配置发一次 HTTP(S)，把结果带回来。
+`http` 提供同步 HTTP(S) 请求和上传；单次接口用完关闭连接，客户端对象可以保留连接供下一次请求复用。
 
 1. **必须已经能上网。** 没网会 DNS/连接失败。demo 都是先 `lp.wait_link`。
 2. `http.request(opts)` 是通用入口。`http.sync` 与它是同一个函数。
 3. `http.get` / `http.post` 只是帮你填 `url`、`method`（post 再填 body），其余仍走 `request`。
 4. 不带 `save`：整份 body 变成 Lua 字符串。带 `save`：body 写入指定存储，`resp.body` 为空串，`body_len` 仍有效。
 5. `http.encode` 只做百分号编码，不联网、不改你正在发的请求。查询值里的方括号要自己编完再拼进 `url`。
+6. 固件 `1.4.3` 起，`http.upload(opts)` 返回上传对象；`http.upload(opts, producer)` 按需取数并完成上传，支持 POST/PUT。
+7. `http.client(opts)` 建立固定服务地址的客户端，`c:get/post/request/upload` 共用它的连接。
 
-这不是 TCP/MQTT 那种托管连接：没有后台任务、不会断线重连、失败不会自己再试。要再发就再调一次。
+请求不会在后台自动执行，失败的请求也不会自动重放。客户端保留的是 TCP/TLS 连接；空闲超时会释放连接，下一次新请求按需重建。没有 HTTP 心跳或自动补发业务数据。
 
 不要在 UART / MQTT / TCP 回调里调用：一次请求会占住整条 Lua 引擎线程。
 
@@ -89,6 +99,10 @@ local http = require("http")
 | `save` → ublob | 同上，再覆盖写入 ublob | **否** | 内部二进制文件；`body=""` |
 | `save` → lfs | 同上，再写入已挂载分区 | **否** | 外挂 Flash 上的路径 |
 | `save` → kv / ts | 同上，再写入已挂载库 | **否** | FlashDB 键 / 一条时序 |
+| `upload(opts)` | 建连接、发请求头，随后用对象写入并结束 | **否**，每个网络操作同步执行 | `finish()` 返回响应表 |
+| `upload(opts, producer)` | 回调取数、发送 chunk、结束并读取响应 | **否** | 调用返回响应表 |
+| `client(opts)` | 建立 TCP/TLS 连接，返回客户端 | **否** | 暂无正文 |
+| `c:request/get/post/upload` | 借用客户端连接，完成本次请求或上传 | **否** | 响应表或上传对象 |
 
 和 TCP/MQTT 不同：没有独立工作线程替你收包。整次调用占着当前协程。
 
@@ -103,6 +117,8 @@ local http = require("http")
 - 默认发送/接收超时各 30 秒；再加大文件，整机业务会卡住
 
 失败不会自动重试。HTTPS 握手、大 body、慢站点（如 httpbin）都会把这次调用拉长。
+
+固件 `1.4.3` 的 `upload`、`write`、`poll`、`finish`、`send` 同样同步执行，占用当前 Lua VM 线程。取数回调需要及时返回。需要事件供数时，可以保存上传对象，由任务协程消费事件数据并逐次 `write()`，数据结束时 `finish()`；串口、MQTT 等快捷回调先转交数据。
 
 ---
 
@@ -179,7 +195,7 @@ local http = require("http")
 
 ## 6. 模块函数
 
-模块表：`request`、`sync`、`get`、`post`、`encode`，以及嵌套表 `http.save`。
+模块表：`request`、`sync`、`get`、`post`、`upload`、`client`、`encode`，以及嵌套表 `http.save`。
 
 ---
 
@@ -376,6 +392,215 @@ http.encode("/a b/c", http.ENCODE_PATH)
 
 ---
 
+### 6.9 `http.upload(opts [, producer])`（固件 1.4.3） {#6-9-upload}
+
+固件 **1.4.3** 新增。使用 HTTP/1.1 `Transfer-Encoding: chunked` 上传，方法支持 `POST` 和 `PUT`，默认 `POST`。适用于文件逐块读取、持续生成数据以及开始时未知总长度的上传。服务器需支持 chunked 请求体。
+
+`http.upload(opts)` 建立连接并发送请求头，成功返回上传对象。传入第二参 `producer` 时，会循环取数并完成整个上传，成功返回响应表。两种形式失败都返回 `nil, err_code, err_msg, info`。
+
+SDK 为非空写入生成 chunk 帧，结束时发送 `0\r\n\r\n`。指定总长度也使用 chunked 请求体。完成前会等待完整的最终 HTTP 响应，最终状态为 **2xx** 才返回成功。遇到断线、错误或提前拒绝时关闭连接，返回错误及已获得的 HTTP 状态和发送进度。
+
+| `opts` 字段 | 约定 |
+| --- | --- |
+| `url` | 必填，完整 HTTP/HTTPS URL |
+| `method` | `"POST"` 或 `"PUT"`，默认 `"POST"` |
+| `total_bytes` | 省略表示未知长度；显式 0 表示空上传；范围 0～4294967295 |
+| `content_type` | 默认 `application/octet-stream` |
+| `headers` | 沿用 [自定义头](#8-自定义头) 的格式，最多 32 对 |
+| `timeout_s` / `timeout_r` | 发送/响应接收超时，单位秒；0 或省略使用 30，最大 3600 |
+| `connect_timeout_s` | 0 或省略沿用底层连接默认值 |
+| `max_response_size` | 响应正文内存上限；0 或省略使用 16 KiB，最大 1 MiB |
+| `expect_wait_ms` | 等待 `100 Continue` 的时间；0 或省略使用 1000 ms，最大 30000 ms |
+| `max_recv_bps` | 响应正文接收限速，单位字节/秒；0 不限速 |
+| Basic Auth、`pdp_id`、TLS 字段 | 沿用请求配置中的同名字段 |
+
+`Host`、`Content-Length`、`Transfer-Encoding`、`Connection`、`Expect` 由上传实现管理，自定义这些头会返回参数错误。请求头中带 `Expect: 100-continue`；服务器在等待窗口内未回复 100 时，客户端继续上传。
+
+#### 手动写入
+
+在已联网的任务中执行下面代码。手动模式通过 `finish()` 完成事务，指定长度时，写入超量或不足量就结束均返回 `-32`。
+
+~~~lua
+local http = require("http")
+
+local u, code, message, info = http.upload({
+    url = "https://httpbin.org/post",
+    method = "POST",
+    content_type = "text/plain",
+    total_bytes = 6,
+    tls_mode = http.TLS_INSECURE,
+})
+if not u then
+    return nil, code, message, info
+end
+
+for _, data in ipairs({"abc", "def"}) do
+    local written
+    written, code, message, info = u:write(data)
+    if not written then
+        u:close()
+        return nil, code, message, info
+    end
+end
+
+local response
+response, code, message, info = u:finish()
+u:close()
+return response, code, message, info
+~~~
+
+#### 取数回调
+
+`http.upload(opts, producer)` 或 `u:send(producer)` 在当前 Lua VM 中同步调用 `producer(event)`。回调每次填充一块数据后返回，网络发送完成后再请求下一块。
+
+| 回调参数 | 含义 |
+| --- | --- |
+| `event.max_bytes` | 本次最多可返回的字节数，最大 2048 |
+| `event.sent_bytes` | 已完整发送的 chunk 正文累计字节数 |
+| `event.remaining` | 仅指定 `total_bytes` 时有，表示剩余字节数 |
+
+回调返回 1～`max_bytes` 字节的字符串。返回 `nil` 表示数据结束，返回 `false` 表示取消。空字符串、超长字符串、其他类型或回调抛错返回 `-33`。指定总长度时，达到长度自动结束；提前返回 `nil` 会触发长度不足错误。未知长度通过回调返回 `nil` 结束。
+
+~~~lua
+local http = require("http")
+local bytes = "abc\0def"
+local offset = 1
+
+local response, code, message, info = http.upload({
+    url = "https://httpbin.org/post",
+    content_type = "application/octet-stream",
+    total_bytes = #bytes,
+    tls_mode = http.TLS_INSECURE,
+}, function(event)
+    if offset > #bytes then
+        return nil
+    end
+    local data = bytes:sub(offset, offset + event.max_bytes - 1)
+    offset = offset + #data
+    return data
+end)
+
+return response, code, message, info
+~~~
+
+删除上述示例的 `total_bytes` 即为未知长度上传，数据耗尽时返回 `nil` 结束。取数回调需要及时返回，可执行同步读取来填充数据，不能在回调中执行需要 yield 的等待。回调运行期间，该上传对象的写入、轮询、发送、结束和关闭操作会返回 `-30`。回调异常会作为整个 `upload` / `send` 的错误返回，回调模式在结束、失败或取消时释放连接。
+
+### 6.10 上传对象方法 {#6-10-upload-methods}
+
+**对应固件版本 1.4.3。**
+
+| 调用 | 成功返回值 | 用途 |
+| --- | --- | --- |
+| `u:write(data)` | `本次字节数, 累计发送字节数` | 发送二进制字符串，空字符串返回 0 字节 |
+| `u:poll([wait_ms])` | `true, info` | 检查断线和服务器提前响应；等待 0～1000 ms，默认 0 |
+| `u:status()` | `info` | 查询本地状态 |
+| `u:finish()` | 响应表 | 发送结束 chunk，等待完整最终响应；单次上传关闭连接，客户端上传归还可复用连接 |
+| `u:send(producer)` | 响应表 | 按回调供数并完成上传，连接处理与 `finish()` 相同 |
+| `u:close()` | `true` | 清理上传对象；上传未完成时丢弃连接，可重复调用，支持 GC 与 Lua `<close>` |
+
+`write` / `poll` / `finish` / `send` 失败返回 `nil, err_code, err_msg, info`。参数类型错误遵循 Lua 参数异常约定。`write` 成功说明完整 chunk 已交给本地传输层；业务成功以 `finish` 收到完整 2xx 响应为准。
+
+返回的 `info` 包含 `sent_bytes`、可选的 `total_bytes`、`error_code` 和 `state`（`open` / `finished` / `closed` / `error`）。已经解析到响应时还包含响应表字段，例如 `status_code`、`header`、`body`。错误发生在 chunk 中途时，服务器可能已经收到该块的部分数据，`sent_bytes` 仅累计完整发送的块。
+
+`finish()` 的成功返回表包含响应内容和发送进度。连接释放后，`status()` 保留本地状态和发送计数。手动模式发生错误时调用 `close()`；有空闲供数间隔时可调用 `poll()` 检查连接。
+
+上传新增错误码如下。连接、DNS、TLS、内存和解析错误沿用 [第 12 节](#12-错误与返回约定)。
+
+| 码 | `err_msg` | 含义 |
+| --- | --- | --- |
+| `-30` | `upload state` | 对象已关闭、已结束或在取数回调中重入 |
+| `-31` | `http rejected` | 最终 HTTP 状态非 2xx，状态码在 `info.status_code` |
+| `-32` | `upload length mismatch` | 指定的上传长度与实际数据不符 |
+| `-33` | `upload producer failed` | 取数回调返回值不符合约定或抛错；抛错时返回信息带异常文本 |
+| `-37` | `upload cancelled` | 取数回调返回 `false` |
+| `-38` | `early final response` | 结束帧发送完成前收到 2xx 响应 |
+
+AT 的连续串口输入使用 `HTTPFREE="chunk"`，参数和结束序列见 [AT HTTP 手册](../../at/manual/http.md#7-4-chunk-upload)。
+
+---
+
+### 6.11 `http.client(opts)` 长连接客户端 {#6-11-client}
+
+保留同一 TCP 连接和完整 TLS 上下文，减少重复建连与握手。`http.client(opts)` 会立即连接，成功返回客户端，失败返回 `nil, err_code, err_msg`。
+
+```lua
+local http = require("http")
+local c, err, msg = http.client {
+    origin = "https://api.example.com",
+    idle_timeout = 60,
+    timeout_s = 30,
+    timeout_r = 30,
+    tls_mode = http.TLS_SERVER_AUTH,
+    ca_cert = CA_PEM,
+}
+if not c then return nil, err, msg end
+
+local first = assert(c:get("/device/info"))
+local second = assert(c:post("/report", '{"v":1}', {
+    content_type = "application/json",
+}))
+print(second.connection_seq, second.reused, second.reusable)
+c:close()
+```
+
+| opts 字段 | 默认 / 范围 | 说明 |
+| --- | --- | --- |
+| `origin` | 必填；`url` 为别名 | HTTP/HTTPS 服务地址，只取 scheme、host、port；即使含路径，也不会作为后续请求的路径前缀 |
+| `idle_timeout` | 省略或 0 使用 60 秒，最大 86400 | 上次事务结束后的连接空闲时长；超时释放 TCP/TLS，客户端对象仍可使用 |
+| `timeout_s` / `timeout_r` | 省略或 0 使用 30 秒，最大 3600 | 后续请求的默认发送 / 接收超时，可按次覆盖 |
+| `connect_timeout_s` | 省略或 0 沿用底层默认值，最大 3600 秒 | 建立连接时使用；连接超时由客户端配置持有 |
+| `pdp_id` | 0～255，默认 0 | 固定 PDP 上下文 |
+| `tls_mode`、证书、SNI、套件等 | 沿用 [HTTPS](#9-https) 字段 | 固定连接身份；客户端复制持有证书内容 |
+| 请求头、Basic Auth、限速、响应上限、保存选项 | 沿用各自请求字段 | 作为后续请求的默认值，按次 opts 可以覆盖 |
+
+构造参数会保存为默认值，之后修改原配置表中的字符串字段不会改变客户端的连接身份。按次 opts 不允许修改 `origin`、`pdp_id` 或任何 TLS/证书字段；需要更换时创建新客户端。请求头等嵌套表仍是普通 Lua 表，业务上按需管理。
+
+同一客户端固定 origin（协议、主机、有效端口）；可以请求不同路径。同一时间只能有一个请求或上传租用它，重入返回 `-17`。这里是串行复用，不使用 HTTP pipelining。
+
+### 6.12 客户端方法 {#6-12-client-methods}
+
+| 方法 | 成功 | 说明 |
+| --- | --- | --- |
+| `c:request(opts)` | 响应表 | 使用 `path` 或相同 origin 的完整 `url`，默认 `/`；支持现有请求、保存选项 |
+| `c:get(path [, opts])` | 响应表 | GET；保存文件请在 opts 中设置 `save` / `save_file` 等 |
+| `c:post(path, body [, opts])` | 响应表 | POST；body 为二进制字符串 |
+| `c:upload(opts [, producer])` | 上传对象或响应表 | 使用 `path`，其余上传选项和返回值沿用 [6.9](#6-9-upload) |
+| `c:status()` | 本地状态表 | 字段见下表；不发送 HTTP 探活请求 |
+| `c:close()` | `true` | 销毁客户端，可重复调用；支持 GC 与 Lua `<close>` |
+
+请求失败返回 `nil, err_code, err_msg`；上传失败沿用第四返回值 `info`。不同 origin 返回 `-18`，原连接仍可继续使用。类型错误、修改固定连接选项、使用已关闭客户端时按 Lua 参数异常处理。
+
+```lua
+local c <close> = assert(http.client { origin = "http://example.com" })
+local resp = assert(c:request { path = "/info", headers = { Accept = "application/json" } })
+local u = assert(c:upload { path = "/upload", total_bytes = 6 })
+assert(u:write("ab\0def"))
+local result = assert(u:finish())
+u:close()
+-- 上传结束后，c 仍可继续请求。
+assert(c:get("/status"))
+```
+
+`c:upload` 从创建到 `finish()` / `close()` 期间独占客户端。此时再发请求、创建另一上传或调用 `c:close()`，返回 `-17`。上传对象持有父客户端，父变量置 nil 或触发 GC 不会提前释放连接。成功 `finish()` 归还满足复用条件的连接；取消、长度不足、提前响应或中途网络错误会丢弃连接，下一次新请求可重建。
+
+普通请求和上传的成功响应增加 [第 11 节](#11-返回表) 的连接字段。`c:status()` 返回：
+
+| 字段 | 含义 |
+| --- | --- |
+| `closed` | 客户端已被 `close()` 销毁 |
+| `connected` | 本地已知连接状态，不能保证远端此刻仍在线 |
+| `busy` | 连接正在被请求或上传占用；忙时只保证该字段，统计字段请在事务完成后查询 |
+| `reused` | 最近一次事务是否借用了已有连接 |
+| `connection_seq` | 当前客户端内每次新建 TCP/TLS 后递增，创建新客户端重新计数 |
+| `completed_requests` | 已完整完成的请求数，含完成的上传 |
+| `last_error` | 最近一次连接/传输阶段错误码 |
+
+空闲超时只释放连接，不销毁客户端。服务器空闲关闭后，发送前检测到关闭时会先重建；发送或等待响应期间失败的请求不自动重放。普通请求的完整 HTTP 4xx/5xx 仍返回响应表，上传仍要求最终 HTTP 2xx。
+
+AT 侧连接保持与自由会话见 [HTTPCONN](../../at/manual/http.md#10-athttpconn) 和 [HTTPSESS](../../at/manual/http.md#11-athttpsess)。
+
+---
+
 ## 7. 请求配置
 
 `opts` 必填只有 `url`。没写的项走协议层默认。
@@ -389,7 +614,7 @@ http.encode("/a b/c", http.ENCODE_PATH)
 | `headers` | table | 无 | 最多 32 对，见第 8 节 |
 | `basic_auth_user` + `basic_auth_password` | string | 无 | **成对**才生效 |
 | `timeout_s` | integer | `30`（写 `0` 也由协议层补默认） | 发送超时（秒） |
-| `timeout_r` | integer | `30` | 接收超时（秒） |
+| `timeout_r` | integer | `30` | 接收超时（秒）；`timeout_s` / `timeout_r` 最大 3600 秒 |
 | `pdp_id` | integer | `0` | PDP 上下文 |
 | `max_response_size` | integer | `0` = 不限制 | 响应体上限（字节），超出 `-15` |
 | `require_content_length` | boolean | `false` | `true` 时没有 Content-Length 则 `-14`。数字 `0` 会被当成真 |
@@ -417,6 +642,8 @@ http.encode("/a b/c", http.ENCODE_PATH)
 ```lua
 { { "User-Agent", "doiot" }, { "Accept", "*/*" } }
 ```
+
+`Host`、`Content-Length`、`Transfer-Encoding`、`Connection`、`Expect` 由 HTTP 实现管理，自定义这些头返回 `-1`；普通头仍可按次设置。
 
 扁平数组长度必须为偶数。非法头：`nil, -1, "invalid headers"`。内存不够：`nil, -3, "out of memory"`。
 
@@ -617,7 +844,7 @@ KV 必须有非空 `key`。TS 没有文件名。`max_len` 为 0 的 TS：直接 
 | `saved.key` | 仅 kv |
 | `saved_file` | **仅 ublob**，等于文件名（兼容旧脚本） |
 
-HTTP 状态不是 2xx 时，只要收包和写盘成功，仍返回这张表。业务上请自己看 `status_code`。
+`request` / `get` / `post` 的 HTTP 状态不是 2xx 时，只要收包和写盘成功，仍返回这张表，业务上请自己看 `status_code`。固件 1.4.3 新增的 `upload` 只接受完整 2xx 响应，其他状态返回 `-31`，并在错误第四返回值 `info` 中提供响应内容。
 
 `save` 表里同时写多个目标时，识别顺序是 **ublob → lfs → kv → ts**，只用第一个认到的。
 
@@ -636,6 +863,9 @@ HTTP 状态不是 2xx 时，只要收包和写盘成功，仍返回这张表。�
 | `header_len` | integer | |
 | `body` | string | 响应体，可能含 0 字节 |
 | `body_len` | integer | |
+| `connection_seq` | integer | 当前客户端内的连接序号；单次连接接口为 0 |
+| `reused` | boolean | 本次借用了已有连接；构造时已预连接，第一次客户端请求也可为 true |
+| `reusable` | boolean | 完整响应后满足继续使用条件，不保证远端存活；单次接口为 false |
 
 有 `save` 时见 [10.6](#106-落盘后的响应表)。
 
@@ -645,7 +875,13 @@ HTTP 状态不是 2xx 时，只要收包和写盘成功，仍返回这张表。�
 
 | 接口 | 成功 | 失败 |
 | --- | --- | --- |
-| `request` / `sync` / `get` / `post` | 响应表 | `nil, err_code, err_msg` |
+| `request` / `sync` / `get` / `post` 及 `c:request/get/post` | 响应表 | `nil, err_code, err_msg` |
+| `http.client(opts)` | 客户端 | `nil, err_code, err_msg` |
+| `c:close()` | `true` | 租用期间 `nil, -17, "session busy"` |
+| `upload(opts)` | 上传对象 | `nil, err_code, err_msg, info` |
+| `upload(opts, producer)` / `u:send(producer)` / `u:finish()` | 响应表 | `nil, err_code, err_msg, info` |
+| `u:write(data)` | `本次字节数, 累计发送字节数` | `nil, err_code, err_msg, info` |
+| `u:poll([wait_ms])` | `true, info` | `nil, err_code, err_msg, info` |
 | `http.encode` | 编码后的字符串 | **抛错**，见 [6.8](#6-8-encode) |
 | `http.save.ublob` | 描述表 | 缺参抛错 |
 | `http.save.lfs` / `kv` / `ts` | 描述表 | 对象未挂载等：**抛错** |
@@ -671,6 +907,9 @@ HTTP 状态不是 2xx 时，只要收包和写盘成功，仍返回这张表。�
 | `-13` | `parse chunked failed` | chunked 不完整或格式坏 |
 | `-14` | `content-length required` | 这次请求要求 Content-Length，响应没给 |
 | `-15` | `response too large` | 超过 `max_response_size`；改上限或改 `save` 落盘 |
+| `-16` | `response output failed` | 响应输出失败 |
+| `-17` | `session busy` | 客户端被请求或上传占用 |
+| `-18` | `origin mismatch` | 请求与客户端的协议、主机或有效端口不同 |
 | 其它负值 | `http request failed` | 未单独翻译的底层码 |
 
 落盘错误从 **-20** 起（组 save 描述或写盘时）：
@@ -700,9 +939,19 @@ TLS 配置失败：`err_msg` 为 `"tls configure failed"`，码可能是 `-1`～
 | 默认超时 | 30 s / 30 s | 发送 / 接收 |
 | ublob | 与 ufs 共用 `usage().limit` | 只适合小文件 |
 | 并发 view（ublob） | 1 | 与 HTTP 无关，读回时注意 |
-| 对象 | 无 | 无 userdata 客户端 |
+| 上传对象 | 每次上传一个 | 单次上传完成关闭连接；客户端上传成功归还连接，未完成关闭则丢弃连接 |
+| 长连接会话 | 默认共 8 个 | Lua 客户端、AT 配置通道和 AT 自由会话共用；超出返回 `-3` |
+| 客户端空闲时长 | 默认 60 秒，最大 86400 秒 | 释放 TCP/TLS；仍需 `close()` 或 GC 销毁不用的客户端以归还会话名额 |
+| 上传取数回调 | 每次最多 2048 字节 | 使用回调参数中的 `max_bytes` |
+| 上传响应正文 | 默认 16 KiB，最大 1 MiB | `upload` 的 `max_response_size`；0 使用默认值 |
 
-无回调槽。不必长期持有 `http` 模块以外的引用；但 `save.lfs` / `kv` / `ts` 用到的 `fs`/`db` 在这次调用期间必须仍有效（调用方本来就该持有挂载对象）。
+`request` / `get` / `post` 的文件和数据库对象在调用期间必须有效。手动上传期间持有上传对象，出错或取消后调用 `close()`。取数回调只在 `upload(opts, producer)` 或 `u:send(producer)` 执行期间调用。
+
+### 13.1 连接复用条件
+
+只有完整消费本次响应后才能继续使用连接：定长正文收满、chunked 结束块与 trailers 收完，或明确无正文。`Content-Length: 0`、HEAD、204、304 不等待远端断开；100/103 等临时响应继续等待最终响应。
+
+`Connection: close`、HTTP/1.0 未声明 keep-alive、依赖 EOF 定界的正文，以及截断、解析错误、超限、输出中断都不复用。断网或 SIM 移除会使旧连接失效；空闲连接由周期清理处理，正在执行的事务负责结束并释放租用。不会发送 HTTP 心跳，也不会自动重放已经发出的失败请求。
 
 ---
 
@@ -711,6 +960,7 @@ TLS 配置失败：`err_msg` 为 `"tls configure failed"`，码可能是 `-1`～
 | 需求 | 做法 |
 | --- | --- |
 | 小 JSON / 调试 | `http.get` / `request`，看 `resp.body` |
+| 同一服务连续请求或上传 | `http.client` + `c:request/get/post/upload`，复用 TCP/TLS |
 | 查询值里有 `[` `]`、空格 | 先 `http.encode`，再拼进 `url` |
 | HTTPS 不验证书 | `tls_mode = http.TLS_INSECURE` |
 | HTTPS 验服务端 | `TLS_SERVER_AUTH` + `ca_cert` |
@@ -719,6 +969,7 @@ TLS 配置失败：`err_msg` 为 `"tls configure failed"`，码可能是 `-1`～
 | 大文件 / 资源包 | 先挂 LittleFS，再 `http.save.lfs` |
 | FlashDB 一条记录 | `save.kv` / `save.ts` |
 | MCU OTA 小包 | ublob + `ublob.open` 按块读；再大走外挂盘 |
+| 上传持续生成的数据 | 固件 1.4.3，`http.upload` 的取数回调或上传对象 |
 | 回调里发 HTTP | **不要** |
 
 ---
@@ -816,6 +1067,10 @@ f:close()
 
 | 调用 | 动作 |
 | --- | --- |
+| `http.client(opts)` | 建立可复用连接的客户端 |
+| `c:request(opts)` / `c:get(path, opts)` / `c:post(path, body, opts)` | 在客户端连接上请求 |
+| `c:upload(opts [, producer])` | 在客户端连接上上传 |
+| `c:status()` / `c:close()` | 查询状态 / 销毁客户端 |
 | `http.request(opts)` / `http.sync(opts)` | 通用一次请求 |
 | `http.get(url)` | GET |
 | `http.get(url, opts)` | GET + 选项 |
@@ -823,6 +1078,10 @@ f:close()
 | `http.get(url, filename, opts)` | 同上，可加 TLS 等 |
 | `http.post(url, body)` | POST |
 | `http.post(url, body, opts)` | POST + 选项（可含 `save`） |
+| `http.upload(opts)` | 固件 1.4.3，建立 chunked 上传，返回对象 |
+| `http.upload(opts, producer)` | 固件 1.4.3，按回调取数并完成上传 |
+| `u:write(data)` / `u:finish()` / `u:close()` | 写入、结束并读响应、释放上传连接 |
+| `u:poll([wait_ms])` / `u:status()` / `u:send(producer)` | 检查连接、本地状态、回调供数 |
 | `http.encode(text)` | 按 `ENCODE_COMPONENT` 百分号编码 |
 | `http.encode(text, level)` | 按 `ENCODE_COMPONENT` / `ENCODE_FORM` / `ENCODE_PATH` / `ENCODE_URI` 编码 |
 | `http.save.ublob(name)` | ublob 描述表 |
@@ -858,3 +1117,5 @@ f:close()
 | 1.1.0 | 2026-09-05 | 协议/落盘错误码补全可能原因，并写未翻译码与 LFS 关闭时的抛错 |
 | 1.2.0 | 2026-10-16 | 新增 `http.encode` 与 `ENCODE_COMPONENT` / `ENCODE_FORM` / `ENCODE_PATH` / `ENCODE_URI`。查询值默认把方括号编成 `%5B` `%5D` |
 | 1.2.1 | 2026-10-16 | 补全 `http.encode` 的参数、四个调用等级和抛错文案 |
+| 1.3.0 | 2026-11-09 | 对应固件 1.4.3。新增 `http.upload` 的 POST/PUT chunked 上传、上传对象、取数回调、四返回值错误约定及资源上限 |
+| 1.4.0 | 2026-11-12 | 当前 SDK 新增长连接客户端、连接复用状态、上传租用、资源上限、断线与错误语义；AT 接口说明移至 AT 手册 |

@@ -22,12 +22,12 @@
 | [lbs.md](lbs.md) | `LBS` `LBSCFG` `WIFISCAN` `WIFILOC` | 基站 / Wi-Fi 定位 |
 | [sock.md](sock.md) | `SOCK` `SOCKCFG` `SOCKKEEP` `SOCKSYNC` `SOCKASYNC` | 四路 TCP/UDP |
 | [mqtt.md](mqtt.md) | `MQTT` `MQTTCFG` `MQTTAUTH` `MQTTPLATFORM` `MQTTSUB` `MQTTPUB` `MQTTSYNC` `MQTTASYNC` `MQTTCLRRET` `MQTTWILL` | 四路 MQTT |
-| [http.md](http.md) | `HTTPURL` `HTTPCFG` `HTTPREQ` `HTTPFREE` | 五路 HTTP 与自由请求 |
+| [http.md](http.md) | `HTTPURL` `HTTPCFG` `HTTPREQ` `HTTPFREE` `HTTPUPLOAD` `HTTPCONN` `HTTPSESS` | 五路 HTTP、自由请求与连接复用 |
 | [ssl.md](ssl.md) | `SSL` | 三组证书 |
 | [uart.md](uart.md) | `UART` `UARTQUE` `UARTID` | 串口线参数、分包、当前口 |
 | [io.md](io.md) | `IOSET` `IOGET` `IOCFG` `IOVTGCFG` `IOVTGINIT` `IOTOG` `IOTMPLH` `IOLR` `IOCR` `IOPUL` `IOSEQ` `ADC` | GPIO、模板、波形、ADC |
 | [sms.md](sms.md) | `SMS` `SMSR` `SMSL` `SMSD` `SMSWRITE` `SMSSYNC` `SMSASYNC` `SMSTMPH` `SMSCFG` | 短信通道、SIM 存储、收发、转发 |
 | [rtu.md](rtu.md) | `RTUCONFIG` `DTUTASK` `DTUSTATE` `NETIO` `DTUHEART` `DTUREG` `DTUPSUP` `DTUPSDN` `RTUWRITE` `RTUWRITEQ` `RTUCTL` `RTUPSD` `DTUMSGHEAD` `CLDCFG` | 透传任务、路由、云配置策略 |
-| [script.md](script.md) | `SCRIPTCLEAR` `SCRIPTDEL` `SCRIPTCB` `SCRIPTBUNDLE` `SCRIPTDEPLOY` `SCRIPTFILE` `SCRIPTMANIFEST` `SCRIPTSELECT` `SCRIPTCONFIRM` `SCRIPTROLLBACK` | Lua 脚本包 AB 槽 |
+| [script.md](script.md) | `SCRIPTCLEAR` `SCRIPTDEL` `SCRIPTCB` `SCRIPTBUNDLE` `SCRIPTDEPLOY` `SCRIPTFILE` `SCRIPTMANIFEST` `SCRIPTSELECT` `SCRIPTCONFIRM` `SCRIPTROLLBACK` | Lua 脚本包、删除与清空；[删除后重启恢复无脚本](script.md#33-删除后重启) |
 | [ota.md](ota.md) | `OTA` `MCUOTA` | 模组升级、MCU 槽位分片 |
 | [sys.md](sys.md) | `LOG` `PLOG` `FSINFO` `FSLIST` `HEAPINFO` `THREAD` `PMU` `TRNG` `DEVICECFG` `CFGID` `FACTORY` `ONLINEDBG` | 日志、文件系统、诊断、整机配置、恢复出厂 |
